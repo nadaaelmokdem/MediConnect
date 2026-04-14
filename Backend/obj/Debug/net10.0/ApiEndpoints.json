@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "MediConnectAPI.Controllers.AIController",
+    "Method": "AskAI",
+    "RelativePath": "api/AI",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "MediConnectAPI.DTOs.SendAIMessageDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
