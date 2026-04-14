@@ -6,8 +6,7 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class DoctorSpecialty
-    {
+
         public class DoctorSpecialty
         {
             [Key]
@@ -26,4 +25,3 @@ namespace MediConnect.Models
             public Specialty Specialty { get; set; } = null!;
         }
     }
-}

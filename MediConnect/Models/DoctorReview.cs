@@ -6,8 +6,7 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class DoctorReview
-    {
+  
         public class DoctorReview
         {
             [Key]
@@ -36,4 +35,4 @@ namespace MediConnect.Models
             public Appointment Appointment { get; set; } = null!;
         }
     }
-}
+

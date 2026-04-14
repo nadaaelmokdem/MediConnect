@@ -6,8 +6,6 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class PatientProfile
-    {
         public class PatientProfile
         {
             [Key]
@@ -46,4 +44,3 @@ namespace MediConnect.Models
 
         public enum SubscriptionTier { Free, Premium }
     }
-}

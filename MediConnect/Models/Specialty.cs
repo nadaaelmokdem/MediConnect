@@ -5,8 +5,6 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class Specialty
-    {
         public class Specialty
         {
             [Key]
@@ -28,4 +26,4 @@ namespace MediConnect.Models
             public ICollection<DoctorSpecialty> DoctorSpecialties { get; set; } = new List<DoctorSpecialty>();
         }
     }
-}
+

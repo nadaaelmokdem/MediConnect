@@ -6,8 +6,7 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class ChatSession
-    {
+  
         public class ChatSession
         {
             [Key]
@@ -33,4 +32,4 @@ namespace MediConnect.Models
 
         public enum SessionStatus { Active, Completed, Abandoned }
     }
-}
+

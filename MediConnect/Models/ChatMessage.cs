@@ -6,8 +6,7 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class ChatMessage
-    {
+   
         public class ChatMessage
         {
             [Key]
@@ -30,4 +29,4 @@ namespace MediConnect.Models
             public ChatSession Session { get; set; } = null!;
         }
     }
-}
+

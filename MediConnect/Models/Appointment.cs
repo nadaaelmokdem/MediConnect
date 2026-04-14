@@ -6,8 +6,7 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class Appointment
-    {
+
         public class Appointment
         {
             [Key]
@@ -48,5 +47,5 @@ namespace MediConnect.Models
         public enum AppointmentType { Online, InPerson }
         public enum AppointmentStatus { Pending, Confirmed, Completed, Cancelled }
 
-    }
+    
 }

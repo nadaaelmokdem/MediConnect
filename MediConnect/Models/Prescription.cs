@@ -6,8 +6,7 @@ using System.Text;
 
 namespace MediConnect.Models
 {
-    internal class Prescription
-    {
+   
         public class Prescription
         {
             [Key]
@@ -41,5 +40,5 @@ namespace MediConnect.Models
 
             public ICollection<PrescriptionItem> Items { get; set; } = new List<PrescriptionItem>();
         }
-    }
+    
 }
