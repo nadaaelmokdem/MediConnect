@@ -11,6 +11,10 @@
       "RelativeMoniker": "D:0:0:{638C7E1E-2049-258B-7DF5-D30CFC1DF9A2}|MediConnectAPI.csproj|solutionrelative:controllers\\aicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{638C7E1E-2049-258B-7DF5-D30CFC1DF9A2}|MediConnectAPI.csproj|c:\\my files\\coding\\mediconnectapi\\backend\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{638C7E1E-2049-258B-7DF5-D30CFC1DF9A2}|MediConnectAPI.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{638C7E1E-2049-258B-7DF5-D30CFC1DF9A2}|MediConnectAPI.csproj|c:\\my files\\coding\\mediconnectapi\\backend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{638C7E1E-2049-258B-7DF5-D30CFC1DF9A2}|MediConnectAPI.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -22,11 +26,23 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnectAPI\\Backend\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnectAPI\\Backend\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-14T22:51:42.601Z"
             },
             {
               "$type": "Document",
@@ -36,23 +52,22 @@
               "RelativeDocumentMoniker": "Services\\AIDoctor.cs",
               "ToolTip": "C:\\My Files\\Coding\\MediConnectAPI\\Backend\\Services\\AIDoctor.cs",
               "RelativeToolTip": "Services\\AIDoctor.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAqwBYAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-14T15:45:37.336Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\My Files\\Coding\\MediConnectAPI\\Backend\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\My Files\\Coding\\MediConnectAPI\\Backend\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAABAAAAAAAAAAAAAQwBgAAABQAAAAAAAAAA==",
+              "ViewState": "AgIAACIAAAAAAAAAAAAEwDEAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-13T21:48:24.446Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-13T21:48:24.446Z"
             },
             {
               "$type": "Document",
@@ -62,10 +77,9 @@
               "RelativeDocumentMoniker": "Controllers\\AIController.cs",
               "ToolTip": "C:\\My Files\\Coding\\MediConnectAPI\\Backend\\Controllers\\AIController.cs",
               "RelativeToolTip": "Controllers\\AIController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-13T21:37:33.816Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-13T21:37:33.816Z"
             }
           ]
         }

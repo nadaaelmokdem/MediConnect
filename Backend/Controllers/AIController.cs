@@ -12,14 +12,7 @@ namespace MediConnectAPI.Controllers
         [HttpPost()]
         public async Task<IActionResult> AskAI(SendAIMessageDTO request)
         {
-            try
-            {
-                return Ok(await aiDoctor.Ask(request.RequestText, request.ContextText));
-            }
-            catch(Exception e)
-            {
-                return Problem(e.Message);
-            }
+            return Ok(await aiDoctor.Ask(request.RequestText, request.ContextText));
         }
     }
 }

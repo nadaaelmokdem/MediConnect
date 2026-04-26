@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+/* Define your custom theme/colors here using CSS variables */
+@theme {
+  --color-primary: #6A5ACD;
+  --color-primary-dark: #2A2455;
+  --color-primary-light: #B8A7FF;
+  --color-surface-variant: #E6E1FF;
+  --color-background: #FBFAFF;
+  --color-text-main: #2A2455;
+  --color-text-muted: #6b7280;
+  
+  --shadow-soft: 0 10px 40px -10px rgba(106, 90, 205, 0.08);
+  --shadow-floating: 0 20px 50px -20px rgba(42, 36, 85, 0.15);
+}
+
+/* Custom utility/component classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}

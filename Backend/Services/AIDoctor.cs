@@ -1,4 +1,6 @@
-﻿using GenerativeAI;
+﻿using Google.GenAI;
+using Google.GenAI.Types;
+using Type = Google.GenAI.Types.Type;
 
 namespace MediConnectAPI.Services
 {
@@ -6,48 +8,82 @@ namespace MediConnectAPI.Services
     {
         public async Task<string> Ask(string msg, string prevContext = "")
         {
-            var googleAI = new GoogleAi(config.GetValue<string>("AIKey"));
-            var model = googleAI.CreateGenerativeModel("models/gemini-2.5-flash");
-
+            var client = new Client(apiKey: config.GetValue<string>("AIKey")!);
             string systemInstruction =
-                @"You are an advanced Medical Intake & Wellness Orchestrator.
-                Your objective is to evaluate user input, provide immediate guidance for minor health concerns,
-                and identify high-risk cases that require a human physician's intervention.
-                You operate in a stateless environment; the 'Previous Context' provided is the ONLY memory of the case.
+                    @"# ROLE
+                        You are a Helpful Medical Intake and Triage AI working for Tabibi. 
+                        Core Logic: Provide comprehensive wellness suggestions, practical home remedies, and general over-the-counter (OTC) medication information for minor issues. Clarify missing information. Escalate ONLY when severe risks, red-flag symptoms, or emergencies are present.
 
-                LANGUAGE & TONE:
-                - RESPOND IN THE USER'S LANGUAGE: Match the user's dialect and slang (e.g., Egyptian Arabic or English).
-                - STRICT LANGUAGE RULE: Do NOT answer in Arabic unless the user speaks in Arabic first.
-                - Tone: Professional, empathetic, and calming. Use natural phrasing, avoiding robotic or ""textbook"" translations.
-                - Gender: Assume the user is male or use gender-neutral phrasing.
+                        # STRICT RULES
+                        1. LANGUAGE: 
+                           - IF the user speaks English: The `user_facing_reply` MUST be in English.
+                           - IF the user speaks Arabic: The `user_facing_reply` MUST be strictly in Modern Standard Arabic (MSA). Do not use regional dialects or colloquialisms.
+                        2. FORMAT: Output ONLY raw, valid JSON. Do not include markdown code blocks (e.g., ```json), conversational filler, prose, or <thought> tags. 
+                        3. LOGIC & HELPFULNESS: 
+                           - Always assume the user is male
+                           - Always check 'Previous Context' first. 
+                           - For minor, common, or non-severe symptoms (e.g., common cold, mild headache, minor scrapes, general fatigue, mild indigestion), DO NOT escalate. 
+                           - Instead of escalating minor issues, provide highly actionable help: suggest specific home care strategies (rest, hydration, etc.) and provide general educational information on standard OTC active ingredients (e.g., mentioning ibuprofen or acetaminophen for pain, saline spray for congestion, or antacids for heartburn).
+                           - Only classify as 'doctor_escalation' for true emergencies, necessary physical exams, symptoms persisting beyond typical recovery periods, or severe/red-flag symptoms (e.g., chest pain, shortness of breath, severe bleeding).
+                           - The input text is a continuation to the case you already have.                            
 
-                OPERATIONAL LOGIC:
-                1. TRIVIAL/MINOR: For minor issues (e.g., common cold, mild muscle soreness, basic wellness), provide evidence-based suggestions (home remedies, OTC guidance, lifestyle changes).
-                2. CONTEXT UTILIZATION: Read the 'Previous Context' first. If it contains sufficient data to make a 'wellness_suggestion' or 'doctor_escalation', do not request 'clarification_needed'.
-                3. CRITICAL/DANGEROUS: If symptoms indicate an emergency, chronic instability, or require physical examination (e.g., chest pain, neurological shifts, severe trauma), flag for ""doctor_escalation.""
+                        # JSON SCHEMA
+                        {
+                          ""user_facing_reply"": ""Your actionable, helpful response to the patient, including OTC info or home remedies if appropriate."",
+                          ""classification"": ""Must be exactly one of: wellness_suggestion, clarification_needed, doctor_escalation"",
+                          ""recommended_departments"": [""Array of string medical specialties if escalated, otherwise empty []""],
+                          ""clinical_assessment"": ""Brief clinical summary of the case written in English."",
+                          ""urgency_level"": ""Must be exactly one of: low, medium, high, emergency""
+                        }";
 
-                DEPARTMENTAL ROUTING:
-                If ""classification"" is ""doctor_escalation"", you MUST identify the most probable medical departments for the user (e.g., ""Cardiology"", ""Orthopedics"", ""General Practice"", ""Emergency Room"").
-
-                OUTPUT DIRECTIVE:
-                Respond EXCLUSIVELY in a valid JSON object. No markdown wrapping. No prose outside the JSON.
-
-                {
-                  ""classification"": ""wellness_suggestion"" | ""clarification_needed"" | ""doctor_escalation"",
-                  ""recommended_departments"": [""Department A"", ""Department B""], 
-                  ""user_facing_reply"": ""Your natural, empathetic response in the user's dialect."",
-                  ""clinical_assessment"": ""A concise, professional English summary of the whole conversation so far."",
-                  ""urgency_level"": ""low"" | ""medium"" | ""high"" | ""emergency""
-                }";
-
-            var cleanResponse = (await model.GenerateContentAsync($"{systemInstruction} Previous Context: {prevContext} User: {msg}")).Text() ?? "";
-
-            if (cleanResponse.Contains("```json"))
+            Schema Diagnosis = new Schema
             {
-                cleanResponse = cleanResponse.Replace("```json", "").Replace("```", "").Trim();
-            }
+                Properties =
+            new Dictionary<string, Schema> {
+                {
+                "user_facing_reply", new Schema { Type = Type.String, Title = "user_facing_reply" }
+                },
+                {
+                "classification", new Schema { Type = Type.String, Title = "classification" }
+                },
+                {
+                "recommended_departments", new Schema { Type = Type.String, Title = "recommended_departments" }
+                },
+                {
+                "clinical_assessment", new Schema { Type = Type.String, Title = "clinical_assessment" }
+                },
+                {
+                "urgency_level", new Schema { Type = Type.String, Title = "urgency_level" }
+                }
+            },
+                    PropertyOrdering =
+                new List<string> { "user_facing_reply", "classification", "recommended_departments", "clinical_assessment", "urgency_level" },
+                    Required = new List<string> { "user_facing_reply", "classification", "recommended_departments", "clinical_assessment", "urgency_level" },
+                    Title = "Diagnosis",
+                    Type = Type.Object
+                };
 
-            return cleanResponse;
+            var generateContentConfig =
+                new GenerateContentConfig
+                {
+                    SystemInstruction = new Content
+                    {
+                        Parts = new List<Part> {
+                          new Part {Text = systemInstruction}
+                      }
+                    },
+                    
+                    ResponseMimeType = "application/json",
+                    ResponseSchema = Diagnosis
+                };
+
+            var response = await client.Models.GenerateContentAsync(
+                 model: "gemini-3.1-flash-lite-preview",
+                 contents: $"Previous Context: {prevContext}\nUser: {msg}",
+                 config: generateContentConfig
+                 );
+            return response?.Candidates?[0]?.Content?.Parts?[0].Text ?? "";
+
         }
     }
 }
