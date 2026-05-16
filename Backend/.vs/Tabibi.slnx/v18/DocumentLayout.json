@@ -1,0 +1,168 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\My Files\\Coding\\MediConnect\\Backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|c:\\my files\\coding\\mediconnect\\backend\\models\\patientprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|solutionrelative:models\\patientprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|c:\\my files\\coding\\mediconnect\\backend\\models\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|solutionrelative:models\\appuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|c:\\my files\\coding\\mediconnect\\backend\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\My Files\\Coding\\MediConnect\\Backend\\Migrations\\20260516175243_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Migrations\\20260516175243_init.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|c:\\my files\\coding\\mediconnect\\backend\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|solutionrelative:data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|MediConnect.csproj|c:\\my files\\coding\\mediconnect\\backend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|MediConnect.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|c:\\my files\\coding\\mediconnect\\backend\\dtos\\authdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|Tabibi.csproj|solutionrelative:dtos\\authdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|MediConnect.csproj|c:\\my files\\coding\\mediconnect\\backend\\services\\aidoctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BE4AC407-559D-0919-25D2-F432A8DFBC86}|MediConnect.csproj|solutionrelative:services\\aidoctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{fbcae063-e2c0-4ab1-a516-996ea3dafb72}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PatientProfile.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Models\\PatientProfile.cs",
+              "RelativeDocumentMoniker": "Models\\PatientProfile.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Models\\PatientProfile.cs",
+              "RelativeToolTip": "Models\\PatientProfile.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAkwCQAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-16T20:28:53.45Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "20260516175243_init.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Migrations\\20260516175243_init.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260516175243_init.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Migrations\\20260516175243_init.cs",
+              "RelativeToolTip": "Migrations\\20260516175243_init.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-16T17:52:43.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AppUser.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Models\\AppUser.cs",
+              "RelativeDocumentMoniker": "Models\\AppUser.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Models\\AppUser.cs",
+              "RelativeToolTip": "Models\\AppUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-16T17:48:56.847Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\AppDbContext.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "Data\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-16T17:39:11.037Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AuthDTOs.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\DTOs\\AuthDTOs.cs",
+              "RelativeDocumentMoniker": "DTOs\\AuthDTOs.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\DTOs\\AuthDTOs.cs",
+              "RelativeToolTip": "DTOs\\AuthDTOs.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-15T12:57:02.932Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "Controllers\\AuthController.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAIwB4AAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-15T12:55:58.007Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAB0AAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-14T20:21:18.502Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AIDoctor.cs",
+              "DocumentMoniker": "C:\\My Files\\Coding\\MediConnect\\Backend\\Services\\AIDoctor.cs",
+              "RelativeDocumentMoniker": "Services\\AIDoctor.cs",
+              "ToolTip": "C:\\My Files\\Coding\\MediConnect\\Backend\\Services\\AIDoctor.cs",
+              "RelativeToolTip": "Services\\AIDoctor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T15:45:37.336Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,5 +3,5 @@ export default interface Message {
   senderId: string;
   text: string;
   timestamp: string;
-  context: string;
+  context?: string;
 }

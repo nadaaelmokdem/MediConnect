@@ -1,4 +1,4 @@
-﻿namespace MediConnectAPI.DTOs
+﻿namespace Tabibi.DTOs
 {
     public class SendAIMessageDTO
     {

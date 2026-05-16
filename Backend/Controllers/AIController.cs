@@ -1,9 +1,9 @@
-﻿using MediConnectAPI.DTOs;
-using MediConnectAPI.Services;
+﻿using Tabibi.DTOs;
+using Tabibi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MediConnectAPI.Controllers
+namespace Tabibi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

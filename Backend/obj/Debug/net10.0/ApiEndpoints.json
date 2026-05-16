@@ -1,6 +1,6 @@
 [
   {
-    "ContainingType": "MediConnectAPI.Controllers.AIController",
+    "ContainingType": "Tabibi.Controllers.AIController",
     "Method": "AskAI",
     "RelativePath": "api/AI",
     "HttpMethod": "POST",
@@ -9,10 +9,36 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "MediConnectAPI.DTOs.SendAIMessageDTO",
+        "Type": "Tabibi.DTOs.SendAIMessageDTO",
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tabibi.Controllers.AuthController",
+    "Method": "EmailExists",
+    "RelativePath": "api/Auth/check-email",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tabibi.Controllers.AuthController",
+    "Method": "RefreshToken",
+    "RelativePath": "api/Auth/refresh-token",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   }
 ]

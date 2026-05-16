@@ -2,7 +2,7 @@
 using Google.GenAI.Types;
 using Type = Google.GenAI.Types.Type;
 
-namespace MediConnectAPI.Services
+namespace Tabibi.Services
 {
     public class AIDoctor(IConfiguration config)
     {
