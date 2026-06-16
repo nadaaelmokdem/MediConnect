@@ -9,7 +9,6 @@ namespace Tabibi.Models
         public int PaymentId { get; set; }
 
         public int AppointmentId { get; set; }
-        public int PatientId { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal Amount { get; set; }
@@ -28,9 +27,6 @@ namespace Tabibi.Models
         // Navigation
         [ForeignKey(nameof(AppointmentId))]
         public Appointment Appointment { get; set; } = null!;
-
-        [ForeignKey(nameof(PatientId))]
-        public PatientProfile Patient { get; set; } = null!;
     }
 
     public enum PaymentStatus { Pending, Paid, Refunded, Failed }

@@ -27,17 +27,12 @@ namespace Tabibi.Models
             [MaxLength(2000)]
             public string? Notes { get; set; }
 
-            public int? SymptomAnalysisId { get; set; }   // link back to chatbot session
-
             // Navigation
             [ForeignKey(nameof(PatientId))]
             public PatientProfile Patient { get; set; } = null!;
 
             [ForeignKey(nameof(DoctorId))]
             public DoctorProfile Doctor { get; set; } = null!;
-
-            [ForeignKey(nameof(SymptomAnalysisId))]
-            public SymptomAnalysis? SymptomAnalysis { get; set; }
 
             public Prescription? Prescription { get; set; }
             public Payment? Payment { get; set; }

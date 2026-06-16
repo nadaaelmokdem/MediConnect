@@ -17,7 +17,7 @@ export interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string, userType?: 'patient' | 'doctor') => Promise<void>;
+  register: (fullName: string, email: string, password: string, phoneNumber: string, userType?: 'patient' | 'doctor') => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -31,6 +31,7 @@ export interface SignupRequest {
   fullName: string;
   email: string;
   password: string;
+  phoneNumber: string;
   userType?: 'patient' | 'doctor';
 }
 

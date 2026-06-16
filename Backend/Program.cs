@@ -1,12 +1,13 @@
 
-using Tabibi.Data;
-using Tabibi.Models;
-using Tabibi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Text;
+using Tabibi.Data;
+using Tabibi.Models;
+using Tabibi.Services;
 
 namespace Tabibi
 {
@@ -24,15 +25,22 @@ namespace Tabibi
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
             });
+            builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                return ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!);
+            });
 
             // Identity
             builder.Services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
 
             builder.Services.AddScoped<AIDoctor>();
-            
+            builder.Services.AddScoped<PatientService>();
+            builder.Services.AddScoped<AuthUtils>();
+            builder.Services.AddScoped<ITokenStore,RedisTokenStore>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(name: "React Frontend",
@@ -42,7 +50,8 @@ namespace Tabibi
                                              .WithOrigins("http://localhost:5173")
                                             .WithOrigins("http://127.0.0.1:5500")
                                             .AllowAnyHeader()
-                                            .AllowAnyMethod();
+                                            .AllowAnyMethod()
+                                            .AllowCredentials();
                                   });
             });
 
@@ -59,10 +68,10 @@ namespace Tabibi
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                        ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                        ValidIssuer = builder.Configuration["JwtSettings:ValidIssuer"],
+                        ValidAudience = builder.Configuration["JwtSettings:ValidAudience"],
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+                            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
                     };
                 });
 
@@ -78,7 +87,7 @@ namespace Tabibi
 
             app.UseCors("React Frontend");
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();

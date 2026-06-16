@@ -6,41 +6,34 @@ using System.Text;
 
 namespace Tabibi.Models
 {
-        public class PatientProfile
-        {
-            [Key]
-            public int PatientId { get; set; }
+    public class PatientProfile
+    {
+        [Key]
+        public int PatientId { get; set; }
 
-            [Required]
-            public string UserId { get; set; } = "";
+        [Required]
+        public string UserId { get; set; } = "";
 
-            public DateTime? DateOfBirth { get; set; }
+        public string? Address { get; set; }
 
-            [MaxLength(10)]
-            public string? Gender { get; set; }
+        public int? Age { get; set; }
 
-            [MaxLength(5)]
-            public string? BloodType { get; set; }
+        public double? Weight { get; set; }
+        public double? Height { get; set; }
 
-            [MaxLength(500)]
-            public string? Allergies { get; set; }
+        [MaxLength(10)]
+        public GenderTypes? Gender { get; set; }
 
-            [MaxLength(500)]
-            public string? ChronicConditions { get; set; }
+        [MaxLength(200)]
+        public string? EmergencyContact { get; set; }
 
-            [MaxLength(200)]
-            public string? EmergencyContact { get; set; }
+        // Navigation
+        [ForeignKey(nameof(UserId))]
+        public AppUser User { get; set; } = null!;
 
-            public SubscriptionTier SubscriptionTier { get; set; } = SubscriptionTier.Free;
-
-            // Navigation
-            [ForeignKey(nameof(UserId))]
-            public AppUser User { get; set; } = null!;
-
-            public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
-            public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
-            public ICollection<DoctorReview> Reviews { get; set; } = new List<DoctorReview>();
-        }
-
-        public enum SubscriptionTier { Free, Premium }
+        public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
+
+    public enum GenderTypes { Male, Female }
+}

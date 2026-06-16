@@ -10,6 +10,9 @@ import SignIn from "./pages/SignIn"
 import SignUp from "./pages/SignUp"
 import ForgotPassword from "./pages/ForgotPassword"
 import { useState } from "react"
+import Password from "./pages/Password"
+import ContinueData from "./pages/PatientAdditionalData"
+import ProfilePage from "./pages/PatientProfile"
 
 function App() {
   const [loginMail,setLoginMail] = useState<string>("");
@@ -22,7 +25,8 @@ function App() {
             <Routes>
               <Route path="/login" element={null} />
               <Route path="/register" element={null} />
-              <Route path="/forgot-password" element={null} />
+              <Route path="/password" element={null} />
+              <Route path="/patient-data" element={null} />
               <Route path="*" element={<Navbar />} />
             </Routes>
 
@@ -31,7 +35,8 @@ function App() {
               {/* Auth Routes */}
               <Route path="/login" element={<SignIn setloginEmail={setLoginMail}/>} />
               <Route path="/register" element={<SignUp loginMail={loginMail}/>} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/password" element={<Password loginMail={loginMail}/>} />
+              <Route path="/patient-data" element={<ContinueData/>} />
 
               {/* Protected Routes */}
               <Route
@@ -53,6 +58,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <DoctorDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
                   </ProtectedRoute>
                 }
               />

@@ -38,7 +38,6 @@ namespace Tabibi.Models
 
             public ICollection<DoctorSpecialty> DoctorSpecialties { get; set; } = new List<DoctorSpecialty>();
             public ICollection<DoctorAvailability> Availabilities { get; set; } = new List<DoctorAvailability>();
-            public ICollection<DoctorReview> Reviews { get; set; } = new List<DoctorReview>();
             public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         }
     }

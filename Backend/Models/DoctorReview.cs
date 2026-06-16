@@ -12,8 +12,6 @@ namespace Tabibi.Models
             [Key]
             public int ReviewId { get; set; }
 
-            public int DoctorId { get; set; }
-            public int PatientId { get; set; }
             public int AppointmentId { get; set; }
 
             [Range(1, 5)]
@@ -25,12 +23,6 @@ namespace Tabibi.Models
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
             // Navigation
-            [ForeignKey(nameof(DoctorId))]
-            public DoctorProfile Doctor { get; set; } = null!;
-
-            [ForeignKey(nameof(PatientId))]
-            public PatientProfile Patient { get; set; } = null!;
-
             [ForeignKey(nameof(AppointmentId))]
             public Appointment Appointment { get; set; } = null!;
         }

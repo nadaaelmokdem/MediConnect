@@ -9,6 +9,7 @@ export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [displayError, setDisplayError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   
   // Simple regex for basic email format validation
   const validateEmailFormat = (inputEmail: string) => {
@@ -41,11 +42,14 @@ export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.
       return;
     }
 
-    // 2. API Request if format is valid
+    // 2. Start Loading
+    setIsLoading(true);
+
+    // 3. API Request if format is valid
     try {
       await api.post("/auth/check-email", email);
       setloginEmail(email);
-      navigate('/');
+      navigate('/password');
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data === "User Not Found") {
         setloginEmail(email);
@@ -53,6 +57,9 @@ export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.
       } else {
         setDisplayError("An unexpected error occurred. Please try again.");
       }
+    } finally {
+      // 4. Stop Loading regardless of success or failure
+      setIsLoading(false);
     }
   };
 
@@ -134,11 +141,12 @@ export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.
                   <div className="relative">
                     <MdOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-xl" />
                     <input
+                      disabled={isLoading}
                       className={`w-full h-11 lg:h-12 px-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[15px] lg:text-[16px] leading-[24px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${
                         displayError 
                           ? 'border-red-300 focus:ring-red-200 focus:border-red-400' 
                           : 'border-[#e5deff] focus:ring-[#b8a7ff] focus:border-[#b8a7ff]'
-                      }`}
+                      } ${isLoading ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}
                       id="email"
                       name="email"
                       placeholder="name@example.com"
@@ -151,11 +159,21 @@ export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.
                 </div>
                 
                 <button
-                  className="cursor-pointer w-full h-11 lg:h-12 flex items-center justify-center gap-2 bg-[#6a5acd] text-[#f0ebff] hover:bg-[#5140b3] hover:text-[#ffffff] rounded-full text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-md"
+                  disabled={isLoading}
+                  className={`w-full h-11 lg:h-12 flex items-center justify-center gap-2 bg-[#6a5acd] text-[#f0ebff] rounded-full text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-md ${
+                    isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#5140b3] hover:text-[#ffffff] cursor-pointer'
+                  }`}
                   type='submit'
                 >
-                  <span>Next</span>
-                  <MdArrowForward className="text-lg lg:text-xl" />
+                  {isLoading ? (
+                    // CSS Spinner for Loading State
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span>Next</span>
+                      <MdArrowForward className="text-lg lg:text-xl" />
+                    </>
+                  )}
                 </button>
               </form>
 
@@ -169,7 +187,10 @@ export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.
               {/* Secondary Actions */}
               <div className="flex flex-col gap-3 lg:gap-4">
                 <button
-                  className="cursor-pointer w-full h-11 lg:h-12 flex items-center justify-center gap-3 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] hover:bg-[#f0ebff] hover:border-[#c9c4d5] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold text-[#1a1345] transition-all"
+                  disabled={isLoading}
+                  className={`w-full h-11 lg:h-12 flex items-center justify-center gap-3 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold text-[#1a1345] transition-all ${
+                    isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#f0ebff] hover:border-[#c9c4d5] cursor-pointer'
+                  }`}
                   type="button"
                 >
                   <FcGoogle className="w-5 h-5" />

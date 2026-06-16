@@ -8,63 +8,125 @@ import {
   MdPerson, 
   MdLock,
   MdVisibility,
-  MdVisibilityOff 
+  MdVisibilityOff,
+  MdPhone
 } from 'react-icons/md';
 import { FcGoogle } from 'react-icons/fc';
+import { AxiosError } from 'axios';
 
 type UserType = 'patient' | 'doctor';
 
-export default function SignUp({ loginMail } : {loginMail : string}) {
+export default function SignUp({ loginMail }: { loginMail: string }) {
   const navigate = useNavigate();
   const { register, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
     fullName: '',
-    email: loginMail,
+    email: loginMail || '',
+    phoneNumber: '',
     password: '',
     confirmPassword: '',
     userType: 'patient' as UserType,
   });
+
+  // New state for field-specific errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [localError, setLocalError] = useState('');
+
+  // Validation function
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Name validation
+    if (!form.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (form.fullName.trim().length < 2) {
+      newErrors.fullName = 'Name must be at least 2 characters long';
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim()) {
+      newErrors.email = 'Email address is required';
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Phone validation (allows optional +, digits, spaces, and hyphens. Min 8, Max 15 digits)
+    const phoneRegex = /^\+?[\d\s-]{8,15}$/;
+    if (!form.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!phoneRegex.test(form.phoneNumber)) {
+      newErrors.phoneNumber = 'Please enter a valid phone number';
+    }
+
+    // Password validation
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>\\/ ]).{8,}$/;
+    if (!form.password) {
+      newErrors.password = 'Password is required';
+    } else if (!passwordRegex.test(form.password)) {
+      newErrors.password = 'Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character';
+    }
+
+    // Confirm password validation
+    if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    
+    // Return true if no errors
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    
+    // Clear the specific error when the user starts typing to fix it
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); 
     setLocalError('');
 
-    if (form.password !== form.confirmPassword) {
-      setLocalError('Passwords do not match');
-      return;
+    // Run client-side validation
+    if (!validateForm()) {
+      return; // Stop execution if validation fails
     }
 
     try {
-      await register(form.fullName, form.email, form.password, form.userType);
-      navigate('/');
-    } catch (err) {
-      setLocalError(err instanceof Error ? err.message : 'Sign up failed');
+      await register(form.fullName, form.email, form.password, form.phoneNumber, form.userType);
+      navigate('/patient-data');
+    } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.data) {
+        const errorData = error.response.data;
+        if (Array.isArray(errorData) && errorData.length > 0) {
+          const errorMessage = errorData[0].description;
+          setLocalError(errorMessage);
+        }
+      } else if (error instanceof AxiosError){
+        setLocalError(error.message);
+      }
+      console.log(error instanceof AxiosError);
     }
   };
 
   const displayError = localError;
 
+  // Helper for dynamic input border classes based on error state
+  const getInputBorderClass = (fieldName: string) => 
+    errors[fieldName] 
+      ? 'border-red-400 focus:ring-red-400 focus:border-red-400' 
+      : 'border-[#e5deff] focus:ring-[#b8a7ff] focus:border-[#b8a7ff]';
+
   return (
     <div className="bg-[#fcf8ff] text-[#1a1345] text-[15px] leading-[22px] font-normal antialiased h-screen overflow-hidden flex flex-col selection:bg-[#6a5acd] selection:text-[#f0ebff]">
       <main className="flex-grow flex w-full h-full relative z-20 overflow-hidden">
-        {/* Brand Header as Clickable Button */}
-        <header className="absolute top-4 left-15 z-50 flex items-center">
-          <button
-            onClick={() => navigate('/')}
-            className="cursor-pointer flex items-center gap-2 text-[#5140b3] hover:opacity-80 transition-opacity duration-200"
-          >
-            <MdMedicalServices className="text-3xl" />
-            <span className="text-2xl font-bold tracking-tight">Tabibi</span>
-          </button>
-        </header>
         
         {/* Full-Screen Background Image */}
         <div className="absolute inset-0 w-full h-full z-0">
@@ -119,62 +181,80 @@ export default function SignUp({ loginMail } : {loginMail : string}) {
                 </div>
               </div>
 
-              {/* Form Area */}
-              <form className="flex flex-col gap-2.5 lg:gap-3" onSubmit={handleSignup}>
+              {/* Form Area - Added noValidate to override default browser popups */}
+              <form className="flex flex-col gap-2.5 lg:gap-3" onSubmit={handleSignup} noValidate>
                 
-                {/* Error Message */}
+                {/* Global Error Message from Auth Context */}
                 {displayError && (
                   <div className="p-2 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-red-600 text-xs font-medium text-center">{displayError}</p>
                   </div>
                 )}
 
-                {/* Form Inputs Grid Row 1 */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {/* Full Name */}
-                  <div className="flex flex-col gap-1 flex-1 relative">
-                    <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="fullName">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <MdPerson className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                      <input
-                        className="w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 focus:ring-[#b8a7ff] focus:border-[#b8a7ff] transition-all"
-                        id="fullName"
-                        name="fullName"
-                        placeholder="John Doe"
-                        type="text"
-                        required
-                        value={form.fullName}
-                        onChange={handleInputChange}
-                        disabled={isLoading}
-                      />
-                    </div>
+                {/* Full Name */}
+                <div className="flex flex-col gap-1 w-full relative">
+                  <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="fullName">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <MdPerson className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+                    <input
+                      className={`w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('fullName')}`}
+                      id="fullName"
+                      name="fullName"
+                      placeholder="John Doe"
+                      type="text"
+                      value={form.fullName}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
                   </div>
-
-                  {/* Email Address */}
-                  <div className="flex flex-col gap-1 flex-1 relative">
-                    <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="email">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <MdOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                      <input
-                        className="w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 focus:ring-[#b8a7ff] focus:border-[#b8a7ff] transition-all"
-                        id="email"
-                        name="email"
-                        placeholder="name@example.com"
-                        type="email"
-                        required
-                        value={form.email}
-                        onChange={handleInputChange}
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
+                  {errors.fullName && <p className="text-red-500 text-[11px] mt-0.5">{errors.fullName}</p>}
                 </div>
 
-                {/* Form Inputs Grid Row 2 */}
+                {/* Email Address */}
+                <div className="flex flex-col gap-1 w-full relative">
+                  <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="email">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <MdOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+                    <input
+                      className={`w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('email')}`}
+                      id="email"
+                      name="email"
+                      placeholder="name@example.com"
+                      type="email"
+                      value={form.email}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.email && <p className="text-red-500 text-[11px] mt-0.5">{errors.email}</p>}
+                </div>
+
+                {/* Phone Number */}
+                <div className="flex flex-col gap-1 w-full relative">
+                  <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="phoneNumber">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <MdPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+                    <input
+                      className={`w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('phoneNumber')}`}
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      placeholder="+201012345678"
+                      type="tel"
+                      value={form.phoneNumber}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.phoneNumber && <p className="text-red-500 text-[11px] mt-0.5">{errors.phoneNumber}</p>}
+                </div>
+
+                {/* Passwords Layout Side-by-Side */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   {/* Password */}
                   <div className="flex flex-col gap-1 flex-1 relative">
@@ -184,14 +264,11 @@ export default function SignUp({ loginMail } : {loginMail : string}) {
                     <div className="relative">
                       <MdLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
                       <input
-                        className="w-full h-10 lg:h-10.5 pl-4 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 focus:ring-[#b8a7ff] focus:border-[#b8a7ff] transition-all"
+                        className={`w-full h-10 lg:h-10.5 pr-10 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('password')}`}
                         id="password"
                         name="password"
                         placeholder="••••••••"
                         type={showPassword ? 'text' : 'password'}
-                        required
-                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-                        title="Must contain at least one number, one uppercase, one lowercase letter, and at least 8 characters"
                         value={form.password}
                         onChange={handleInputChange}
                         disabled={isLoading}
@@ -205,6 +282,7 @@ export default function SignUp({ loginMail } : {loginMail : string}) {
                         {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
                       </button>
                     </div>
+                    {errors.password && <p className="text-red-500 text-[11px] mt-0.5 leading-tight">{errors.password}</p>}
                   </div>
 
                   {/* Confirm Password */}
@@ -215,12 +293,11 @@ export default function SignUp({ loginMail } : {loginMail : string}) {
                     <div className="relative">
                       <MdLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
                       <input
-                        className="w-full h-10 lg:h-10.5 pl-4 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 focus:ring-[#b8a7ff] focus:border-[#b8a7ff] transition-all"
+                        className={`w-full h-10 lg:h-10.5 pr-10 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('confirmPassword')}`}
                         id="confirmPassword"
                         name="confirmPassword"
                         placeholder="••••••••"
                         type={showPassword ? 'text' : 'password'}
-                        required
                         value={form.confirmPassword}
                         onChange={handleInputChange}
                         disabled={isLoading}
@@ -234,6 +311,7 @@ export default function SignUp({ loginMail } : {loginMail : string}) {
                         {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
                       </button>
                     </div>
+                    {errors.confirmPassword && <p className="text-red-500 text-[11px] mt-0.5">{errors.confirmPassword}</p>}
                   </div>
                 </div>
                 

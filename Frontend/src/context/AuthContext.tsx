@@ -1,31 +1,31 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import authService from '../services/authService';
-import type { AuthContextType, AppUser } from '../types/auth';
+import { type AppUser, type AuthContextType } from '../types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUser | null>(() => authService.getUser() || null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize auth state from localStorage
+  // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const storedUser = authService.initializeAuth();
-        const storedToken = authService.getToken();
-        
+        const storedUser = authService.getUser();
         if (storedUser) {
           setUser(storedUser);
         }
-        if (storedToken) {
-          setToken(storedToken);
+        const accessToken = await authService.refreshToken();
+        
+        if (accessToken) {
+          setToken(accessToken.token ?? "");
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
-        console.error('Failed to initialize auth:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize auth');
+        logout();
       } finally {
         setIsLoading(false);
       }
@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fullName: string,
     email: string,
     password: string,
+    phoneNumber: string,
     userType?: 'patient' | 'doctor'
   ) => {
     setIsLoading(true);
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fullName,
         email,
         password,
+        phoneNumber,
         userType,
       });
       if (response.user && response.token) {
@@ -99,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     token,
-    isAuthenticated: !!token,
+    isAuthenticated: !!token || !!user,
     isLoading,
     error,
     login,

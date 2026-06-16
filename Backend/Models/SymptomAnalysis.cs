@@ -38,8 +38,6 @@ namespace Tabibi.Models
 
             [ForeignKey(nameof(RoutedDoctorId))]
             public DoctorProfile? RoutedDoctor { get; set; }
-
-            public Appointment? Appointment { get; set; }
         }
     }
 

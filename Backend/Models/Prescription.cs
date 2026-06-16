@@ -13,8 +13,6 @@ namespace Tabibi.Models
             public int PrescriptionId { get; set; }
 
             public int AppointmentId { get; set; }
-            public int DoctorId { get; set; }
-            public int PatientId { get; set; }
 
             [MaxLength(500)]
             public string? Diagnosis { get; set; }
@@ -31,12 +29,6 @@ namespace Tabibi.Models
             // Navigation
             [ForeignKey(nameof(AppointmentId))]
             public Appointment Appointment { get; set; } = null!;
-
-            [ForeignKey(nameof(DoctorId))]
-            public DoctorProfile Doctor { get; set; } = null!;
-
-            [ForeignKey(nameof(PatientId))]
-            public PatientProfile Patient { get; set; } = null!;
 
             public ICollection<PrescriptionItem> Items { get; set; } = new List<PrescriptionItem>();
         }

@@ -6,8 +6,8 @@ namespace Tabibi.Models
 {
     public class AppUser : IdentityUser
     {
-        [Required, MaxLength(200)]
-        public string FullName { get; set; } = "";
+        [MaxLength(200)]
+        public required string FullName { get; set; }
 
         [MaxLength(500)]
         public string? ProfilePictureUrl { get; set; }
@@ -19,7 +19,7 @@ namespace Tabibi.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation
-        //public PatientProfile? PatientProfile { get; set; }
+        public PatientProfile? PatientProfile { get; set; }
         //public DoctorProfile? DoctorProfile { get; set; }
     }
 }
