@@ -7,7 +7,8 @@ export interface AppUser {
   profilePictureUrl?: string;
   isActive: boolean;
   createdAt: string;
-  userType?: 'patient' | 'doctor' | 'admin';
+  userType?: "user" | "doctor" | "admin";
+  roles?: string[];
 }
 
 export interface AuthContextType {
@@ -16,8 +17,14 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string, phoneNumber: string, userType?: 'patient' | 'doctor') => Promise<void>;
+  login: (email: string, password: string) => Promise<AppUser | undefined>;
+  register: (
+    fullName: string,
+    email: string,
+    password: string,
+    phoneNumber: string,
+    userType?: "user" | "doctor",
+  ) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -32,7 +39,7 @@ export interface SignupRequest {
   email: string;
   password: string;
   phoneNumber: string;
-  userType?: 'patient' | 'doctor';
+  userType?: "user" | "doctor";
 }
 
 export interface AuthResponse {

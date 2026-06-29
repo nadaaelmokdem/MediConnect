@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+
 
 namespace Tabibi.Models
 {
@@ -15,16 +13,29 @@ namespace Tabibi.Models
             [Required]
             public string UserId { get; set; } = "";
 
-            [MaxLength(100)]
-            public string? LicenseNumber { get; set; }
+            // Mandatory Fields
+            [Required]
+            public string LicenseNumber { get; set; } = "";
+
+            [Required]
+            public string NationalIdNumber { get; set; } = "";
+
+            [Required]
+            public string ClinicLocation { get; set; } = "";
+
+            [Required]
+            public string ClinicPhoneNumber { get; set; } = "";
+
+            [Required]
+            public string LicenseProofUrl { get; set; } = "";
+
+            [Required]
+            public DateTime? LicenseExpiryDate { get; set; } = null;
 
             public int YearsOfExperience { get; set; }
 
-            [Column(TypeName = "decimal(10,2)")]
-            public decimal ConsultationFee { get; set; }
-
-            [MaxLength(1000)]
             public string? Bio { get; set; }
+            public string? ProfilePictureUrl { get; set; }
 
             [Column(TypeName = "decimal(3,2)")]
             public decimal AverageRating { get; set; } = 0;
@@ -41,4 +52,3 @@ namespace Tabibi.Models
             public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         }
     }
-

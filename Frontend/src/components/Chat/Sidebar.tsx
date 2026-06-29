@@ -1,8 +1,14 @@
-import { FiX } from 'react-icons/fi';
-import { MdSmartToy } from 'react-icons/md';
-import { FaStethoscope } from 'react-icons/fa';
+import { FiX } from "react-icons/fi";
+import { MdSmartToy } from "react-icons/md";
+import { FaStethoscope } from "react-icons/fa";
 
-export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function Sidebar({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   return (
     <>
       {isOpen && (
@@ -16,7 +22,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
           absolute lg:relative z-50 left-0 top-0 bottom-0
           w-[85%] sm:w-80 border-r border-[#e5deff] bg-[#ffffff] flex flex-col h-[calc(100dvh-70px)]
           transform transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+          ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
         `}
       >
         <div className="lg:hidden flex justify-between items-center p-4 border-b border-[#e5deff]">
@@ -53,10 +59,16 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
           <div className="bg-[#eae5ff] rounded-lg p-[12px] cursor-pointer border-l-4 border-[#5140b3]">
             <div className="flex items-center gap-[4px] mb-[4px]">
               <MdSmartToy className="text-[#5140b3] text-[18px]" />
-              <span className="p-1 text-[14px] leading-[1] tracking-[0.02em] font-semibold text-[#1a1345] line-clamp-1">Migraine Assessment</span>
+              <span className="p-1 text-[14px] leading-[1] tracking-[0.02em] font-semibold text-[#1a1345] line-clamp-1">
+                Migraine Assessment
+              </span>
             </div>
-            <p className="p-1 text-[14px] leading-[1.5] font-normal text-[#474553] line-clamp-1">Based on the visual aura symptoms...</p>
-            <p className="p-1 text-[12px] leading-[1] font-medium text-[#787584] mt-[4px] text-right">Today, 10:42 AM</p>
+            <p className="p-1 text-[14px] leading-[1.5] font-normal text-[#474553] line-clamp-1">
+              Based on the visual aura symptoms...
+            </p>
+            <p className="p-1 text-[12px] leading-[1] font-medium text-[#787584] mt-[4px] text-right">
+              Today, 10:42 AM
+            </p>
           </div>
         </div>
       </aside>

@@ -1,23 +1,18 @@
-import { LuClipboardList } from 'react-icons/lu';
-import type { RequestItem } from '../../types/DoctorDashboard';
+import { LuClipboardList } from "react-icons/lu";
 
-interface PatientRequestsProps {
-  requests: RequestItem[];
-  onAccept: (req: RequestItem) => void;
-  onReschedule: (id: number) => void;
-}
+import type { PatientRequestsProps } from "../../types/dashboardProps";
 
-export default function PatientRequests({ 
-  requests, 
-  onAccept, 
-  onReschedule 
+export default function PatientRequests({
+  requests,
+  onAccept,
+  onReschedule,
 }: PatientRequestsProps) {
   return (
     <section className="bg-white rounded-xl shadow-ambient-card border border-surface-variant flex-1 flex flex-col hover:shadow-ambient-float transition-shadow duration-300">
       <div className="p-md border-b border-surface-variant flex justify-between items-center">
         <h3 className="font-label-md text-label-md text-custom-text flex items-center gap-xs">
           <LuClipboardList className="text-[18px] text-custom-secondary" />
-          Patient Requests
+          User Requests
         </h3>
         {requests.length > 0 && (
           <span className="bg-error-container text-on-error-container font-label-sm text-label-sm px-2 py-0.5 rounded-full animate-pulse">
@@ -27,16 +22,27 @@ export default function PatientRequests({
       </div>
       <div className="p-md space-y-md">
         {requests.length === 0 ? (
-          <p className="text-center text-sm text-on-surface-variant py-4">No new requests</p>
+          <p className="text-center text-sm text-on-surface-variant py-4">
+            No new requests
+          </p>
         ) : (
           requests.map((request) => (
-            <div key={request.id} className="p-md border border-surface-variant rounded-lg bg-custom-light-bg/30 hover:bg-custom-light-bg/50 transition-colors">
+            <div
+              key={request.id}
+              className="p-md border border-surface-variant rounded-lg bg-custom-light-bg/30 hover:bg-custom-light-bg/50 transition-colors"
+            >
               <div className="flex justify-between items-start mb-sm">
                 <div>
-                  <p className="font-label-md text-label-md text-custom-text">{request.name}</p>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">{request.concern}</p>
+                  <p className="font-label-md text-label-md text-custom-text">
+                    {request.name}
+                  </p>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    {request.concern}
+                  </p>
                 </div>
-                <p className="font-label-sm text-label-sm text-on-surface-variant">{request.timeDisplay}</p>
+                <p className="font-label-sm text-label-sm text-on-surface-variant">
+                  {request.timeDisplay}
+                </p>
               </div>
               <div className="flex gap-sm mt-sm">
                 <button

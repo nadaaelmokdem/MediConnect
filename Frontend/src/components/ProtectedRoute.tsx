@@ -1,16 +1,15 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  allowedUserTypes?: string[];
-}
+import type { ProtectedRouteProps } from "../types/props";
 
 /**
  * Route guard component that redirects to login if user is not authenticated
  */
-export function ProtectedRoute({ children, allowedUserTypes }: ProtectedRouteProps) {
+export function ProtectedRoute({
+  children,
+  allowedUserTypes,
+}: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -25,7 +24,11 @@ export function ProtectedRoute({ children, allowedUserTypes }: ProtectedRoutePro
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedUserTypes && user?.userType && !allowedUserTypes.includes(user.userType)) {
+  if (
+    allowedUserTypes &&
+    user?.userType &&
+    !allowedUserTypes.includes(user.userType)
+  ) {
     return <Navigate to="/" replace />;
   }
 

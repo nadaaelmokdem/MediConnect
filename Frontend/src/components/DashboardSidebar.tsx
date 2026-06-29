@@ -1,28 +1,27 @@
 import { NavLink } from "react-router-dom";
-import { 
-  LuCalendarDays, 
-  LuFolderHeart, 
-  LuCreditCard, 
-  LuMessageSquare, 
+import {
+  LuCalendarDays,
+  LuFolderHeart,
+  LuCreditCard,
+  LuMessageSquare,
   LuLayoutDashboard,
   LuCircle,
-  LuLogOut
+  LuLogOut,
 } from "react-icons/lu";
-import { type IconType } from "react-icons";
 
 // Define the shape of our navigation items
-interface NavItem {
-  name: string;
-  icon: IconType;
-  path: string;
-}
+import type { NavItem } from "../types/props";
 
 const navItems: NavItem[] = [
   { name: "Appointments", icon: LuCalendarDays, path: "/appointments" },
   { name: "Medical Records", icon: LuFolderHeart, path: "/records" },
   { name: "Billing", icon: LuCreditCard, path: "/billing" },
   { name: "Messages", icon: LuMessageSquare, path: "/messages" },
-  { name: "Doctor DoctorDashboard", icon: LuLayoutDashboard, path: "/doctor-dashboard" },
+  {
+    name: "Doctor DoctorDashboard",
+    icon: LuLayoutDashboard,
+    path: "/doctor-dashboard",
+  },
 ];
 
 export default function Sidebar() {
@@ -32,14 +31,18 @@ export default function Sidebar() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <img 
-              alt="Doctor Avatar" 
-              className="w-12 h-12 rounded-full object-cover shadow-sm" 
+            <img
+              alt="Doctor Avatar"
+              className="w-12 h-12 rounded-full object-cover shadow-sm"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBntAs1gxA_2x1EGovvCHIAC65R6l7-HtTkBq6ec6IgYikiiACdsML40XTnvtKk1Qk3bxRfEgof9zQ6YBiFXEDYX34r70UTIlyvrJ2EELryTiBqxXRrWkDA8APNR4bU5wouRXRFhEw2Gc2pW-9MDcmpbesvFLNg9QMjxmBghtaW0Oj7p6H6u5EuuUHegep2eJeANZH1MeZ10PeWCOp2cloTNECdEXzc-lBVeC6V7FTJ20N5ATblS2wZAUe3ZOqX1rQAYllS78Y00sA"
             />
             <div>
-              <h2 className="text-lg font-bold text-indigo-600">MediConnect Portal</h2>
-              <p className="text-xs text-slate-500 font-normal">Empathetic Care</p>
+              <h2 className="text-lg font-bold text-indigo-600">
+                MediConnect Portal
+              </h2>
+              <p className="text-xs text-slate-500 font-normal">
+                Empathetic Care
+              </p>
             </div>
           </div>
         </div>
@@ -69,13 +72,19 @@ export default function Sidebar() {
           <button className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-md hover:opacity-90 transition-colors active:scale-95 flex items-center justify-center gap-2">
             Book Consultation
           </button>
-          
+
           <div className="space-y-1">
-            <a className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out active:scale-95" href="#help">
+            <a
+              className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out active:scale-95"
+              href="#help"
+            >
               <LuCircle className="text-lg" />
               <span>Help Center</span>
             </a>
-            <a className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out active:scale-95" href="#logout">
+            <a
+              className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out active:scale-95"
+              href="#logout"
+            >
               <LuLogOut className="text-lg" />
               <span>Sign Out</span>
             </a>

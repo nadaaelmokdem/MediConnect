@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tabibi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ae6b925b1ef069a75120dcecc3370d3e29ae90e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5099c471a38eb21d6f9d50d8af06026b757a3de")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tabibi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tabibi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Tabibi.Models;
 
@@ -49,14 +49,21 @@ namespace Tabibi.Data
                 .HasMany(p => p.ChatSessions)
                 .WithOne(cs => cs.Patient)
                 .HasForeignKey(cs => cs.PatientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // DoctorProfile to ChatSession (Prevent cascade path)
+            modelBuilder.Entity<ChatSession>()
+                .HasOne(cs => cs.Doctor)
+                .WithMany()
+                .HasForeignKey(cs => cs.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // PatientProfile to Appointment (1:many)
             modelBuilder.Entity<PatientProfile>()
                 .HasMany(p => p.Appointments)
                 .WithOne(a => a.Patient)
                 .HasForeignKey(a => a.PatientId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // ==================== DoctorProfile Configurations ====================
             

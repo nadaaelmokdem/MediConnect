@@ -211,10 +211,6 @@ namespace Tabibi.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProfilePictureUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -250,6 +246,9 @@ namespace Tabibi.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("ConsultationType")
+                        .HasColumnType("int");
+
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
@@ -263,13 +262,16 @@ namespace Tabibi.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<DateTime>("ScheduledAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
+                    b.Property<int?>("SessionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Type")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("AppointmentId");
@@ -277,6 +279,8 @@ namespace Tabibi.Migrations
                     b.HasIndex("DoctorId");
 
                     b.HasIndex("ScheduledAt");
+
+                    b.HasIndex("SessionId");
 
                     b.HasIndex("PatientId", "DoctorId");
 
@@ -324,11 +328,32 @@ namespace Tabibi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SessionId"));
 
+                    b.Property<int>("ConsultationType")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("DoctorAccepted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DoctorResponseAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsFreeMessage")
+                        .HasColumnType("bit");
+
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
+
+                    b.Property<int?>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("SessionSummary")
                         .HasMaxLength(2000)
@@ -342,7 +367,11 @@ namespace Tabibi.Migrations
 
                     b.HasKey("SessionId");
 
+                    b.HasIndex("DoctorId");
+
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("PaymentId");
 
                     b.ToTable("ChatSessions");
                 });
@@ -392,11 +421,15 @@ namespace Tabibi.Migrations
                         .HasColumnType("decimal(3,2)");
 
                     b.Property<string>("Bio")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("ConsultationFee")
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<string>("ClinicLocation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClinicPhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsAvailableNow")
                         .HasColumnType("bit");
@@ -404,9 +437,23 @@ namespace Tabibi.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime>("LicenseExpiryDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("LicenseNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseProofUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NationalIdNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -417,7 +464,8 @@ namespace Tabibi.Migrations
 
                     b.HasKey("DoctorId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("DoctorProfiles");
                 });
@@ -459,14 +507,41 @@ namespace Tabibi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("CallPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("ChatPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("ClinicPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsCustomCallPrice")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCustomChatPrice")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCustomVideoPrice")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
 
                     b.Property<int>("SpecialtyId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("VideoPrice")
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
 
@@ -769,8 +844,14 @@ namespace Tabibi.Migrations
                     b.HasOne("Tabibi.Models.PatientProfile", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Tabibi.Models.ChatSession", "ChatSession")
+                        .WithMany()
+                        .HasForeignKey("SessionId");
+
+                    b.Navigation("ChatSession");
 
                     b.Navigation("Doctor");
 
@@ -790,13 +871,27 @@ namespace Tabibi.Migrations
 
             modelBuilder.Entity("Tabibi.Models.ChatSession", b =>
                 {
+                    b.HasOne("Tabibi.Models.DoctorProfile", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Tabibi.Models.PatientProfile", "Patient")
                         .WithMany("ChatSessions")
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Tabibi.Models.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId");
+
+                    b.Navigation("Doctor");
+
                     b.Navigation("Patient");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorAvailability", b =>
@@ -813,8 +908,8 @@ namespace Tabibi.Migrations
             modelBuilder.Entity("Tabibi.Models.DoctorProfile", b =>
                 {
                     b.HasOne("Tabibi.Models.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("DoctorProfile")
+                        .HasForeignKey("Tabibi.Models.DoctorProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -915,6 +1010,8 @@ namespace Tabibi.Migrations
 
             modelBuilder.Entity("Tabibi.Models.AppUser", b =>
                 {
+                    b.Navigation("DoctorProfile");
+
                     b.Navigation("PatientProfile");
                 });
 

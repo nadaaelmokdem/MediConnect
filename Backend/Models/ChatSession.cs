@@ -12,10 +12,28 @@ namespace Tabibi.Models
             [Key]
             public int SessionId { get; set; }
 
+            [Required]
             public int PatientId { get; set; }
+
+            [Required]
+            public int DoctorId { get; set; }
+
+            [Required]
+            public ConsultationType ConsultationType { get; set; } = ConsultationType.Chat;
+
+            [Required]
+            public bool IsFreeMessage { get; set; } = true;
+
+            public bool? DoctorAccepted { get; set; } = null;  // null = pending, true = accepted, false = declined
+
+            [Column(TypeName = "decimal(10,2)")]
+            public decimal? Price { get; set; } = null;  // null for free message
 
             public DateTime StartedAt { get; set; } = DateTime.UtcNow;
             public DateTime? EndedAt { get; set; }
+
+            [Column(TypeName = "datetime2")]
+            public DateTime? DoctorResponseAt { get; set; }
 
             public SessionStatus Status { get; set; } = SessionStatus.Active;
 
@@ -26,10 +44,15 @@ namespace Tabibi.Models
             [ForeignKey(nameof(PatientId))]
             public PatientProfile Patient { get; set; } = null!;
 
+            [ForeignKey(nameof(DoctorId))]
+            public DoctorProfile Doctor { get; set; } = null!;
+
             public ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
             public SymptomAnalysis? SymptomAnalysis { get; set; }
+            public Payment? Payment { get; set; }
         }
 
-        public enum SessionStatus { Active, Completed, Abandoned }
+        public enum SessionStatus { Active, Completed, Abandoned, PendingDoctorResponse, Declined }
+        //public enum ConsultationType { Chat, Video, Call, Clinic }
     }
 

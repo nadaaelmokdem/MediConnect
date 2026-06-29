@@ -341,10 +341,10 @@ C:\My Files\Tabibi\Backend\obj\Debug\net10.0\staticwebassets.build.json.cache
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\staticwebassets.development.json
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\swae.build.ex.cache
-C:\My Files\Tabibi\Backend\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\Tabibi.csproj.Up2Date
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\Tabibi.dll
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\refint\Tabibi.dll
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\Tabibi.pdb
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\Tabibi.genruntimeconfig.cache
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\ref\Tabibi.dll
+C:\My Files\Tabibi\Backend\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

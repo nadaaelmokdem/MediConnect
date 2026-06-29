@@ -1,6 +1,5 @@
 ﻿using Tabibi.DTOs;
 using Tabibi.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Tabibi.Controllers

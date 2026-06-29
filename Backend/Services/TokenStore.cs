@@ -1,44 +1,69 @@
-﻿using StackExchange.Redis;
+using System.Collections.Concurrent;
 
 namespace Tabibi.Services
 {
-    public class RedisTokenStore(IConnectionMultiplexer redis) : ITokenStore
+    public class InMemoryTokenStore : ITokenStore
     {
-        private readonly IDatabase _cache = redis.GetDatabase();
-
-        public async Task<string?> GetUserIdByTokenAsync(string token) =>
-            await _cache.StringGetAsync($"refresh-token:{token}");
-
-        public async Task<string?> GetActiveReplacementAsync(string token) =>
-            await _cache.StringGetAsync($"rotated-to:{token}");
-
-        public async Task<bool> TryRotateTokenAsync(string oldToken, string newToken, string userId, TimeSpan lifetime, TimeSpan gracePeriod)
+        private class TokenData
         {
-            var transaction = _cache.CreateTransaction();
-            transaction.AddCondition(Condition.KeyExists($"refresh-token:{oldToken}"));
-
-            _ = transaction.StringSetAsync($"refresh-token:{newToken}", userId, lifetime);
-            _ = transaction.StringSetAsync($"rotated-to:{oldToken}", newToken, gracePeriod);
-            _ = transaction.KeyDeleteAsync($"refresh-token:{oldToken}");
-
-            return await transaction.ExecuteAsync();
-        }
-        public async Task<bool> TryAcquireLockAsync(string lockKey, string lockValue, TimeSpan timeout)
-        {
-            return await _cache.StringSetAsync(lockKey, lockValue, timeout, When.NotExists);
+            public string UserId { get; set; } = string.Empty;
+            public DateTimeOffset ExpiresAt { get; set; }
         }
 
-        public async Task<bool> ReleaseLockAsync(string lockKey, string lockValue)
+        private class ReplacementData
         {
-            string luaScript = @"
-            if redis.call('get', KEYS[1]) == ARGV[1] then
-                return redis.call('del', KEYS[1])
-            else
-                return 0
-            end";
+            public string NewToken { get; set; } = string.Empty;
+            public DateTimeOffset ExpiresAt { get; set; }
+        }
 
-            var result = await _cache.ScriptEvaluateAsync(luaScript, new RedisKey[] { lockKey }, new RedisValue[] { lockValue });
-            return (int)result == 1;
+        private readonly ConcurrentDictionary<string, TokenData> _tokens = new();
+        private readonly ConcurrentDictionary<string, ReplacementData> _replacements = new();
+        private readonly object _syncRoot = new();
+
+        public Task<string?> GetUserIdByTokenAsync(string token)
+        {
+            if (_tokens.TryGetValue(token, out var data) && data.ExpiresAt > DateTimeOffset.UtcNow)
+            {
+                return Task.FromResult<string?>(data.UserId);
+            }
+            return Task.FromResult<string?>(null);
+        }
+
+        public Task<string?> GetActiveReplacementAsync(string token)
+        {
+            if (_replacements.TryGetValue(token, out var data) && data.ExpiresAt > DateTimeOffset.UtcNow)
+            {
+                return Task.FromResult<string?>(data.NewToken);
+            }
+            return Task.FromResult<string?>(null);
+        }
+
+        public Task<bool> TryRotateTokenAsync(string oldToken, string newToken, string userId, TimeSpan lifetime, TimeSpan gracePeriod)
+        {
+            lock (_syncRoot)
+            {
+                if (!_tokens.TryGetValue(oldToken, out var oldData) || oldData.ExpiresAt <= DateTimeOffset.UtcNow)
+                {
+                    return Task.FromResult(false);
+                }
+
+                _tokens[newToken] = new TokenData { UserId = userId, ExpiresAt = DateTimeOffset.UtcNow.Add(lifetime) };
+                _replacements[oldToken] = new ReplacementData { NewToken = newToken, ExpiresAt = DateTimeOffset.UtcNow.Add(gracePeriod) };
+                _tokens.TryRemove(oldToken, out _);
+
+                return Task.FromResult(true);
+            }
+        }
+
+        public Task<bool> StoreTokenAsync(string token, string userId, TimeSpan lifetime)
+        {
+            _tokens[token] = new TokenData { UserId = userId, ExpiresAt = DateTimeOffset.UtcNow.Add(lifetime) };
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> RevokeTokenAsync(string token)
+        {
+            return Task.FromResult(_tokens.TryRemove(token, out _));
         }
     }
 }

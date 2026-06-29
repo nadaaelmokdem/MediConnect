@@ -1,3 +1,5 @@
+using Tabibi.Shared;
+
 namespace Tabibi.DTOs
 {
     public class LoginRequest
@@ -12,7 +14,7 @@ namespace Tabibi.DTOs
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
         public string PhoneNumber { get; set; } = "";
-        public string? UserType { get; set; } = "patient"; // "patient" or "doctor"
+        public string Role { get; set; } = UserRoles.Patient;
     }
 
     public class ForgotPasswordRequest
@@ -40,9 +42,9 @@ namespace Tabibi.DTOs
         public string Email { get; set; } = "";
         public string FullName { get; set; } = "";
         public string PhoneNumber { get; set; } = "";
-        public string? ProfilePictureUrl { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string UserType { get; set; } = "patient"; // "patient", "doctor", or "admin"
+        public string UserType { get; set; } = UserRoles.Patient;
+        public List<string> Roles { get; set; } = new();
     }
 }

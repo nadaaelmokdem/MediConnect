@@ -1,31 +1,17 @@
-import type { Dispatch, SetStateAction } from 'react';
-import { MdArrowForward, MdVideocam, MdLocalHospital } from 'react-icons/md';
+import { MdArrowForward, MdVideocam, MdLocalHospital } from "react-icons/md";
+import type { AppointmentsListProps } from "../../types/dashboardProps";
 
-
-export interface Appointment {
-  id: number | string;
-  time: string;
-  duration: string;
-  patientName: string;
-  type: string;
-  method: "Video" | "In-Person" | string;
-  isActive: boolean;
-  avatar?: string;
-  initials?: string;
-}
-
-interface AppointmentsListProps {
-  appointments: Appointment[];
-  setAppointments: Dispatch<SetStateAction<Appointment[]>>;
-}
-
-export default function AppointmentsList({ appointments, setAppointments }: AppointmentsListProps) {
-  
+export default function AppointmentsList({
+  appointments,
+  setAppointments,
+}: AppointmentsListProps) {
   const handleAppointmentClick = (id: number | string) => {
     setAppointments((prev) =>
       prev.map((app) =>
-        app.id === id ? { ...app, isActive: true } : { ...app, isActive: false }
-      )
+        app.id === id
+          ? { ...app, isActive: true }
+          : { ...app, isActive: false },
+      ),
     );
   };
 
@@ -52,18 +38,24 @@ export default function AppointmentsList({ appointments, setAppointments }: Appo
             {appointment.isActive && (
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-custom-primary"></div>
             )}
-            
+
             <div className="text-center w-16 flex-shrink-0">
-              <p className={`font-label-md text-label-md ${appointment.isActive ? "text-custom-primary" : "text-custom-text"}`}>
+              <p
+                className={`font-label-md text-label-md ${appointment.isActive ? "text-custom-primary" : "text-custom-text"}`}
+              >
                 {appointment.time}
               </p>
-              <p className={`font-body-sm text-body-sm ${appointment.isActive ? "text-custom-primary/80" : "text-on-surface-variant"}`}>
+              <p
+                className={`font-body-sm text-body-sm ${appointment.isActive ? "text-custom-primary/80" : "text-on-surface-variant"}`}
+              >
                 {appointment.duration}
               </p>
             </div>
-            
-            <div className={`w-1 h-12 rounded-full ${appointment.isActive ? "bg-custom-primary/20" : "bg-custom-secondary"}`}></div>
-            
+
+            <div
+              className={`w-1 h-12 rounded-full ${appointment.isActive ? "bg-custom-primary/20" : "bg-custom-secondary"}`}
+            ></div>
+
             <div className="flex-1 flex items-center justify-between">
               <div className="flex items-center gap-md">
                 {appointment.avatar ? (
@@ -78,18 +70,28 @@ export default function AppointmentsList({ appointments, setAppointments }: Appo
                   </div>
                 )}
                 <div>
-                  <p className="font-label-md text-label-md text-custom-text">{appointment.patientName}</p>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">{appointment.type}</p>
+                  <p className="font-label-md text-label-md text-custom-text">
+                    {appointment.patientName}
+                  </p>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    {appointment.type}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-sm">
-                <span className={`font-label-sm text-label-sm px-sm py-xs rounded-full flex items-center gap-xs ${
-                  appointment.isActive 
-                    ? "bg-custom-primary/10 text-custom-primary" 
-                    : "bg-surface-container-highest text-on-surface-variant"
-                }`}>
+                <span
+                  className={`font-label-sm text-label-sm px-sm py-xs rounded-full flex items-center gap-xs ${
+                    appointment.isActive
+                      ? "bg-custom-primary/10 text-custom-primary"
+                      : "bg-surface-container-highest text-on-surface-variant"
+                  }`}
+                >
                   <span className="text-[14px]">
-                    {appointment.method === "Video" ? <MdVideocam /> : <MdLocalHospital />}
+                    {appointment.method === "Video" ? (
+                      <MdVideocam />
+                    ) : (
+                      <MdLocalHospital />
+                    )}
                   </span>
                   {appointment.method}
                 </span>

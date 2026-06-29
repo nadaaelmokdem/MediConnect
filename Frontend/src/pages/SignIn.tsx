@@ -1,214 +1,222 @@
-import { MdMedicalServices, MdOutlineMail, MdArrowForward } from 'react-icons/md';
-import { FcGoogle } from 'react-icons/fc';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import api from '../services/api';
-import { AxiosError } from 'axios';
+import { MdOutlineMail, MdArrowForward } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { useState } from "react";
+import { AxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
+import { addToRole } from "../services/userService";
+import AuthLayout from "../components/Auth/AuthLayout";
+import BrandHeader from "../components/Auth/BrandHeader";
+import ErrorBanner from "../components/Auth/ErrorBanner";
+import Divider from "../components/Auth/Divider";
+import TermsFooter from "../components/Auth/TermsFooter";
+import GoogleButton from "../components/Auth/GoogleButton";
+import FormField from "../components/common/FormField";
+import PasswordField from "../components/common/PasswordField";
 
-export default function TabibiLogin({ setloginEmail } : { setloginEmail : React.Dispatch<React.SetStateAction<string>>} ) {
+import type { SignInProps } from "../types/props";
+
+/** Email validation regex */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function TabibiLogin({
+  background,
+  headerText,
+  pText,
+  registerLink,
+  additionalLink,
+  requiredRole,
+}: SignInProps) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState<string>("");
-  const [displayError, setDisplayError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { login, logout } = useAuth();
   
-  // Simple regex for basic email format validation
-  const validateEmailFormat = (inputEmail: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(inputEmail);
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [displayError, setDisplayError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
+
+    if (displayError && EMAIL_REGEX.test(value)) {
+      setDisplayError("");
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
     
-    // Clear the error dynamically if they fix the format while typing
-    if (displayError && validateEmailFormat(value)) {
+    if (displayError && value) {
       setDisplayError("");
     }
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setDisplayError(""); // Reset error state on new submit
+    setDisplayError("");
 
-    // 1. Client-side validation check
     if (!email.trim()) {
       setDisplayError("Email address is required.");
       return;
     }
 
-    if (!validateEmailFormat(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       setDisplayError("Please enter a valid email address.");
       return;
     }
 
-    // 2. Start Loading
+    if (!password) {
+      setDisplayError("Password is required.");
+      return;
+    }
+
     setIsLoading(true);
 
-    // 3. API Request if format is valid
     try {
-      await api.post("/auth/check-email", email);
-      setloginEmail(email);
-      navigate('/password');
+      const user = await login(email, password);
+
+      if (requiredRole && user?.roles && !user.roles.includes(requiredRole)) {
+        Swal.fire({
+          title: "Account found in another portal",
+          text: `Do you want to sign in to that portal or register as a ${requiredRole} here?`,
+          showCancelButton: true,
+          confirmButtonText: "Register here",
+          cancelButtonText: `Go to ${requiredRole === "Doctor" ? "User" : "Doctor"} login`,
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              await addToRole(email, requiredRole);
+              // Re-authenticate to fetch the updated user object with the new role
+              await login(email, password);
+              if (additionalLink) {
+                navigate(`/${additionalLink}`);
+              } else {
+                navigate("/");
+              }
+            } catch (err) {
+              setDisplayError(`Failed to register as a ${requiredRole}.`);
+            }
+          } else {
+            logout();
+            navigate(`/${requiredRole === "Doctor" ? "login" : "doctor-login"}`);
+          }
+        });
+        return;
+      }
+
+      navigate("/");
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.data === "User Not Found") {
-        setloginEmail(email);
-        navigate('/register');
+      if (
+        error instanceof AxiosError &&
+        error.response?.data === "Invalid Email Or Password"
+      ) {
+        setDisplayError("Invalid Email Or Password!");
       } else {
         setDisplayError("An unexpected error occurred. Please try again.");
       }
     } finally {
-      // 4. Stop Loading regardless of success or failure
       setIsLoading(false);
     }
   };
 
+  const getInputBorderClass = (hasError: boolean) =>
+    hasError
+      ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+      : "border-[#e5deff] focus:ring-[#b8a7ff] focus:border-[#b8a7ff]";
+
   return (
-    <div className="bg-[#fcf8ff] text-[#1a1345] text-[16px] leading-[24px] font-normal antialiased h-screen overflow-hidden flex flex-col selection:bg-[#6a5acd] selection:text-[#f0ebff]">
-      <main className="flex-grow flex w-full h-full relative">
-        {/* Brand Header as Clickable Button */}
-        <header className="absolute top-4 left-15 z-50 flex items-center">
-          <button
-            onClick={() => navigate('/')}
-            className="cursor-pointer flex items-center gap-2 text-[#5140b3] hover:opacity-80 transition-opacity duration-200"
-          >
-            <MdMedicalServices className="text-3xl" />
-            <span className="text-2xl font-bold tracking-tight">Tabibi</span>
-          </button>
-        </header>
-        
-        {/* Full-Screen Background Image */}
-        <div className="absolute inset-0 w-full h-full z-0">
-          <img
-            alt="Tabibi Medical Group"
-            className="w-full h-full object-cover object-left"
-            src="doctor-login.jpg"
-          />
-        </div>
+    <AuthLayout background={background} headerText={headerText} pText={pText}>
+      {/* Toggle */}
+      <div className="flex w-full bg-[#f0ebff] rounded-full p-1 mb-0.5">
+        <button
+          type="button"
+          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all bg-[#6a5acd] text-white shadow-sm"
+        >
+          Login
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate(`/${registerLink}`)}
+          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all text-[#6a5acd] hover:bg-[#e5deff] cursor-pointer"
+        >
+          Register
+        </button>
+      </div>
 
-        <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none z-0"></div>
-          <div className="absolute inset-y-0 right-0 w-[60%] bg-gradient-to-t to-transparent backdrop-blur-sm"></div>
-        </div>
-        
-        <div className="relative w-full h-full flex flex-col lg:flex-row z-20 max-lg:backdrop-blur-sm">
-          <div className="hidden lg:flex flex-col justify-end w-[40%] p-8 lg:p-12 pb-16 lg:pb-24">
-            <div className="max-w-md">
-              <h2 className="text-[32px] lg:text-[40px] leading-[40px] lg:leading-[48px] tracking-[-0.01em] font-bold mb-4 text-white drop-shadow-md">
-                Care that revolves around you.
-              </h2>
-              <p className="text-[16px] lg:text-[18px] leading-[24px] lg:leading-[28px] font-normal text-white/90 drop-shadow-sm">
-                Join Tabibi today and experience modern healthcare management tailored to your needs.
-              </p>
-            </div>
-          </div>
+      {/* Brand Header */}
+      <BrandHeader
+        size="medium"
+        title="Welcome Back"
+        subtitle="Sign in to continue to Tabibi"
+        onNavigateHome={() => navigate("/")}
+      />
 
-          {/* Right Side: Form Content Center Alignment */}
-          <div className="w-full lg:w-[60%] h-full flex items-center justify-center p-4 lg:p-8 lg:p-12 ml-auto">
-            <div className="w-full max-w-xl flex flex-col gap-5 lg:gap-6 bg-white/95 backdrop-blur-md p-6 lg:p-10 rounded-3xl shadow-2xl border border-white/20">
-              
-              {/* Brand Header */}
-              <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-3">
-                <button className="flex items-center gap-2 text-[#5140b3] cursor-pointer" onClick={() => navigate('/')}>
-                  <MdMedicalServices className="text-3xl lg:text-4xl" />
-                  <span className="text-[28px] leading-[36px] lg:text-[40px] lg:leading-[48px] font-bold tracking-tight text-[#5140b3]">
-                    Tabibi
-                  </span>
-                </button>
-                <div className="flex flex-col gap-1 mt-1 lg:mt-2">
-                  <h1 className="text-[24px] leading-[32px] lg:text-[28px] lg:leading-[36px] font-bold text-[#1a1345]">
-                    Welcome to Tabibi
-                  </h1>
-                  <p className="text-[14px] leading-[20px] lg:text-[16px] lg:leading-[24px] font-normal text-[#474553]">
-                    Enter your email to get started
-                  </p>
-                </div>
-              </div>
+      {/* Form */}
+      <form
+        className="flex flex-col gap-2 lg:gap-3"
+        onSubmit={handleLogin}
+        noValidate
+      >
+        {displayError && <ErrorBanner message={displayError} />}
 
-              {/* Form Area with noValidate added */}
-              <form className="flex flex-col gap-4 lg:gap-5" onSubmit={handleLogin} noValidate>
-                {/* Error Message Banner */}
-                {displayError && (
-                  <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg transition-all animate-fadeIn">
-                    <p className="text-red-600 text-xs lg:text-sm font-medium text-center">{displayError}</p>
-                  </div>
-                )}
-                
-                <div className="flex flex-col gap-2 relative">
-                  <label className="text-[13px] leading-[18px] lg:text-[14px] lg:leading-[20px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="email">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <MdOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-xl" />
-                    <input
-                      disabled={isLoading}
-                      className={`w-full h-11 lg:h-12 px-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[15px] lg:text-[16px] leading-[24px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${
-                        displayError 
-                          ? 'border-red-300 focus:ring-red-200 focus:border-red-400' 
-                          : 'border-[#e5deff] focus:ring-[#b8a7ff] focus:border-[#b8a7ff]'
-                      } ${isLoading ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}
-                      id="email"
-                      name="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={handleEmailChange}
-                      required
-                      type="email"
-                    />
-                  </div>
-                </div>
-                
-                <button
-                  disabled={isLoading}
-                  className={`w-full h-11 lg:h-12 flex items-center justify-center gap-2 bg-[#6a5acd] text-[#f0ebff] rounded-full text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-md ${
-                    isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#5140b3] hover:text-[#ffffff] cursor-pointer'
-                  }`}
-                  type='submit'
-                >
-                  {isLoading ? (
-                    // CSS Spinner for Loading State
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  ) : (
-                    <>
-                      <span>Next</span>
-                      <MdArrowForward className="text-lg lg:text-xl" />
-                    </>
-                  )}
-                </button>
-              </form>
+        <FormField
+          id="email"
+          label="Email Address"
+          icon={
+            <MdOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+          }
+          placeholder="name@example.com"
+          type="email"
+          value={email}
+          onChange={handleEmailChange}
+          disabled={isLoading}
+          borderClass={getInputBorderClass(!!displayError)}
+        />
 
-              {/* Divider */}
-              <div className="flex items-center gap-4 w-full py-1">
-                <div className="h-px bg-[#c9c4d5]/50 flex-grow"></div>
-                <span className="text-[11px] lg:text-[12px] leading-[16px] font-medium text-[#787584]">OR</span>
-                <div className="h-px bg-[#c9c4d5]/50 flex-grow"></div>
-              </div>
+        <PasswordField
+          id="password"
+          label="Password"
+          value={password}
+          onChange={handlePasswordChange}
+          showPassword={showPassword}
+          togglePassword={() => setShowPassword(!showPassword)}
+          disabled={isLoading}
+          borderClass={getInputBorderClass(!!displayError)}
+        />
 
-              {/* Secondary Actions */}
-              <div className="flex flex-col gap-3 lg:gap-4">
-                <button
-                  disabled={isLoading}
-                  className={`w-full h-11 lg:h-12 flex items-center justify-center gap-3 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold text-[#1a1345] transition-all ${
-                    isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#f0ebff] hover:border-[#c9c4d5] cursor-pointer'
-                  }`}
-                  type="button"
-                >
-                  <FcGoogle className="w-5 h-5" />
-                  Continue with Google
-                </button>
-              </div>
+        <button
+          disabled={isLoading}
+          className={`w-full h-9 lg:h-10 flex items-center justify-center gap-2 bg-[#6a5acd] text-[#f0ebff] rounded-full text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-md ${
+            isLoading
+              ? "opacity-70 cursor-not-allowed"
+              : "hover:bg-[#5140b3] hover:text-[#ffffff] cursor-pointer"
+          }`}
+          type="submit"
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <span>Log In</span>
+              <MdArrowForward className="text-lg lg:text-xl" />
+            </>
+          )}
+        </button>
+      </form>
 
-              {/* Footer Terms */}
-              <p className="text-[11px] lg:text-[12px] leading-[16px] font-medium text-center text-[#787584] mt-1 lg:mt-2">
-                By continuing, you agree to Tabibi's{' '}
-                <span className="text-[#5140b3] cursor-pointer">Terms of Service</span>{' '}
-                and{' '}
-                <span className="text-[#5140b3] cursor-pointer">Privacy Policy</span>.
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+      {/* Divider */}
+      <Divider />
+
+      {/* Google Sign-in */}
+      <div className="flex flex-col gap-2 lg:gap-3">
+        <GoogleButton disabled={isLoading} />
+      </div>
+
+      {/* Footer */}
+      <TermsFooter />
+    </AuthLayout>
   );
 }

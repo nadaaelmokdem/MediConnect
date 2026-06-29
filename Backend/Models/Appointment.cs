@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -7,40 +7,49 @@ using System.Text;
 namespace Tabibi.Models
 {
 
-        public class Appointment
-        {
-            [Key]
-            public int AppointmentId { get; set; }
+    public class Appointment
+    {
+        [Key]
+        public int AppointmentId { get; set; }
 
-            public int PatientId { get; set; }
-            public int DoctorId { get; set; }
+        public int PatientId { get; set; }
+        public int DoctorId { get; set; }
 
-            public DateTime ScheduledAt { get; set; }
-            public int DurationMins { get; set; } = 30;
+        public DateTime ScheduledAt { get; set; }
+        public int DurationMins { get; set; } = 30;
 
-            public AppointmentType Type { get; set; } = AppointmentType.Online;
-            public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
+        [Required]
+        public ConsultationType ConsultationType { get; set; } = ConsultationType.Chat;
 
-            [MaxLength(500)]
-            public string? ChiefComplaint { get; set; }
+        public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
 
-            [MaxLength(2000)]
-            public string? Notes { get; set; }
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal Price { get; set; } = 0;
 
-            // Navigation
-            [ForeignKey(nameof(PatientId))]
-            public PatientProfile Patient { get; set; } = null!;
+        [MaxLength(500)]
+        public string? ChiefComplaint { get; set; }
 
-            [ForeignKey(nameof(DoctorId))]
-            public DoctorProfile Doctor { get; set; } = null!;
+        [MaxLength(2000)]
+        public string? Notes { get; set; }
 
-            public Prescription? Prescription { get; set; }
-            public Payment? Payment { get; set; }
-            public DoctorReview? Review { get; set; }
-        }
+        public int? SessionId { get; set; }  // Link to ChatSession if applicable
 
-        public enum AppointmentType { Online, InPerson }
-        public enum AppointmentStatus { Pending, Confirmed, Completed, Cancelled }
+        // Navigation
+        [ForeignKey(nameof(PatientId))]
+        public PatientProfile Patient { get; set; } = null!;
 
-    
+        [ForeignKey(nameof(DoctorId))]
+        public DoctorProfile Doctor { get; set; } = null!;
+
+        [ForeignKey(nameof(SessionId))]
+        public ChatSession? ChatSession { get; set; }
+
+        public Prescription? Prescription { get; set; }
+        public Payment? Payment { get; set; }
+        public DoctorReview? Review { get; set; }
+    }
+
+    public enum ConsultationType { Chat, Video, Call, Clinic }
+    public enum AppointmentStatus { Pending, Confirmed, Completed, Cancelled }
+
 }

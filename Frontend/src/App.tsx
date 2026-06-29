@@ -1,50 +1,48 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
-import { AuthProvider } from "./context/AuthContext"
-import { LangProvider } from "./context/LangContext"
-import Navbar from "./components/Navbar"
-import { ProtectedRoute } from "./components/ProtectedRoute"
-import HomePage from "./pages/HomePage"
-import ChatPage from "./pages/ChatPage"
-import DoctorDashboard from "./pages/DoctorDashboard"
-import SignIn from "./pages/SignIn"
-import SignUp from "./pages/SignUp"
-import ForgotPassword from "./pages/ForgotPassword"
-import { useState } from "react"
-import Password from "./pages/Password"
-import ContinueData from "./pages/PatientAdditionalData"
-import ProfilePage from "./pages/PatientProfile"
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { LangProvider } from "./context/LangContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import MainLayout from "./components/Layout/MainLayout";
+import { USER_AUTH_CONFIG, DOCTOR_AUTH_CONFIG } from "./config/authConfig";
+import HomePage from "./pages/HomePage";
+import ChatPage from "./pages/ChatPage";
+import DoctorDashboard from "./pages/DoctorDashboard";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import PatientProfilePage from "./pages/PatientProfile";
+import DoctorProfilePage from "./pages/DoctorProfile";
+import PatientAdditionalData from "./pages/PatientAdditionalData";
+import DoctorAdditionalData from "./pages/DoctorAdditionalData";
 
 function App() {
-  const [loginMail,setLoginMail] = useState<string>("");
   return (
-    <>
-      <BrowserRouter>
-        <AuthProvider>
-          <LangProvider>
-            {/* Navigation - shown on all pages except auth pages */}
-            <Routes>
-              <Route path="/login" element={null} />
-              <Route path="/register" element={null} />
-              <Route path="/password" element={null} />
-              <Route path="/patient-data" element={null} />
-              <Route path="*" element={<Navbar />} />
-            </Routes>
+    <BrowserRouter>
+      <AuthProvider>
+        <LangProvider>
+          <Routes>
+            {/* Auth Routes (no Navbar) */}
+            <Route
+              path="/login"
+              element={<SignIn {...USER_AUTH_CONFIG} />}
+            />
+            <Route
+              path="/doctor-login"
+              element={<SignIn {...DOCTOR_AUTH_CONFIG} />}
+            />
+            <Route
+              path="/register"
+              element={<SignUp {...USER_AUTH_CONFIG} />}
+            />
+            <Route
+              path="/doctor-register"
+              element={<SignUp {...DOCTOR_AUTH_CONFIG} />}
+            />
+            <Route path="/user-data" element={<PatientAdditionalData />} />
+            <Route path="/doctor-data" element={<DoctorAdditionalData />} />
 
-            {/* Routes */}
-            <Routes>
-              {/* Auth Routes */}
-              <Route path="/login" element={<SignIn setloginEmail={setLoginMail}/>} />
-              <Route path="/register" element={<SignUp loginMail={loginMail}/>} />
-              <Route path="/password" element={<Password loginMail={loginMail}/>} />
-              <Route path="/patient-data" element={<ContinueData/>} />
-
-              {/* Protected Routes */}
-              <Route
-                path="/"
-                element={
-                    <HomePage />
-                }
-              />
+            {/* Main Layout Routes (with Navbar) */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<HomePage />} />
               <Route
                 path="/ai-chat"
                 element={
@@ -61,21 +59,28 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/profile"
                 element={
                   <ProtectedRoute>
-                    <ProfilePage />
+                    <PatientProfilePage />
                   </ProtectedRoute>
                 }
               />
-            </Routes>
-          </LangProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </>
-  )
+              <Route
+                path="/doctor-profile"
+                element={
+                  <ProtectedRoute>
+                    <DoctorProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+          </Routes>
+        </LangProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

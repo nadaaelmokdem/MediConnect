@@ -1,25 +1,19 @@
-import { createContext, useState, useContext, type ReactNode } from 'react';
+import { createContext, useState, useContext } from "react";
 
-type Lang = 'en' | 'ar';
-
-interface LangContextType {
-  lang: Lang;
-  toggleLang: () => void;
-}
+import type {
+  LangContextType,
+  LangProviderProps,
+  Lang,
+} from "../types/context";
 
 const LangContext = createContext<LangContextType | undefined>(undefined);
-
-// Define props to include children
-interface LangProviderProps {
-  children: ReactNode;
-}
 
 export const LangProvider = ({ children }: LangProviderProps) => {
   const [lang, setLang] = useState<Lang>(() => {
     // Check if we are in a browser environment to avoid SSR errors
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lang");
-      return (saved === "ar" || saved === "en") ? saved : "en";
+      return saved === "ar" || saved === "en" ? saved : "en";
     }
     return "en";
   });

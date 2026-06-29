@@ -1,8 +1,14 @@
-import { FiMenu } from 'react-icons/fi';
-import { MdOutlineAccountBalanceWallet, MdSmartToy } from 'react-icons/md';
-import type Contact from '../../types/Contact';
+import { FiMenu } from "react-icons/fi";
+import { MdOutlineAccountBalanceWallet, MdSmartToy } from "react-icons/md";
+import type Contact from "../../types/Contact";
 
-export default function ChatHeader({ contact, onOpenSidebar }: { contact: Contact; onOpenSidebar: () => void }) {
+export default function ChatHeader({
+  contact,
+  onOpenSidebar,
+}: {
+  contact: Contact;
+  onOpenSidebar: () => void;
+}) {
   return (
     <header className="bg-[#ffffff] border-b border-[#e5deff] px-4 sm:px-[24px] py-[12px] sm:py-[16px] flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 shrink-0 shadow-[0px_4px_20px_rgba(42,36,85,0.05)] z-10">
       <div className="flex items-center gap-[12px]">
@@ -21,7 +27,9 @@ export default function ChatHeader({ contact, onOpenSidebar }: { contact: Contac
           </h2>
           <div className="flex items-center gap-[4px]">
             <div className="w-2 h-2 rounded-full bg-[#b8a7ff]"></div>
-            <span className="text-[12px] leading-[1] font-medium text-[#474553]">Active Session</span>
+            <span className="text-[12px] leading-[1] font-medium text-[#474553]">
+              Active Session
+            </span>
           </div>
         </div>
       </div>
@@ -33,18 +41,26 @@ export default function ChatHeader({ contact, onOpenSidebar }: { contact: Contac
         </div>
         <div className="flex flex-col gap-1.5 w-full sm:w-24 md:w-32">
           <div className="flex justify-between text-[10px] sm:text-[11px] font-bold text-[#2A2455] uppercase tracking-wide">
-            <span>AI</span><span>5/15</span>
+            <span>AI</span>
+            <span>5/15</span>
           </div>
           <div className="h-1.5 sm:h-2 w-full bg-[#E6E1FF] rounded-full overflow-hidden">
-            <div className="h-full bg-[#6A5ACD] rounded-full" style={{ width: '33%' }}></div>
+            <div
+              className="h-full bg-[#6A5ACD] rounded-full"
+              style={{ width: "33%" }}
+            ></div>
           </div>
         </div>
         <div className="flex flex-col gap-1.5 w-full sm:w-24 md:w-32">
           <div className="flex justify-between text-[10px] sm:text-[11px] font-bold text-[#2A2455] uppercase tracking-wide">
-            <span>Doc</span><span>2/5</span>
+            <span>Doc</span>
+            <span>2/5</span>
           </div>
           <div className="h-1.5 sm:h-2 w-full bg-[#E6E1FF] rounded-full overflow-hidden">
-            <div className="h-full bg-[#2A2455] rounded-full" style={{ width: '40%' }}></div>
+            <div
+              className="h-full bg-[#2A2455] rounded-full"
+              style={{ width: "40%" }}
+            ></div>
           </div>
         </div>
       </div>

@@ -11,6 +11,20 @@ export interface ProfileData {
   imageUrl: string | undefined;
 }
 
+export interface DoctorProfileData {
+  fullName: string;
+  email: string;
+  imageUrl: string;
+  nationalIdNumber: string;
+  licenseNumber: string;
+  licenseExpiryDate: string;
+  yearsOfExperience: string;
+  clinicLocation: string;
+  clinicPhoneNumber: string;
+  bio: string;
+  specialties: string;
+}
+
 export interface EditableHeaderFieldProps {
   value: string | undefined;
   isEditing: boolean;
@@ -30,4 +44,6 @@ export interface EditableDetailItemProps {
   onSave: (val: string | undefined) => void;
   onCancel: () => void;
   type?: string | undefined;
+  options?: string[];
+  fieldName?: string;
 }

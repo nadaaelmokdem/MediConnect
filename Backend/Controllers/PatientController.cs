@@ -1,32 +1,81 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.SqlServer.Server;
-using Tabibi.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Tabibi.DTOs;
 using Tabibi.Services;
+using Tabibi.Extensions;
 
 namespace Tabibi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PatientController(PatientService patientService) : ControllerBase
     {
-        [HttpPatch("change-patient-data")]
+        [HttpPut("change-patient-data")]
         public async Task<IActionResult> ChangePatientData(PatientExtraDTO patientData)
         {
-            if (!patientService.ValidatePatientExtras(patientData))
+            var userId = User.GetId();
+
+            if (string.IsNullOrEmpty(userId))
             {
-                return BadRequest("Please check that your data is valid!");
+                return Unauthorized("User not authenticated");
+            }
+            var res = patientService.ValidatePatientExtras(patientData);
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
             }
 
-            if (!await patientService.UpdateData(patientData))
+            if (!(await patientService.UpdateData(userId, patientData)).IsSuccess)
             {
                 return NotFound("User not found!");
             }
 
             return Ok("Data updated successfully");
         }
-        
+
+        [HttpPatch("profile-field")]
+        public async Task<IActionResult> UpdateProfileField([FromBody] PatientProfileFieldDTO fieldData)
+        {
+            var userId = User.GetId();
+            
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            if (string.IsNullOrEmpty(fieldData.FieldName) || string.IsNullOrEmpty(fieldData.Value))
+            {
+                return BadRequest("Field name and value are required");
+            }
+            var res = (await patientService.UpdateProfileField(userId, fieldData.FieldName, fieldData.Value));
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
+            }
+
+            return Ok($"{fieldData.FieldName} updated successfully");
+        }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetPatientProfile()
+        {
+            var userId = User.GetId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            var profile = await patientService.GetProfile(userId);
+
+            if (profile is not null)
+            {
+                return Ok(profile);
+            }
+            return NotFound("User does not exist!");
+        }
+
+
     }
 }

@@ -1,372 +1,272 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { 
-  MdMedicalServices, 
-  MdOutlineMail, 
-  MdArrowForward, 
-  MdPerson, 
-  MdLock,
-  MdVisibility,
-  MdVisibilityOff,
-  MdPhone
-} from 'react-icons/md';
-import { FcGoogle } from 'react-icons/fc';
-import { AxiosError } from 'axios';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  MdOutlineMail,
+  MdArrowForward,
+  MdPerson,
+  MdPhone,
+} from "react-icons/md";
+import BrandHeader from "../components/Auth/BrandHeader";
+import ErrorBanner from "../components/Auth/ErrorBanner";
+import Divider from "../components/Auth/Divider";
+import TermsFooter from "../components/Auth/TermsFooter";
+import GoogleButton from "../components/Auth/GoogleButton";
+import FormField from "../components/common/FormField";
+import PasswordField from "../components/common/PasswordField";
+import { AxiosError } from "axios";
+import AuthLayout from "../components/Auth/AuthLayout";
 
-type UserType = 'patient' | 'doctor';
+import type { SignUpProps, SignUpForm } from "../types/props";
 
-export default function SignUp({ loginMail }: { loginMail: string }) {
+/* ─── Validation Constants ─── */
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?[\d\s-]{8,15}$/;
+const PASSWORD_REGEX = new RegExp(
+  '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{} |<>\\\\/ ]).{8,}$',
+);
+
+/* ─── Validation Logic ─── */
+
+function validateForm(form: SignUpForm): Record<string, string> {
+  const errors: Record<string, string> = {};
+
+  if (!form.fullName.trim()) {
+    errors.fullName = "Full name is required";
+  } else if (form.fullName.trim().length < 2) {
+    errors.fullName = "Name must be at least 2 characters long";
+  }
+
+  if (!form.email.trim()) {
+    errors.email = "Email address is required";
+  } else if (!EMAIL_REGEX.test(form.email)) {
+    errors.email = "Please enter a valid email address";
+  }
+
+  if (!form.phoneNumber.trim()) {
+    errors.phoneNumber = "Phone number is required";
+  } else if (!PHONE_REGEX.test(form.phoneNumber)) {
+    errors.phoneNumber = "Please enter a valid phone number";
+  }
+
+  if (!form.password) {
+    errors.password = "Password is required";
+  } else if (!PASSWORD_REGEX.test(form.password)) {
+    errors.password =
+      "Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character";
+  }
+
+  if (form.password !== form.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
+  }
+
+  return errors;
+}
+
+/* ─── Component ─── */
+
+export default function SignUp({
+  background,
+  headerText,
+  pText,
+  signInLink,
+  continueDataLink,
+}: SignUpProps) {
   const navigate = useNavigate();
   const { register, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
-  const [form, setForm] = useState({
-    fullName: '',
-    email: loginMail || '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
-    userType: 'patient' as UserType,
+  const [form, setForm] = useState<SignUpForm>({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+    userType: "user",
   });
 
-  // New state for field-specific errors
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [localError, setLocalError] = useState('');
-
-  // Validation function
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    // Name validation
-    if (!form.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    } else if (form.fullName.trim().length < 2) {
-      newErrors.fullName = 'Name must be at least 2 characters long';
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!form.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!emailRegex.test(form.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    // Phone validation (allows optional +, digits, spaces, and hyphens. Min 8, Max 15 digits)
-    const phoneRegex = /^\+?[\d\s-]{8,15}$/;
-    if (!form.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!phoneRegex.test(form.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid phone number';
-    }
-
-    // Password validation
-    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>\\/ ]).{8,}$/;
-    if (!form.password) {
-      newErrors.password = 'Password is required';
-    } else if (!passwordRegex.test(form.password)) {
-      newErrors.password = 'Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character';
-    }
-
-    // Confirm password validation
-    if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    
-    // Return true if no errors
-    return Object.keys(newErrors).length === 0;
-  };
+  const [localError, setLocalError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    
-    // Clear the specific error when the user starts typing to fix it
+
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); 
-    setLocalError('');
+    e.preventDefault();
+    setLocalError("");
 
-    // Run client-side validation
-    if (!validateForm()) {
-      return; // Stop execution if validation fails
-    }
+    const validationErrors = validateForm(form);
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
     try {
-      await register(form.fullName, form.email, form.password, form.phoneNumber, form.userType);
-      navigate('/patient-data');
+      await register(
+        form.fullName,
+        form.email,
+        form.password,
+        form.phoneNumber,
+        form.userType,
+      );
+      navigate(`/${continueDataLink}`);
     } catch (error) {
-      if (error instanceof AxiosError && error.response && error.response.data) {
+      if (error instanceof AxiosError && error.response?.data) {
         const errorData = error.response.data;
         if (Array.isArray(errorData) && errorData.length > 0) {
-          const errorMessage = errorData[0].description;
-          setLocalError(errorMessage);
+          setLocalError(errorData[0].description);
         }
-      } else if (error instanceof AxiosError){
+      } else if (error instanceof AxiosError) {
         setLocalError(error.message);
       }
-      console.log(error instanceof AxiosError);
     }
   };
 
-  const displayError = localError;
-
-  // Helper for dynamic input border classes based on error state
-  const getInputBorderClass = (fieldName: string) => 
-    errors[fieldName] 
-      ? 'border-red-400 focus:ring-red-400 focus:border-red-400' 
-      : 'border-[#e5deff] focus:ring-[#b8a7ff] focus:border-[#b8a7ff]';
+  const getInputBorderClass = (fieldName: string) =>
+    errors[fieldName]
+      ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+      : "border-[#e5deff] focus:ring-[#b8a7ff] focus:border-[#b8a7ff]";
 
   return (
-    <div className="bg-[#fcf8ff] text-[#1a1345] text-[15px] leading-[22px] font-normal antialiased h-screen overflow-hidden flex flex-col selection:bg-[#6a5acd] selection:text-[#f0ebff]">
-      <main className="flex-grow flex w-full h-full relative z-20 overflow-hidden">
-        
-        {/* Full-Screen Background Image */}
-        <div className="absolute inset-0 w-full h-full z-0">
-          <img
-            alt="Tabibi Medical Group"
-            className="w-full h-full object-cover object-left"
-            src="doctor-login.jpg"
+    <AuthLayout
+      background={background}
+      headerText={headerText}
+      pText={pText}
+      cardMaxWidth="max-w-2xl"
+    >
+      {/* Toggle */}
+      <div className="flex w-full bg-[#f0ebff] rounded-full p-1 mb-0.5">
+        <button
+          type="button"
+          onClick={() => navigate(`/${signInLink}`)}
+          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all text-[#6a5acd] hover:bg-[#e5deff] cursor-pointer"
+        >
+          Login
+        </button>
+        <button
+          type="button"
+          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all bg-[#6a5acd] text-white shadow-sm"
+        >
+          Register
+        </button>
+      </div>
+
+      {/* Brand Header */}
+      <BrandHeader
+        size="medium"
+        title="Create Account"
+        subtitle="Join our medical community"
+        onNavigateHome={() => navigate("/")}
+      />
+
+      {/* Primary Action: Google */}
+      <div className="mt-3 mb-1">
+        <GoogleButton disabled={isLoading} isPrimary />
+      </div>
+
+      {/* Divider */}
+      <Divider />
+
+      {/* Form */}
+      <form
+        className="flex flex-col gap-1.5 lg:gap-2"
+        onSubmit={handleSignup}
+        noValidate
+      >
+        {localError && <ErrorBanner message={localError} />}
+
+        {/* Full Name */}
+        <FormField
+          id="fullName"
+          label="Full Name"
+          icon={
+            <MdPerson className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+          }
+          placeholder="John Doe"
+          type="text"
+          value={form.fullName}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          borderClass={getInputBorderClass("fullName")}
+          error={errors.fullName}
+        />
+
+        {/* Email */}
+        <FormField
+          id="email"
+          label="Email Address"
+          icon={
+            <MdOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+          }
+          placeholder="name@example.com"
+          type="email"
+          value={form.email}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          borderClass={getInputBorderClass("email")}
+          error={errors.email}
+        />
+
+        {/* Phone Number */}
+        <FormField
+          id="phoneNumber"
+          label="Phone Number"
+          icon={
+            <MdPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
+          }
+          placeholder="+201012345678"
+          type="tel"
+          value={form.phoneNumber}
+          onChange={handleInputChange}
+          disabled={isLoading}
+          borderClass={getInputBorderClass("phoneNumber")}
+          error={errors.phoneNumber}
+        />
+
+        {/* Passwords Side-by-Side */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <PasswordField
+            id="password"
+            label="Password"
+            value={form.password}
+            onChange={handleInputChange}
+            showPassword={showPassword}
+            togglePassword={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
+            borderClass={getInputBorderClass("password")}
+            error={errors.password}
+          />
+          <PasswordField
+            id="confirmPassword"
+            label="Confirm Password"
+            value={form.confirmPassword}
+            onChange={handleInputChange}
+            showPassword={showPassword}
+            togglePassword={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
+            borderClass={getInputBorderClass("confirmPassword")}
+            error={errors.confirmPassword}
           />
         </div>
 
-        {/* Ambient Gradient Overlays */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none z-0"></div>
-          <div className="absolute inset-y-0 right-0 w-[60%] bg-gradient-to-t to-transparent backdrop-blur-sm hidden lg:block"></div>
-        </div>
+        {/* Submit */}
+        <button
+          className="cursor-pointer mt-0 w-full h-9 lg:h-10 flex items-center justify-center gap-2 bg-[#6a5acd] text-[#f0ebff] hover:bg-[#5140b3] hover:text-[#ffffff] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+          type="submit"
+          disabled={isLoading}
+        >
+          <span>{isLoading ? "Creating Account..." : "Sign Up"}</span>
+          {!isLoading && <MdArrowForward className="text-md lg:text-lg" />}
+        </button>
+      </form>
 
-        <div className="relative w-full h-full flex flex-col lg:flex-row z-20 max-lg:backdrop-blur-sm overflow-hidden">
-          
-          {/* Left Side: Hero Text */}
-          <div className="hidden lg:flex flex-col justify-end w-[35%] p-8 lg:p-12 pb-16 lg:pb-24">
-            <div className="max-w-md">
-              <h2 className="text-[32px] lg:text-[36px] leading-[38px] lg:leading-[44px] tracking-[-0.01em] font-bold mb-3 text-white drop-shadow-md">
-                Care that revolves around you.
-              </h2>
-              <p className="text-[15px] lg:text-[16px] leading-[22px] lg:leading-[26px] font-normal text-white/90 drop-shadow-sm">
-                Join Tabibi today and experience modern healthcare management tailored to your needs.
-              </p>
-            </div>
-          </div>
-
-          {/* Right Side: Form Content Center Alignment - Expanded Width for Long Inputs */}
-          <div className="w-full lg:w-[65%] h-full flex items-center justify-center p-4 lg:p-6 ml-auto overflow-hidden">
-            {/* Compact, Wider Form Card */}
-            <div className="w-full max-w-2xl flex flex-col gap-3 bg-white/95 backdrop-blur-md p-5 lg:p-6 rounded-3xl shadow-2xl border border-white/20">
-              
-              {/* Brand Header */}
-              <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-1">
-                <button className="flex items-center gap-2 text-[#5140b3] cursor-pointer"
-                      onClick={() => navigate('/')}>
-                  <MdMedicalServices className="text-2xl lg:text-3xl" />
-                  <span className="text-[24px] leading-[32px] lg:text-[32px] lg:leading-[40px] font-bold tracking-tight text-[#5140b3]">
-                    Tabibi
-                  </span>
-                </button>
-                <div className="flex flex-col gap-0.5 mt-0.5">
-                  <h1 className="text-[20px] leading-[28px] lg:text-[24px] lg:leading-[32px] font-bold text-[#1a1345]">
-                    Create Account
-                  </h1>
-                  <p className="text-[13px] leading-[18px] lg:text-[14px] lg:leading-[20px] font-normal text-[#474553]">
-                    Join our medical community
-                  </p>
-                </div>
-              </div>
-
-              {/* Form Area - Added noValidate to override default browser popups */}
-              <form className="flex flex-col gap-2.5 lg:gap-3" onSubmit={handleSignup} noValidate>
-                
-                {/* Global Error Message from Auth Context */}
-                {displayError && (
-                  <div className="p-2 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-xs font-medium text-center">{displayError}</p>
-                  </div>
-                )}
-
-                {/* Full Name */}
-                <div className="flex flex-col gap-1 w-full relative">
-                  <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="fullName">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <MdPerson className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                    <input
-                      className={`w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('fullName')}`}
-                      id="fullName"
-                      name="fullName"
-                      placeholder="John Doe"
-                      type="text"
-                      value={form.fullName}
-                      onChange={handleInputChange}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  {errors.fullName && <p className="text-red-500 text-[11px] mt-0.5">{errors.fullName}</p>}
-                </div>
-
-                {/* Email Address */}
-                <div className="flex flex-col gap-1 w-full relative">
-                  <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="email">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <MdOutlineMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                    <input
-                      className={`w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('email')}`}
-                      id="email"
-                      name="email"
-                      placeholder="name@example.com"
-                      type="email"
-                      value={form.email}
-                      onChange={handleInputChange}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  {errors.email && <p className="text-red-500 text-[11px] mt-0.5">{errors.email}</p>}
-                </div>
-
-                {/* Phone Number */}
-                <div className="flex flex-col gap-1 w-full relative">
-                  <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="phoneNumber">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <MdPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                    <input
-                      className={`w-full h-10 lg:h-10.5 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('phoneNumber')}`}
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      placeholder="+201012345678"
-                      type="tel"
-                      value={form.phoneNumber}
-                      onChange={handleInputChange}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  {errors.phoneNumber && <p className="text-red-500 text-[11px] mt-0.5">{errors.phoneNumber}</p>}
-                </div>
-
-                {/* Passwords Layout Side-by-Side */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {/* Password */}
-                  <div className="flex flex-col gap-1 flex-1 relative">
-                    <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="password">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <MdLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                      <input
-                        className={`w-full h-10 lg:h-10.5 pr-10 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('password')}`}
-                        id="password"
-                        name="password"
-                        placeholder="••••••••"
-                        type={showPassword ? 'text' : 'password'}
-                        value={form.password}
-                        onChange={handleInputChange}
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a19db3] hover:text-[#5140b3] focus:outline-none cursor-pointer text-lg p-1 rounded transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                      </button>
-                    </div>
-                    {errors.password && <p className="text-red-500 text-[11px] mt-0.5 leading-tight">{errors.password}</p>}
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div className="flex flex-col gap-1 flex-1 relative">
-                    <label className="text-[12px] leading-[16px] lg:text-[13px] lg:leading-[18px] tracking-[0.01em] font-semibold text-[#1a1345]" htmlFor="confirmPassword">
-                      Confirm Password
-                    </label>
-                    <div className="relative">
-                      <MdLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#c9c4d5] pointer-events-none text-lg" />
-                      <input
-                        className={`w-full h-10 lg:h-10.5 pr-10 p-4 bg-[#ffffff]/90 backdrop-blur-sm border rounded-lg text-[14px] lg:text-[15px] leading-[22px] font-normal text-[#1a1345] placeholder:text-[#a19db3] focus:outline-none focus:ring-2 transition-all ${getInputBorderClass('confirmPassword')}`}
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        placeholder="••••••••"
-                        type={showPassword ? 'text' : 'password'}
-                        value={form.confirmPassword}
-                        onChange={handleInputChange}
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a19db3] hover:text-[#5140b3] focus:outline-none cursor-pointer text-lg p-1 rounded transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                      </button>
-                    </div>
-                    {errors.confirmPassword && <p className="text-red-500 text-[11px] mt-0.5">{errors.confirmPassword}</p>}
-                  </div>
-                </div>
-                
-                {/* Submit Action */}
-                <button
-                  className="cursor-pointer mt-1 w-full h-10 lg:h-10.5 flex items-center justify-center gap-2 bg-[#6a5acd] text-[#f0ebff] hover:bg-[#5140b3] hover:text-[#ffffff] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
-                  type="submit"
-                  disabled={isLoading}
-                >
-                  <span>{isLoading ? 'Creating Account...' : 'Sign Up'}</span>
-                  {!isLoading && <MdArrowForward className="text-md lg:text-lg" />}
-                </button>
-              </form>
-
-              {/* Divider */}
-              <div className="flex items-center gap-3 w-full py-0.5">
-                <div className="h-px bg-[#c9c4d5]/50 flex-grow"></div>
-                <span className="text-[10px] lg:text-[11px] leading-[14px] font-medium text-[#787584]">OR</span>
-                <div className="h-px bg-[#c9c4d5]/50 flex-grow"></div>
-              </div>
-
-              {/* Secondary Actions Layer */}
-              <div className="flex flex-col gap-2">
-                {/* Google Sign Up */}
-                <button
-                  className="cursor-pointer w-full h-10 lg:h-10.5 flex items-center justify-center gap-2.5 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] hover:bg-[#f0ebff] hover:border-[#c9c4d5] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold text-[#1a1345] transition-all"
-                  type="button"
-                  disabled={isLoading}
-                >
-                  <FcGoogle className="w-4.5 h-4.5" />
-                  Continue with Google
-                </button>
-
-                {/* Switch to Login */}
-                <button
-                  className="cursor-pointer w-full h-10 lg:h-10.5 flex items-center justify-center bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] hover:bg-[#f0ebff] hover:border-[#c9c4d5] rounded-full text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold text-[#1a1345] transition-all"
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  disabled={isLoading}
-                >
-                  Already have an account? <span className="text-[#5140b3] ml-1">Sign in here</span>
-                </button>
-              </div>
-
-              {/* Footer Terms */}
-              <p className="text-[10px] lg:text-[11px] leading-[14px] font-medium text-center text-[#787584] mt-0.5">
-                By creating an account, you agree to Tabibi's{' '}
-                <span className="text-[#5140b3]">Terms of Service</span>
-                {' '}and{' '}
-                <span className="text-[#5140b3]">Privacy Policy</span>.
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+      {/* Footer */}
+      <TermsFooter actionText="creating an account" />
+    </AuthLayout>
   );
 }

@@ -3,17 +3,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using StackExchange.Redis;
 using System.Text;
 using Tabibi.Data;
 using Tabibi.Models;
 using Tabibi.Services;
+using Tabibi.Shared;
 
 namespace Tabibi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -25,10 +25,6 @@ namespace Tabibi
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
             });
-            builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-            {
-                return ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!);
-            });
 
             // Identity
             builder.Services.AddIdentity<AppUser, IdentityRole>()
@@ -36,8 +32,11 @@ namespace Tabibi
 
             builder.Services.AddScoped<AIDoctor>();
             builder.Services.AddScoped<PatientService>();
+            builder.Services.AddScoped<DoctorService>();
             builder.Services.AddScoped<AuthUtils>();
-            builder.Services.AddScoped<ITokenStore,RedisTokenStore>();
+            builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<TokenService>();
+            builder.Services.AddSingleton<ITokenStore, InMemoryTokenStore>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpContextAccessor();
@@ -93,6 +92,22 @@ namespace Tabibi
             app.UseAuthorization();
 
             app.MapControllers();
+
+            // Seed roles
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                if (!await roleManager.RoleExistsAsync(UserRoles.Patient))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Patient));
+                }
+
+                if (!await roleManager.RoleExistsAsync(UserRoles.Doctor))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Doctor));
+                }
+            }
 
             app.Run();
         }

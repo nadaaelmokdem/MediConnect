@@ -9,9 +9,6 @@ namespace Tabibi.Models
         [MaxLength(200)]
         public required string FullName { get; set; }
 
-        [MaxLength(500)]
-        public string? ProfilePictureUrl { get; set; }
-
         public string? GoogleId { get; set; }
 
         public bool IsActive { get; set; } = true;
@@ -20,6 +17,6 @@ namespace Tabibi.Models
 
         // Navigation
         public PatientProfile? PatientProfile { get; set; }
-        //public DoctorProfile? DoctorProfile { get; set; }
+        public DoctorProfile? DoctorProfile { get; set; }
     }
 }

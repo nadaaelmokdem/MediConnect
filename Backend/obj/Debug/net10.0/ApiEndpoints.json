@@ -17,6 +17,22 @@
   },
   {
     "ContainingType": "Tabibi.Controllers.AuthController",
+    "Method": "AddToRole",
+    "RelativePath": "api/Auth/add-to-role",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "addToRoleDTO",
+        "Type": "Tabibi.DTOs.AddToRoleDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tabibi.Controllers.AuthController",
     "Method": "EmailExists",
     "RelativePath": "api/Auth/check-email",
     "HttpMethod": "POST",
@@ -24,8 +40,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
-        "Type": "System.String",
+        "Name": "checkMailDTO",
+        "Type": "Tabibi.DTOs.CheckMailDTO",
         "IsRequired": true
       }
     ],
@@ -84,16 +100,68 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Tabibi.Controllers.DoctorController",
+    "Method": "GetDoctorProfile",
+    "RelativePath": "api/Doctor/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tabibi.Controllers.DoctorController",
+    "Method": "UpdateProfileField",
+    "RelativePath": "api/Doctor/profile-field",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fieldData",
+        "Type": "Tabibi.DTOs.DoctorProfileFieldDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Tabibi.Controllers.PatientController",
     "Method": "ChangePatientData",
     "RelativePath": "api/Patient/change-patient-data",
-    "HttpMethod": "PATCH",
+    "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "patientData",
         "Type": "Tabibi.DTOs.PatientExtraDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tabibi.Controllers.PatientController",
+    "Method": "GetPatientProfile",
+    "RelativePath": "api/Patient/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Tabibi.Controllers.PatientController",
+    "Method": "UpdateProfileField",
+    "RelativePath": "api/Patient/profile-field",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fieldData",
+        "Type": "Tabibi.DTOs.PatientProfileFieldDTO",
         "IsRequired": true
       }
     ],

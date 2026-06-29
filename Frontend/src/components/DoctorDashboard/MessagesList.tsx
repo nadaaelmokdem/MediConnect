@@ -1,12 +1,11 @@
-import { HiOutlineChatAlt2 } from 'react-icons/hi';
-import type { ChatMessage } from '../../types/DoctorDashboard';
+import { HiOutlineChatAlt2 } from "react-icons/hi";
 
-interface MessagesListProps {
-  messages: ChatMessage[];
-  onMessageClick: (id: number) => void;
-}
+import type { MessagesListProps } from "../../types/dashboardProps";
 
-export default function MessagesList({ messages, onMessageClick }: MessagesListProps) {
+export default function MessagesList({
+  messages,
+  onMessageClick,
+}: MessagesListProps) {
   return (
     <section className="bg-white rounded-xl shadow-ambient-card border border-surface-variant flex-1 flex flex-col hover:shadow-ambient-float transition-shadow duration-300">
       <div className="p-md border-b border-surface-variant">
