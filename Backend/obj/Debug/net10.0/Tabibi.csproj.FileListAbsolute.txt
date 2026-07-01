@@ -348,3 +348,15 @@ C:\My Files\Tabibi\Backend\obj\Debug\net10.0\Tabibi.pdb
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\Tabibi.genruntimeconfig.cache
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\ref\Tabibi.dll
 C:\My Files\Tabibi\Backend\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.csproj.AssemblyReference.cache
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\rpswa.dswa.cache.json
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.GeneratedMSBuildEditorConfig.editorconfig
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.AssemblyInfoInputs.cache
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.AssemblyInfo.cs
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.csproj.CoreCompileInputs.cache
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.MvcApplicationPartsAssemblyInfo.cs
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.MvcApplicationPartsAssemblyInfo.cache
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.sourcelink.json
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.dll
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\refint\Tabibi.dll
+D:\nadod\My projects\The Pulse Art\MediConnect\Backend\obj\Debug\net10.0\Tabibi.pdb

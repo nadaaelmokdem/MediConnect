@@ -108,6 +108,10 @@ namespace Tabibi
                 {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Doctor));
                 }
+                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
+{
+    await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
+}
             }
 
             app.Run();
