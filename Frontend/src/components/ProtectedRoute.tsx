@@ -24,13 +24,13 @@ export function ProtectedRoute({
     return <Navigate to="/login" replace />;
   }
 
-  if (
-    allowedUserTypes &&
-    user?.userType &&
-    !allowedUserTypes.includes(user.userType)
-  ) {
-    return <Navigate to="/" replace />;
-  }
+ if (
+  allowedUserTypes &&
+  user?.userType &&
+  !allowedUserTypes.map((t) => t.toLowerCase()).includes(user.userType.toLowerCase())
+) {
+  return <Navigate to="/" replace />;
+}
 
   return <>{children}</>;
 }
