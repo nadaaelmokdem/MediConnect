@@ -13,7 +13,7 @@ export default function HomePage() {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  if (isAuthenticated && location.pathname === "/") {
+  if (isAuthenticated && location.pathname === "/" && !location.state?.loggingOut) {
     const isDoctor =
       user?.roles?.some((r) => r.toLowerCase() === "doctor")
     return <Navigate to={isDoctor ? "/doctor-dashboard" : "/patient-dashboard"} replace />;

@@ -128,7 +128,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <a
                 className="flex items-center gap-3 px-4 py-2 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
                 onClick={async () => {
-                  navigate("/");
+                  navigate("/", { state: { loggingOut: true } });
                   logout();
                 }}
               >

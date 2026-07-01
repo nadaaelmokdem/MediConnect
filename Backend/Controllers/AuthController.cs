@@ -32,7 +32,6 @@ namespace Tabibi.Controllers
             });
         }
 
-        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("add-to-role")]
         public async Task<IActionResult> AddToRole([FromBody] AddToRoleDTO addToRoleDTO)
         {

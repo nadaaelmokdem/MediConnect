@@ -21,7 +21,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    navigate("/");
+    navigate("/", { state: { loggingOut: true } });
     await logout();
     setIsUserMenuOpen(false);
     setIsOpen(false);
