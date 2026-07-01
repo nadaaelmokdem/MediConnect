@@ -36,6 +36,7 @@ namespace Tabibi
             builder.Services.AddScoped<AuthUtils>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<AdminService>();
             builder.Services.AddSingleton<ITokenStore, InMemoryTokenStore>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
