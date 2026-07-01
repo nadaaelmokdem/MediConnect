@@ -75,6 +75,25 @@ namespace Tabibi.Controllers
             }
             return NotFound("User does not exist!");
         }
+    
+        [HttpGet("dashboard-summary")]
+        public async Task<IActionResult> GetDashboard()
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+ 
+            var dashboard = await patientService.GetDashboard(userId);
+            if (dashboard is null)
+            {
+                return NotFound("User does not exist!");
+            }
+ 
+            return Ok(dashboard);
+        }
+ 
 
 
     }

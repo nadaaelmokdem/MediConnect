@@ -13,6 +13,8 @@ import PatientProfilePage from "./pages/PatientProfile";
 import DoctorProfilePage from "./pages/DoctorProfile";
 import PatientAdditionalData from "./pages/PatientAdditionalData";
 import DoctorAdditionalData from "./pages/DoctorAdditionalData";
+import PatientDashboard from "./pages/PatientDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -52,11 +54,11 @@ function App() {
                 }
               />
               <Route
-                path="/find-doctor"
+                path="/doctor-dashboard"
                 element={
-                  <ProtectedRoute>
-                    <DoctorDashboard />
-                  </ProtectedRoute>
+                <ProtectedRoute allowedUserTypes={["doctor"]}>
+               <DoctorDashboard />
+                </ProtectedRoute>
                 }
               />
               <Route
@@ -75,6 +77,22 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+               <Route
+      path="/patient-dashboard"
+      element={
+        <ProtectedRoute allowedUserTypes={["user"]}>
+          <PatientDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/admin-dashboard"
+      element={
+        <ProtectedRoute allowedUserTypes={["admin"]}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      }
+    />
             </Route>
           </Routes>
         </LangProvider>
