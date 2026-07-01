@@ -80,8 +80,8 @@ export default function TabibiLogin({
 
       if (requiredRole && user?.roles && !user.roles.includes(requiredRole)) {
         Swal.fire({
-          title: "Account found in another portal",
-          text: `Do you want to sign in to that portal or register as a ${requiredRole} here?`,
+          title: `You are registered as a ${user.roles.join(", ")}.`,
+          text: `Do you want to sign in as a ${user.roles.join(", ")} or register as a ${requiredRole}?`,
           showCancelButton: true,
           confirmButtonText: "Register here",
           cancelButtonText: `Go to ${requiredRole === "Doctor" ? "User" : "Doctor"} login`,
