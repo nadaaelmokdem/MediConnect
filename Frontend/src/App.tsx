@@ -45,6 +45,9 @@ function App() {
             {/* Main Layout Routes (with Navbar) */}
             <Route element={<MainLayout />}>
               <Route path="/" element={<HomePage />} />
+              <Route path="/appointments" element={<HomePage />} />
+              <Route path="/messages" element={<HomePage />} />
+              <Route path="/doctors" element={<HomePage />} />
               <Route
                 path="/ai-chat"
                 element={
@@ -56,9 +59,9 @@ function App() {
               <Route
                 path="/doctor-dashboard"
                 element={
-                <ProtectedRoute allowedUserTypes={["doctor"]}>
-               <DoctorDashboard />
-                </ProtectedRoute>
+                  <ProtectedRoute allowedRoles={["Doctor"]}>
+                    <DoctorDashboard />
+                  </ProtectedRoute>
                 }
               />
               <Route
@@ -77,22 +80,22 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-               <Route
-      path="/patient-dashboard"
-      element={
-        <ProtectedRoute allowedUserTypes={["user"]}>
-          <PatientDashboard />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/admin-dashboard"
-      element={
-        <ProtectedRoute allowedUserTypes={["admin"]}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      }
-    />
+              <Route
+                path="/patient-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["User"]}>
+                    <PatientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["Admin"]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Routes>
         </LangProvider>

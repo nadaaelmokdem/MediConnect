@@ -62,12 +62,20 @@ export default function PatientDashboard() {
         />
       </div>
 
-      <a
-        href="/ai-chat"
-        className="block w-full bg-[#6A5ACD] text-white rounded-2xl px-6 py-4 text-center text-lg font-semibold shadow-sm hover:bg-[#5b4dc0] transition"
-      >
-        Start an AI symptom check
-      </a>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <a
+          href="/ai-chat"
+          className="flex-1 block bg-[#6A5ACD] text-white rounded-2xl px-6 py-4 text-center text-lg font-semibold shadow-sm hover:bg-[#5b4dc0] transition"
+        >
+          Start an AI symptom check
+        </a>
+        <a
+          href="/doctors"
+          className="flex-1 block bg-white border-2 border-[#6A5ACD] text-[#6A5ACD] rounded-2xl px-6 py-4 text-center text-lg font-semibold shadow-sm hover:bg-[#F4F1FF] transition"
+        >
+          Find doctors
+        </a>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <section className="bg-white border border-[#E6E1FF] rounded-2xl p-5">

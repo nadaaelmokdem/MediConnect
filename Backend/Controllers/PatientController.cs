@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Tabibi.DTOs;
 using Tabibi.Services;
 using Tabibi.Extensions;
+using Tabibi.Shared;
 
 namespace Tabibi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = UserRoles.Patient)]
     public class PatientController(PatientService patientService) : ControllerBase
     {
         [HttpPut("change-patient-data")]

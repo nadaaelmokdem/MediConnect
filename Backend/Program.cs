@@ -38,6 +38,7 @@ namespace Tabibi
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AdminService>();
             builder.Services.AddSingleton<ITokenStore, InMemoryTokenStore>();
+            builder.Services.AddHostedService<TokenCleanupService>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpContextAccessor();
@@ -55,6 +56,12 @@ namespace Tabibi
                                   });
             });
 
+            var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+            if (string.IsNullOrEmpty(jwtSecret))
+            {
+                throw new InvalidOperationException("JWT Secret is not configured.");
+            }
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -70,8 +77,18 @@ namespace Tabibi
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["JwtSettings:ValidIssuer"],
                         ValidAudience = builder.Configuration["JwtSettings:ValidAudience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            if (context.Request.Cookies.ContainsKey("X-Access-Token"))
+                            {
+                                context.Token = context.Request.Cookies["X-Access-Token"];
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 

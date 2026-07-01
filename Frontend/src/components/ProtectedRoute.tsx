@@ -8,7 +8,7 @@ import type { ProtectedRouteProps } from "../types/props";
  */
 export function ProtectedRoute({
   children,
-  allowedUserTypes,
+  allowedRoles,
 }: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useAuth();
 
@@ -24,12 +24,15 @@ export function ProtectedRoute({
     return <Navigate to="/login" replace />;
   }
 
- if (
-  allowedUserTypes &&
-  user?.userType &&
-  !allowedUserTypes.map((t) => t.toLowerCase()).includes(user.userType.toLowerCase())
-) {
-  return <Navigate to="/" replace />;
+ if (allowedRoles) {
+  if (
+    !user?.roles ||
+    !user.roles.some((role) =>
+      allowedRoles.map((t) => t.toLowerCase()).includes(role.toLowerCase())
+    )
+  ) {
+    return <Navigate to="/" replace />;
+  }
 }
 
   return <>{children}</>;

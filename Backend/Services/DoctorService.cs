@@ -234,10 +234,18 @@ namespace Tabibi.Services
                 switch (fieldName.ToLower())
                 {
                     case "licensenumber":
-                        doctor.LicenseNumber = value;
+                        if (doctor.LicenseNumber != value)
+                        {
+                            doctor.LicenseNumber = value;
+                            doctor.IsVerified = false;
+                        }
                         break;
                     case "nationalidnumber":
-                        doctor.NationalIdNumber = value;
+                        if (doctor.NationalIdNumber != value)
+                        {
+                            doctor.NationalIdNumber = value;
+                            doctor.IsVerified = false;
+                        }
                         break;
                     case "cliniclocation":
                         doctor.ClinicLocation = value;

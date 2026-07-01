@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Tabibi.DTOs;
 using Tabibi.Services;
 using Tabibi.Extensions;
+using Tabibi.Shared;
 
 namespace Tabibi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = UserRoles.Doctor)]
     public class DoctorController(DoctorService doctorService) : ControllerBase
     {
         [HttpPatch("profile-field")]
