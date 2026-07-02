@@ -37,7 +37,9 @@ namespace Tabibi
             builder.Services.AddScoped<AuthUtils>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<AdminService>();
             builder.Services.AddSingleton<ITokenStore, InMemoryTokenStore>();
+            builder.Services.AddHostedService<TokenCleanupService>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpContextAccessor();
@@ -56,6 +58,12 @@ namespace Tabibi
                                             .AllowCredentials();
                                   });
             });
+
+            var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+            if (string.IsNullOrEmpty(jwtSecret))
+            {
+                throw new InvalidOperationException("JWT Secret is not configured.");
+            }
 
             builder.Services.AddAuthentication(options =>
             {
@@ -88,13 +96,28 @@ namespace Tabibi
  
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
                 {
-                    context.Token = accessToken;
-                }
- 
-                return Task.CompletedTask;
-            }
-        };
-    });
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["JwtSettings:ValidIssuer"],
+                        ValidAudience = builder.Configuration["JwtSettings:ValidAudience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            if (context.Request.Cookies.ContainsKey("X-Access-Token"))
+                            {
+                                context.Token = context.Request.Cookies["X-Access-Token"];
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
 
             var app = builder.Build();
 
@@ -130,6 +153,11 @@ namespace Tabibi
                 if (!await roleManager.RoleExistsAsync(UserRoles.Doctor))
                 {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Doctor));
+                }
+                
+                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
+                {
+                  await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
                 }
             }
 
