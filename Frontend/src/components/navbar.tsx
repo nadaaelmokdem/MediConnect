@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   MdMedicalServices,
   MdMenu,
@@ -16,26 +16,24 @@ const Navbar = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, switchRole } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    navigate("/", { state: { loggingOut: true } });
+    await logout();
     setIsUserMenuOpen(false);
     setIsOpen(false);
   };
 
-  const isPatient =
-    user?.roles?.some((r) => r.toLowerCase() === "user" || r.toLowerCase() === "patient") ||
-    user?.userType?.toLowerCase() === "user" ||
-    user?.userType?.toLowerCase() === "patient";
+  const isUser =
+    user?.roles?.some((r) => r.toLowerCase() === "user");
   const isDoctor =
-    user?.roles?.some((r) => r.toLowerCase() === "doctor") ||
-    user?.userType?.toLowerCase() === "doctor";
-  const hasBoth = isPatient && isDoctor;
+    user?.roles?.some((r) => r.toLowerCase() === "doctor");
+  const hasBoth = isUser && isDoctor;
 
-  const [profileMode, setProfileMode] = useState<"user" | "doctor">(
-    isDoctor && !isPatient ? "doctor" : "user",
-  );
+  const profileMode = user?.activeRole?.toLowerCase() === "doctor" ? "doctor" : "user";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,8 +60,18 @@ const Navbar = () => {
         {/* Left Section: Logo + Navigation Links */}
         <div className="flex items-center gap-8">
           <Link
-            to="/"
-            className="text-2xl font-heading font-extrabold text-primary tracking-tight flex items-center gap-2 mr-5"
+            to={
+              isAuthenticated
+                ? hasBoth
+                  ? profileMode === "doctor"
+                    ? "/doctor-dashboard"
+                    : "/user-dashboard"
+                  : isDoctor
+                    ? "/doctor-dashboard"
+                    : "/user-dashboard"
+                : "/"
+            }
+            className="text-2xl font-heading font-extrabold text-primary tracking-tight flex items-center gap-2 mr-5 hover:opacity-80 transition-opacity"
           >
             <MdMedicalServices className="text-primary-light text-3xl" />
             Tabibi
@@ -72,7 +80,15 @@ const Navbar = () => {
           <div className="hidden md:flex gap-6 items-center">
             {isAuthenticated && (
               <Link
-                to="/dashboard"
+                to={
+                  hasBoth
+                    ? profileMode === "doctor"
+                      ? "/doctor-dashboard"
+                      : "/user-dashboard"
+                    : isDoctor
+                      ? "/doctor-dashboard"
+                      : "/user-dashboard"
+                }
                 className="text-text-muted hover:text-primary transition-colors duration-200"
               >
                 Dashboard
@@ -85,7 +101,7 @@ const Navbar = () => {
               Chat with AI
             </Link>
             <Link
-              to="/find-doctor"
+              to="/doctors"
               className="text-text-muted hover:text-primary transition-colors duration-200"
             >
               Find a Doctor
@@ -161,7 +177,8 @@ const Navbar = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setProfileMode("user");
+                                  switchRole("User");
+                                  navigate("/user-dashboard");
                                 }}
                                 className={`cursor-pointer px-2.5 py-1 text-xs font-medium rounded-md transition-all ${profileMode === "user" ? "bg-white text-primary shadow-sm" : "text-text-muted hover:text-text-main"}`}
                               >
@@ -170,7 +187,8 @@ const Navbar = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setProfileMode("doctor");
+                                  switchRole("Doctor");
+                                  navigate("/doctor-dashboard");
                                 }}
                                 className={`cursor-pointer px-2.5 py-1 text-xs font-medium rounded-md transition-all ${profileMode === "doctor" ? "bg-white text-primary shadow-sm" : "text-text-muted hover:text-text-main"}`}
                               >
@@ -275,14 +293,22 @@ const Navbar = () => {
               </div>
 
               <Link
-                to="/dashboard"
+                to={
+                  hasBoth
+                    ? profileMode === "doctor"
+                      ? "/doctor-dashboard"
+                      : "/user-dashboard"
+                    : isDoctor
+                      ? "/doctor-dashboard"
+                      : "/user-dashboard"
+                }
                 onClick={() => setIsOpen(false)}
                 className="text-text-main font-medium hover:text-primary flex items-center gap-3 bg-surface-variant/30 py-2 px-3 rounded-lg"
               >
                 <MdDashboard className="text-primary text-lg" /> Dashboard
               </Link>
               <Link
-                to="/find-doctor"
+                to="/doctors"
                 onClick={() => setIsOpen(false)}
                 className="text-text-main font-medium hover:text-primary px-3"
               >
@@ -303,13 +329,13 @@ const Navbar = () => {
                   </span>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setProfileMode("user")}
+                      onClick={() => { switchRole("User"); navigate("/user-dashboard"); setIsOpen(false); }}
                       className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${profileMode === "user" ? "bg-primary text-white shadow-sm" : "bg-white text-text-main border border-surface-variant"}`}
                     >
                       User
                     </button>
                     <button
-                      onClick={() => setProfileMode("doctor")}
+                      onClick={() => { switchRole("Doctor"); navigate("/doctor-dashboard"); setIsOpen(false); }}
                       className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${profileMode === "doctor" ? "bg-primary text-white shadow-sm" : "bg-white text-text-main border border-surface-variant"}`}
                     >
                       Doctor

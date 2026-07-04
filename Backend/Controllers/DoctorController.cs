@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Tabibi.DTOs;
 using Tabibi.Services;
 using Tabibi.Extensions;
+using Tabibi.Shared;
 
 namespace Tabibi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = UserRoles.Doctor)]
     public class DoctorController(DoctorService doctorService) : ControllerBase
     {
         [HttpPatch("profile-field")]
@@ -51,6 +52,95 @@ namespace Tabibi.Controllers
                 return Ok(profile);
             }
             return NotFound("Doctor does not exist!");
+        }
+
+        [HttpPut("profile")]
+        public async Task<IActionResult> BulkUpdateProfile([FromBody] DoctorProfileBulkUpdateDTO profileData)
+        {
+            var userId = User.GetId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var res = await doctorService.BulkUpdateProfile(userId, profileData);
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
+            }
+
+            return Ok(res.Data);
+        }
+           
+        [HttpGet("dashboard-summary")]
+        public async Task<IActionResult> GetDashboard()
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+ 
+            var dashboard = await doctorService.GetDashboard(userId);
+            if (dashboard is null)
+            {
+                return NotFound("Doctor does not exist!");
+            }
+            return Ok(dashboard);
+        }
+
+        [HttpPost("upload-proof")]
+        public async Task<IActionResult> UploadProof(IFormFile file, [FromForm] string fieldName)
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded");
+            }
+
+            // Valid field names for proofs
+            var validFields = new[] { "licenseProofUrl", "idProofUrl", "degreeProofUrl", "profilePictureUrl" };
+            if (!validFields.Contains(fieldName))
+            {
+                return BadRequest("Invalid field name for file upload");
+            }
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "proofs");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Return relative URL assuming static files are served from wwwroot
+            var fileUrl = $"/proofs/{uniqueFileName}";
+
+            // Update the profile field with this URL
+            var res = await doctorService.UpdateProfileField(userId, fieldName, fileUrl);
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
+            }
+
+            return Ok(new { url = fileUrl, field = fieldName });
         }
     }
 }

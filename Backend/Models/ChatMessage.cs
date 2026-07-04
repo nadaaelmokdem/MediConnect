@@ -15,8 +15,7 @@ namespace Tabibi.Models
             public int SessionId { get; set; }
 
             [Required, MaxLength(10)]
-            public string Role { get; set; } = "";     // "user" | "assistant"
-
+            public string Role { get; set; } = "";  
             [Required]
             public string Content { get; set; } = "";
 

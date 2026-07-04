@@ -1,5 +1,5 @@
 import { MdOutlineMail, MdArrowForward } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useState } from "react";
 import { AxiosError } from "axios";
@@ -28,18 +28,24 @@ export default function TabibiLogin({
   requiredRole,
 }: SignInProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const { login, logout } = useAuth();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [displayError, setDisplayError] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
 
+    if (errors.email) {
+      setErrors((prev) => ({ ...prev, email: "" }));
+    }
     if (displayError && EMAIL_REGEX.test(value)) {
       setDisplayError("");
     }
@@ -49,6 +55,9 @@ export default function TabibiLogin({
     const value = e.target.value;
     setPassword(value);
     
+    if (errors.password) {
+      setErrors((prev) => ({ ...prev, password: "" }));
+    }
     if (displayError && value) {
       setDisplayError("");
     }
@@ -57,26 +66,28 @@ export default function TabibiLogin({
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setDisplayError("");
+    
+    const newErrors: Record<string, string> = {};
 
     if (!email.trim()) {
-      setDisplayError("Email address is required.");
-      return;
-    }
-
-    if (!EMAIL_REGEX.test(email)) {
-      setDisplayError("Please enter a valid email address.");
-      return;
+      newErrors.email = "Email address is required.";
+    } else if (!EMAIL_REGEX.test(email)) {
+      newErrors.email = "Please enter a valid email address.";
     }
 
     if (!password) {
-      setDisplayError("Password is required.");
+      newErrors.password = "Password is required.";
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const user = await login(email, password);
+      const user = await login(email, password, requiredRole);
 
       if (requiredRole && user?.roles && !user.roles.includes(requiredRole)) {
         Swal.fire({
@@ -89,16 +100,20 @@ export default function TabibiLogin({
           if (result.isConfirmed) {
             try {
               await addToRole(email, requiredRole);
-              // Re-authenticate to fetch the updated user object with the new role
-              await login(email, password);
+              await login(email, password, requiredRole);
               if (additionalLink) {
-                navigate(`/${additionalLink}`);
+                navigate(`/${additionalLink}`, { state: { fromSignIn: true } });
               } else {
-                navigate("/");
+                navigate(from);
               }
             } catch (err) {
-              setDisplayError(`Failed to register as a ${requiredRole}.`);
-            }
+            const message = err instanceof Error ? err.message : "Failed to switch roles.";
+            Swal.fire({
+              icon: "error",
+              title: "Something went wrong",
+              text: message,
+            });
+          }
           } else {
             logout();
             navigate(`/${requiredRole === "Doctor" ? "login" : "doctor-login"}`);
@@ -107,7 +122,7 @@ export default function TabibiLogin({
         return;
       }
 
-      navigate("/");
+      navigate(from);
     } catch (error) {
       if (
         error instanceof AxiosError &&
@@ -173,7 +188,8 @@ export default function TabibiLogin({
           value={email}
           onChange={handleEmailChange}
           disabled={isLoading}
-          borderClass={getInputBorderClass(!!displayError)}
+          borderClass={getInputBorderClass(!!displayError || !!errors.email)}
+          error={errors.email}
         />
 
         <PasswordField
@@ -184,7 +200,8 @@ export default function TabibiLogin({
           showPassword={showPassword}
           togglePassword={() => setShowPassword(!showPassword)}
           disabled={isLoading}
-          borderClass={getInputBorderClass(!!displayError)}
+          borderClass={getInputBorderClass(!!displayError || !!errors.password)}
+          error={errors.password}
         />
 
         <button

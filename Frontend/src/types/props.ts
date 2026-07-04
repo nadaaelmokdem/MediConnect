@@ -18,6 +18,7 @@ export interface SignUpProps {
   pText: string;
   signInLink: string;
   continueDataLink: string;
+  requiredRole?: string;
 }
 
 export interface SignUpForm {
@@ -75,18 +76,6 @@ export interface AuthLayoutProps {
   cardMaxWidth?: string;
 }
 
-export interface QuotaSectionProps {
-  freeAiMessages: number;
-  freeDoctorMessages: number;
-  paidAiMessages: number;
-  paidDoctorMessages: number;
-}
-
-export interface QuotaCardProps {
-  icon: ReactNode;
-  count: number;
-  label: string;
-}
 
 export interface NavItem {
   name: string;
@@ -96,7 +85,7 @@ export interface NavItem {
 
 export interface ProtectedRouteProps {
   children: ReactNode;
-  allowedUserTypes?: string[];
+  allowedRoles?: string[];
 }
 
 export interface BrandHeaderProps {

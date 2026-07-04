@@ -1,4 +1,5 @@
 import { isAxiosError } from "axios";
+import type { DoctorDashboardData } from "../types/dashboard";
 import api from "./api";
 import type { DoctorProfileData } from "../types/profilePageProps";
 
@@ -29,8 +30,47 @@ export default class DoctorService {
     }
   }
 
+  static async uploadProof(file: File, fieldName: string): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fieldName", fieldName);
+
+    try {
+      const response = await api.post("doctor/upload-proof", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+      return response.data.url;
+    } catch (error: unknown) {
+      console.error("Failed to upload proof:", error);
+      throw new Error("Failed to upload file.");
+    }
+  }
+
+  static async bulkUpdateProfile(profileData: any): Promise<void> {
+    try {
+      await api.put("doctor/profile", profileData, { withCredentials: true });
+    } catch (error: unknown) {
+      if (isAxiosError(error) && error.response) {
+        if (error.response.status === 400) {
+          throw new Error(error.response.data || "Invalid data provided!");
+        }
+      }
+      throw error;
+    }
+  }
+
   static async getProfile(): Promise<DoctorProfileData> {
     const response = await api.get("doctor/profile");
+    return response.data;
+  }
+   static async getDashboard(): Promise<DoctorDashboardData> {
+    const response = await api.get("doctor/dashboard-summary");
+    return response.data;
+  }
+
+  static async getSpecialties(): Promise<{ specialtyId: number; name: string }[]> {
+    const response = await api.get("specialties");
     return response.data;
   }
 }

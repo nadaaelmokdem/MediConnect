@@ -1,4 +1,5 @@
-import { Navigate } from "react-router-dom";
+
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import type { ProtectedRouteProps } from "../types/props";
@@ -8,9 +9,10 @@ import type { ProtectedRouteProps } from "../types/props";
  */
 export function ProtectedRoute({
   children,
-  allowedUserTypes,
+  allowedRoles,
 }: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -21,15 +23,24 @@ export function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
   }
 
-  if (
-    allowedUserTypes &&
-    user?.userType &&
-    !allowedUserTypes.includes(user.userType)
-  ) {
-    return <Navigate to="/" replace />;
+  if (allowedRoles) {
+    if (user?.activeRole) {
+      const activeRoleMatch = allowedRoles.some((r) => r.toLowerCase() === user?.activeRole?.toLowerCase());
+      if (!activeRoleMatch) {
+        return <Navigate to="/" replace />;
+      }
+    } else {
+      const hasAllowedRole = user?.roles?.some((role) =>
+        allowedRoles.some(t => role.toLowerCase() === t.toLowerCase())
+      );
+      
+      if (!hasAllowedRole) {
+        return <Navigate to="/" replace />;
+      }
+    }
   }
 
   return <>{children}</>;

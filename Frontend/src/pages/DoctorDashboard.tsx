@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MdAttachMoney,
   MdHourglassEmpty,
@@ -13,13 +13,15 @@ import ScheduleItemComponent, {
 } from "../components/DoctorDashboard/ScheduleItem";
 import RequestItemComponent from "../components/DoctorDashboard/RequestItem";
 import CalendarModal from "../components/DoctorDashboard/CalendarModal";
-import ChatBox from "../components/DoctorDashboard/ChatBox";
+import { useNavigate } from "react-router-dom";
 import { getTodayStr, sortSchedule } from "../utils/dateUtils";
 import {
   initialSchedule,
   initialRequests,
-  initialMessages,
 } from "../data/dummyData.ts";
+import ChatService from "../services/chatService";
+import { onUserPresenceChanged, subscribeToPresence } from "../services/chatHubService";
+import { useAuth } from "../context/AuthContext";
 
 interface RequestItem {
   id: number;
@@ -30,22 +32,40 @@ interface RequestItem {
   initials: string;
 }
 
-interface ChatMessage {
-  id: number;
-  name: string;
-  text: string;
-  time: string;
-  initials: string;
-  isOnline: boolean;
-}
+
 
 export default function Dashboard() {
-  const [activeChat, setActiveChat] = useState<ChatMessage | null>(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [schedule, setSchedule] = useState<ScheduleItem[]>(initialSchedule);
   const [requests, setRequests] = useState<RequestItem[]>(initialRequests);
-  const [messages] = useState<ChatMessage[]>(initialMessages);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let currentSessions: any[] = [];
+    ChatService.getSessions(user?.activeRole).then((data) => {
+      setSessions(data);
+      currentSessions = data;
+      data.forEach(s => {
+        subscribeToPresence(s.otherPartyUserId).catch(console.error);
+      });
+    }).catch(console.error);
+
+    const handlePresence = (userId: string, isOnline: boolean) => {
+      setOnlineUsers(prev => ({ ...prev, [userId]: isOnline }));
+    };
+
+    onUserPresenceChanged(handlePresence);
+
+    return () => {
+      currentSessions.forEach(s => {
+        import("../services/chatHubService").then(m => m.unsubscribeFromPresence(s.otherPartyUserId).catch(() => {}));
+      });
+    };
+  }, []);
 
   const handleCancelAppointment = (id: number) => {
     if (window.confirm("Cancel this appointment?")) {
@@ -68,6 +88,8 @@ export default function Dashboard() {
         initials: req.initials,
       },
     ]);
+    // Navigate to the chat
+    navigate(`/chat/${req.id}`);
   };
 
   const handleReschedule = (id: number) => {
@@ -160,35 +182,39 @@ export default function Dashboard() {
               Messages
             </h3>
             <div className="flex flex-col">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  onClick={() => setActiveChat(msg)}
-                  className="flex items-start gap-3 p-3 hover:bg-[#F8F7FF] rounded-xl transition-all cursor-pointer border-b border-gray-50 last:border-0 group"
-                >
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-full bg-[#E6E1FF] text-[#6A5ACD] flex items-center justify-center font-bold text-xs">
-                      {msg.initials}
-                    </div>
-                    {msg.isOnline && (
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <div className="font-bold text-xs text-[#2A2455] truncate group-hover:text-[#6A5ACD] transition-colors">
-                        {msg.name}
+              {sessions.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No active chat sessions.</p>
+              ) : (
+                sessions.map((session) => (
+                  <div
+                    key={session.sessionId}
+                    onClick={() => navigate(`/chat/${session.sessionId}`)}
+                    className="flex items-start gap-3 p-3 hover:bg-[#F8F7FF] rounded-xl transition-all cursor-pointer border-b border-gray-50 last:border-0 group"
+                  >
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-[#E6E1FF] text-[#6A5ACD] flex items-center justify-center font-bold text-xs">
+                        {session.otherPartyName.charAt(0).toUpperCase()}
                       </div>
-                      <div className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
-                        {msg.time}
-                      </div>
+                      {onlineUsers[session.otherPartyUserId] && (
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                      )}
                     </div>
-                    <p className="text-[11px] text-gray-500 truncate">
-                      {msg.text}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-0.5">
+                        <div className="font-bold text-xs text-[#2A2455] truncate group-hover:text-[#6A5ACD] transition-colors">
+                          {session.otherPartyName}
+                        </div>
+                        <div className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+                          {session.lastMessageTime ? new Date(session.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-gray-500 truncate">
+                        {session.lastMessage || "No messages yet"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -201,7 +227,6 @@ export default function Dashboard() {
         schedule={schedule}
         onCancelAppointment={handleCancelAppointment}
       />
-      <ChatBox activeChat={activeChat} onClose={() => setActiveChat(null)} />
     </div>
   );
 }

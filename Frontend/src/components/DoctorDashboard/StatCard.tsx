@@ -7,10 +7,12 @@ export default function StatCard({
   trend,
   icon: Icon,
   isPrimary,
-}: StatCardProps) {
+  onClick,
+}: StatCardProps & { onClick?: () => void }) {
   return (
     <div
-      className={`p-6 rounded-2xl shadow-sm ${isPrimary ? "bg-[#6A5ACD] text-white" : "bg-white border border-[#E6E1FF]"}`}
+      onClick={onClick}
+      className={`p-6 rounded-2xl shadow-sm ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} ${isPrimary ? "bg-[#6A5ACD] text-white" : "bg-white border border-[#E6E1FF]"}`}
     >
       <div
         className={`flex justify-between items-start mb-2 ${isPrimary ? "opacity-90" : "text-[#2A2455]/70"}`}

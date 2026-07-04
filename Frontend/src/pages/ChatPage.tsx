@@ -106,7 +106,7 @@ export default function ChatPage() {
     <main className="flex-1 flex overflow-hidden max-w-[1280px] mx-auto w-full flex-grow relative">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <section className="flex-1 flex flex-col bg-[#fcf8ff] relative h-[calc(100dvh-70px)] min-w-0">
+      <section className="flex-1 flex flex-col bg-[#fcf8ff] relative h-100dvh min-w-0">
         <ChatHeader
           contact={activeContact}
           onOpenSidebar={() => setIsSidebarOpen(true)}

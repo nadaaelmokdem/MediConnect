@@ -1,30 +1,37 @@
 import { MdLocationOn, MdAssignment, MdAdd, MdDelete } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-// import DoctorService from '../services/doctorService';
+import DoctorService from '../services/doctorService';
 import { AxiosError } from "axios";
-import type DoctorFormData from "../types/doctorRegisterForm";
+import ErrorBanner from "../components/Auth/ErrorBanner";
 
 export default function DoctorAdditionalData() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Input selection states for URL vs File uploads
-  const [licenseProofType, setLicenseProofType] = useState<"file" | "link">(
-    "file",
-  );
+  const [licenseProofType, setLicenseProofType] = useState<"file" | "link">("file");
+  const [idProofType, setIdProofType] = useState<"file" | "link">("file");
+  const [degreeProofType, setDegreeProofType] = useState<"file" | "link">("file");
   const [profilePicType, setProfilePicType] = useState<"file" | "link">("file");
+  const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
 
   // File states
   const [licenseProofFile, setLicenseProofFile] = useState<File | null>(null);
   const [licenseProofUrl, setLicenseProofUrl] = useState<string>("");
+  
+  const [idProofFile, setIdProofFile] = useState<File | null>(null);
+  const [idProofUrl, setIdProofUrl] = useState<string>("");
+
+  const [degreeProofFile, setDegreeProofFile] = useState<File | null>(null);
+  const [degreeProofUrl, setDegreeProofUrl] = useState<string>("");
+
   const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string>("");
 
-  // Main Form Fields
-  const [formData, setFormData] = useState<DoctorFormData>({
+  const [formData, setFormData] = useState<any>({
     id: user?.id || "",
     licenseNumber: "",
     nationalIdNumber: "",
@@ -33,10 +40,65 @@ export default function DoctorAdditionalData() {
     licenseExpiryDate: "",
     yearsOfExperience: "",
     bio: "",
-    specialties: [""], // Starts with one empty specialty input
+    specialties: [""], 
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [globalError, setGlobalError] = useState("");
+
+  useEffect(() => {
+    if (!location.state?.fromSignIn) return;
+    
+    const fetchProfile = async () => {
+      try {
+        const [profile, specialtiesList] = await Promise.all([
+          DoctorService.getProfile(),
+          DoctorService.getSpecialties()
+        ]);
+        setAvailableSpecialties(specialtiesList.map(s => s.name));
+        setFormData({
+          id: user?.id || "",
+          licenseNumber: profile.licenseNumber || "",
+          nationalIdNumber: profile.nationalIdNumber || "",
+          clinicLocation: profile.clinicLocation || "",
+          clinicPhoneNumber: profile.clinicPhoneNumber || "",
+          licenseExpiryDate: profile.licenseExpiryDate ? profile.licenseExpiryDate.split('T')[0] : "",
+          yearsOfExperience: profile.yearsOfExperience?.toString() || "",
+          bio: profile.bio || "",
+           
+          specialties: profile.specialties && profile.specialties.length > 0 
+            ? profile.specialties.map((ds: any) => ds.specialtyName)
+            : [""],
+        });
+
+        if (profile.licenseProofUrl) {
+          setLicenseProofType("link");
+          setLicenseProofUrl(profile.licenseProofUrl);
+        }
+        if (profile.idProofUrl) {
+          setIdProofType("link");
+          setIdProofUrl(profile.idProofUrl);
+        }
+        if (profile.degreeProofUrl) {
+          setDegreeProofType("link");
+          setDegreeProofUrl(profile.degreeProofUrl);
+        }
+        // @ts-expect-error Ignoring missing imageUrl on profile type
+        const picUrl = profile.profilePictureUrl || profile.imageUrl;
+        if (picUrl) {
+          setProfilePicType("link");
+          setProfilePicUrl(picUrl);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      }
+    };
+    fetchProfile();
+  }, [location.state?.fromSignIn, user?.id]);
+
+  if (!location.state?.fromSignIn) {
+    return <Navigate to="/doctor-profile" replace />;
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -64,7 +126,7 @@ export default function DoctorAdditionalData() {
     }
 
     // Specialties Validation
-    formData.specialties.forEach((spec, index) => {
+    formData.specialties.forEach((spec: string, index: any) => {
       if (!spec.trim()) {
         newErrors[`specialty_${index}`] = "Specialty name is required.";
       }
@@ -107,44 +169,52 @@ export default function DoctorAdditionalData() {
   const removeSpecialtyField = (index: number) => {
     if (formData.specialties.length === 1) return;
     const updatedSpecialties = formData.specialties.filter(
-      (_, i) => i !== index,
+      (_: any, i: number) => i !== index,
     );
     setFormData({ ...formData, specialties: updatedSpecialties });
   };
 
   const handleSaveAndContinue = async () => {
+    setGlobalError("");
     if (!validateForm()) return;
 
     try {
       setIsLoading(true);
-
-      const submissionData = new FormData();
-      submissionData.append("id", formData.id);
-      submissionData.append("licenseNumber", formData.licenseNumber);
-      submissionData.append("nationalIdNumber", formData.nationalIdNumber);
-      submissionData.append("licenseExpiryDate", formData.licenseExpiryDate);
-      submissionData.append("yearsOfExperience", formData.yearsOfExperience);
-      submissionData.append("clinicLocation", formData.clinicLocation);
-      submissionData.append("clinicPhoneNumber", formData.clinicPhoneNumber);
-      submissionData.append("bio", formData.bio);
-      submissionData.append(
-        "specialties",
-        JSON.stringify(formData.specialties),
-      );
+      
+      let finalLicenseProofUrl = licenseProofUrl;
+      let finalIdProofUrl = idProofUrl;
+      let finalDegreeProofUrl = degreeProofUrl;
+      let finalProfilePicUrl = profilePicUrl;
 
       if (licenseProofType === "file" && licenseProofFile) {
-        submissionData.append("licenseProofFile", licenseProofFile);
-      } else {
-        submissionData.append("licenseProofUrl", licenseProofUrl);
+        finalLicenseProofUrl = await DoctorService.uploadProof(licenseProofFile, "licenseProofUrl");
       }
-
+      if (idProofType === "file" && idProofFile) {
+        finalIdProofUrl = await DoctorService.uploadProof(idProofFile, "idProofUrl");
+      }
+      if (degreeProofType === "file" && degreeProofFile) {
+        finalDegreeProofUrl = await DoctorService.uploadProof(degreeProofFile, "degreeProofUrl");
+      }
       if (profilePicType === "file" && profilePicFile) {
-        submissionData.append("profilePictureFile", profilePicFile);
-      } else if (profilePicType === "link" && profilePicUrl) {
-        submissionData.append("profilePictureUrl", profilePicUrl);
+        finalProfilePicUrl = await DoctorService.uploadProof(profilePicFile, "profilePictureUrl");
       }
 
-      // await DoctorService.updateDoctorData(submissionData);
+      const bulkData = {
+        licenseNumber: formData.licenseNumber,
+        nationalIdNumber: formData.nationalIdNumber,
+        licenseExpiryDate: formData.licenseExpiryDate,
+        yearsOfExperience: parseInt(formData.yearsOfExperience),
+        clinicLocation: formData.clinicLocation,
+        clinicPhoneNumber: formData.clinicPhoneNumber,
+        bio: formData.bio,
+        specialties: formData.specialties,
+        licenseProofUrl: finalLicenseProofUrl,
+        idProofUrl: finalIdProofUrl,
+        degreeProofUrl: finalDegreeProofUrl,
+        profilePictureUrl: finalProfilePicUrl
+      };
+
+      await DoctorService.bulkUpdateProfile(bulkData);
       setIsLoading(false);
       navigate("/");
     } catch (error) {
@@ -155,10 +225,29 @@ export default function DoctorAdditionalData() {
       ) {
         const errorData = error.response.data;
         if (Array.isArray(errorData) && errorData.length > 0) {
-          console.log(errorData[0].description);
+          let hasMappedError = false;
+          const backendErrors: Record<string, string> = {};
+          
+          errorData.forEach((errItem: any) => {
+             const desc = errItem.description || "";
+             const descLower = desc.toLowerCase();
+             if (descLower.includes("national id")) { backendErrors.nationalIdNumber = desc; hasMappedError = true; }
+             else if (descLower.includes("license number")) { backendErrors.licenseNumber = desc; hasMappedError = true; }
+             else if (descLower.includes("expiry")) { backendErrors.licenseExpiryDate = desc; hasMappedError = true; }
+             else if (descLower.includes("experience")) { backendErrors.yearsOfExperience = desc; hasMappedError = true; }
+             else if (descLower.includes("license proof")) { backendErrors.licenseProof = desc; hasMappedError = true; }
+          });
+          
+          if (hasMappedError) {
+             setErrors(prev => ({ ...prev, ...backendErrors }));
+          } else {
+             setGlobalError(errorData[0].description);
+          }
+        } else if (typeof errorData === "string") {
+          setGlobalError(errorData);
         }
       } else if (error instanceof AxiosError) {
-        console.log(error.message);
+        setGlobalError(error.message);
       }
       setIsLoading(false);
     }
@@ -214,6 +303,7 @@ export default function DoctorAdditionalData() {
                 noValidate
                 onSubmit={(e) => e.preventDefault()}
               >
+                {globalError && <ErrorBanner message={globalError} />}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* National ID */}
                   <div>
@@ -426,6 +516,96 @@ export default function DoctorAdditionalData() {
                     )}
                   </div>
 
+                  {/* ID Proof Document */}
+                  <div className="md:col-span-2 p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff]">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
+                      <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
+                        ID Verification Proof (Optional)
+                      </label>
+                      <div className="flex gap-1 bg-white border p-0.5 rounded-md text-[12px]">
+                        <button
+                          type="button"
+                          onClick={() => setIdProofType("file")}
+                          className={`px-2 py-1 rounded ${idProofType === "file" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500"}`}
+                        >
+                          File Upload
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIdProofType("link")}
+                          className={`px-2 py-1 rounded ${idProofType === "link" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500"}`}
+                        >
+                          Web Link
+                        </button>
+                      </div>
+                    </div>
+                    {idProofType === "file" ? (
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        onChange={(e) =>
+                          setIdProofFile(e.target.files?.[0] || null)
+                        }
+                        className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff]"
+                        disabled={isLoading}
+                      />
+                    ) : (
+                      <input
+                        type="url"
+                        value={idProofUrl}
+                        onChange={(e) => setIdProofUrl(e.target.value)}
+                        placeholder="https://example.com/id-proof.pdf"
+                        className="w-full h-10 px-3 bg-white border border-[#e5deff] rounded-lg text-[13px] outline-none"
+                        disabled={isLoading}
+                      />
+                    )}
+                  </div>
+
+                  {/* Degree Proof Document */}
+                  <div className="md:col-span-2 p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff]">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
+                      <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
+                        Degree Verification Proof (Optional)
+                      </label>
+                      <div className="flex gap-1 bg-white border p-0.5 rounded-md text-[12px]">
+                        <button
+                          type="button"
+                          onClick={() => setDegreeProofType("file")}
+                          className={`px-2 py-1 rounded ${degreeProofType === "file" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500"}`}
+                        >
+                          File Upload
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDegreeProofType("link")}
+                          className={`px-2 py-1 rounded ${degreeProofType === "link" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500"}`}
+                        >
+                          Web Link
+                        </button>
+                      </div>
+                    </div>
+                    {degreeProofType === "file" ? (
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        onChange={(e) =>
+                          setDegreeProofFile(e.target.files?.[0] || null)
+                        }
+                        className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff]"
+                        disabled={isLoading}
+                      />
+                    ) : (
+                      <input
+                        type="url"
+                        value={degreeProofUrl}
+                        onChange={(e) => setDegreeProofUrl(e.target.value)}
+                        placeholder="https://example.com/degree-proof.pdf"
+                        className="w-full h-10 px-3 bg-white border border-[#e5deff] rounded-lg text-[13px] outline-none"
+                        disabled={isLoading}
+                      />
+                    )}
+                  </div>
+
                   {/* Clinic Meta Information (Optional) */}
                   <div className="md:col-span-2 p-4 bg-[#fbfaff] rounded-xl border border-[#e5deff] space-y-4">
                     <h3 className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345] flex items-center gap-2">
@@ -485,20 +665,23 @@ export default function DoctorAdditionalData() {
                         className="flex gap-3 items-center bg-white border border-[#e5deff] p-3 rounded-lg relative"
                       >
                         <div className="flex-grow">
-                          <input
-                            type="text"
+                          <select
                             value={spec}
                             onChange={(e) =>
                               handleSpecialtyChange(index, e.target.value)
                             }
-                            placeholder="e.g. Cardiology"
                             className={`w-full h-10 px-3 bg-white border rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-[#5140b3] ${
                               errors[`specialty_${index}`]
                                 ? "border-red-400 focus:border-red-500"
                                 : "border-[#e5deff]"
                             }`}
                             disabled={isLoading}
-                          />
+                          >
+                            <option value="">Select a Specialty</option>
+                            {availableSpecialties.map(a => (
+                              <option key={a} value={a}>{a}</option>
+                            ))}
+                          </select>
                           {errors[`specialty_${index}`] && (
                             <p className="text-red-500 text-[11px] mt-1 font-medium">
                               {errors[`specialty_${index}`]}

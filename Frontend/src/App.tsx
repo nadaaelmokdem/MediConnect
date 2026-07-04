@@ -1,7 +1,8 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { LangProvider } from "./context/LangContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import ConsultationChat from "./pages/ConsultationChat";
 import MainLayout from "./components/Layout/MainLayout";
 import { USER_AUTH_CONFIG, DOCTOR_AUTH_CONFIG } from "./config/authConfig";
 import HomePage from "./pages/HomePage";
@@ -12,7 +13,11 @@ import SignUp from "./pages/SignUp";
 import PatientProfilePage from "./pages/PatientProfile";
 import DoctorProfilePage from "./pages/DoctorProfile";
 import PatientAdditionalData from "./pages/PatientAdditionalData";
+import DoctorsPage from "./pages/DoctorsPage";
 import DoctorAdditionalData from "./pages/DoctorAdditionalData";
+import PatientDashboard from "./pages/PatientDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import MessagesPage from "./pages/MessagesPage";
 
 function App() {
   return (
@@ -43,6 +48,16 @@ function App() {
             {/* Main Layout Routes (with Navbar) */}
             <Route element={<MainLayout />}>
               <Route path="/" element={<HomePage />} />
+              <Route path="/appointments" element={<HomePage />} />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute>
+                    <MessagesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/doctors" element={<DoctorsPage />} />
               <Route
                 path="/ai-chat"
                 element={
@@ -52,9 +67,17 @@ function App() {
                 }
               />
               <Route
-                path="/find-doctor"
+                path="/chat/:sessionId"
                 element={
                   <ProtectedRoute>
+                    <ConsultationChat />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/doctor-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["Doctor"]}>
                     <DoctorDashboard />
                   </ProtectedRoute>
                 }
@@ -75,7 +98,26 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/user-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["User"]}>
+                    <PatientDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["Admin"]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
+            
+            {/* Catch-all Route for invalid URLs */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </LangProvider>
       </AuthProvider>

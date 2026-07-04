@@ -284,7 +284,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("PatientId", "DoctorId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.ChatMessage", b =>
@@ -317,7 +317,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("ChatMessages");
+                    b.ToTable("ChatMessages", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.ChatSession", b =>
@@ -373,7 +373,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("PaymentId");
 
-                    b.ToTable("ChatSessions");
+                    b.ToTable("ChatSessions", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorAvailability", b =>
@@ -406,7 +406,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("DoctorAvailabilities");
+                    b.ToTable("DoctorAvailabilities", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorProfile", b =>
@@ -424,11 +424,15 @@ namespace Tabibi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClinicLocation")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClinicPhoneNumber")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DegreeProofUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdProofUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsAvailableNow")
@@ -437,19 +441,16 @@ namespace Tabibi.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LicenseExpiryDate")
+                    b.Property<DateTime?>("LicenseExpiryDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LicenseNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LicenseProofUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NationalIdNumber")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePictureUrl")
@@ -459,7 +460,7 @@ namespace Tabibi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("YearsOfExperience")
+                    b.Property<int?>("YearsOfExperience")
                         .HasColumnType("int");
 
                     b.HasKey("DoctorId");
@@ -467,7 +468,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("DoctorProfiles");
+                    b.ToTable("DoctorProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorReview", b =>
@@ -496,7 +497,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("AppointmentId")
                         .IsUnique();
 
-                    b.ToTable("DoctorReviews");
+                    b.ToTable("DoctorReviews", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorSpecialty", b =>
@@ -516,29 +517,23 @@ namespace Tabibi.Migrations
                     b.Property<decimal>("ClinicPrice")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsCustomCallPrice")
+                    b.Property<bool>("IsCallEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsCustomChatPrice")
+                    b.Property<bool>("IsChatEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsCustomVideoPrice")
+                    b.Property<bool>("IsClinicEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsPrimary")
+                    b.Property<bool>("IsVideoEnabled")
                         .HasColumnType("bit");
 
                     b.Property<int>("SpecialtyId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("VideoPrice")
                         .HasColumnType("decimal(10,2)");
@@ -549,7 +544,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("SpecialtyId");
 
-                    b.ToTable("DoctorSpecialties");
+                    b.ToTable("DoctorSpecialties", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.PatientProfile", b =>
@@ -589,7 +584,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("PatientProfiles");
+                    b.ToTable("PatientProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.Payment", b =>
@@ -629,7 +624,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("AppointmentId")
                         .IsUnique();
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.Prescription", b =>
@@ -666,7 +661,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("AppointmentId")
                         .IsUnique();
 
-                    b.ToTable("Prescriptions");
+                    b.ToTable("Prescriptions", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.PrescriptionItem", b =>
@@ -704,7 +699,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.ToTable("PrescriptionItems");
+                    b.ToTable("PrescriptionItems", (string)null);
                 });
 
             modelBuilder.Entity("Tabibi.Models.Specialty", b =>
@@ -715,18 +710,6 @@ namespace Tabibi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SpecialtyId"));
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("IconUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Keywords")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -734,7 +717,229 @@ namespace Tabibi.Migrations
 
                     b.HasKey("SpecialtyId");
 
-                    b.ToTable("Specialties");
+                    b.ToTable("Specialties", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            SpecialtyId = 1,
+                            Name = "Dermatology (Skin)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 2,
+                            Name = "Dentistry (Teeth)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 3,
+                            Name = "Psychiatry (Mental Health)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 4,
+                            Name = "Pediatrics and New Born (Child)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 5,
+                            Name = "Neurology (Brain & Nerves)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 6,
+                            Name = "Orthopedics (Bones)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 7,
+                            Name = "Gynaecology and Infertility (Women's Health)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 8,
+                            Name = "Ear, Nose and Throat (ENT)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 9,
+                            Name = "Cardiology and Vascular Disease (Heart)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 10,
+                            Name = "Allergy and Immunology (Immune System)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 11,
+                            Name = "Andrology and Male Infertility (Men's Health)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 12,
+                            Name = "Audiology (Hearing)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 13,
+                            Name = "Cardiology and Thoracic Surgery (Heart & Chest)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 14,
+                            Name = "Chest and Respiratory (Lungs)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 15,
+                            Name = "Diabetes and Endocrinology (Glands & Hormones)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 16,
+                            Name = "Diagnostic Radiology (X-Ray/Imaging)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 17,
+                            Name = "Dietitian and Nutrition (Diet)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 18,
+                            Name = "Family Medicine (General Practice)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 19,
+                            Name = "Gastroenterology and Endoscopy (Digestive System)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 20,
+                            Name = "General Practice (General)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 21,
+                            Name = "General Surgery (Surgery)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 22,
+                            Name = "Geriatrics (Elderly Care)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 23,
+                            Name = "Hematology (Blood)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 24,
+                            Name = "Hepatology (Liver)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 25,
+                            Name = "Internal Medicine (Internal Organs)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 26,
+                            Name = "Interventional Radiology (Imaging/Procedures)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 27,
+                            Name = "IVF and Infertility (Fertility)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 28,
+                            Name = "Laboratories (Lab Tests)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 29,
+                            Name = "Nephrology (Kidneys)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 30,
+                            Name = "Neurosurgery (Brain & Spine Surgery)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 31,
+                            Name = "Obesity and Laparoscopic Surgery (Weight Loss)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 32,
+                            Name = "Oncology (Cancer)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 33,
+                            Name = "Oncology Surgery (Cancer Surgery)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 34,
+                            Name = "Ophthalmology (Eyes)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 35,
+                            Name = "Osteopathy (Bone & Muscle System)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 36,
+                            Name = "Pain Management (Pain Relief)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 37,
+                            Name = "Pediatric Surgery (Child Surgery)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 38,
+                            Name = "Phoniatrics (Speech & Voice)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 39,
+                            Name = "Physiotherapy and Sport Injuries (Physical Therapy)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 40,
+                            Name = "Plastic Surgery (Cosmetic Surgery)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 41,
+                            Name = "Rheumatology (Joints & Muscles)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 42,
+                            Name = "Spinal Surgery (Spine)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 43,
+                            Name = "Urology (Urinary Tract)"
+                        },
+                        new
+                        {
+                            SpecialtyId = 44,
+                            Name = "Vascular Surgery (Blood Vessels)"
+                        });
                 });
 
             modelBuilder.Entity("Tabibi.Models.SymptomAnalysis", b =>
@@ -779,7 +984,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("SessionId")
                         .IsUnique();
 
-                    b.ToTable("SymptomAnalyses");
+                    b.ToTable("SymptomAnalyses", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

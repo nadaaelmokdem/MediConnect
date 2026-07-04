@@ -7,11 +7,12 @@ import {
   FiBriefcase,
   FiHash,
   FiAlignLeft,
-  FiStar,
 } from "react-icons/fi";
-import { MdLocationOn, MdAssignment } from "react-icons/md";
+import { MdLocationOn, MdAssignment, MdVerified } from "react-icons/md";
 import type { DoctorProfileData } from "../types/profilePageProps";
 import { EditableDetailItem } from "../components/Profile/EditableDetail";
+import { SpecialtyPricingManager } from "../components/Profile/SpecialtyPricingManager";
+import type { SpecialtyWithPrices } from "../components/Profile/SpecialtyPricingManager";
 // Note: You might want to update this to DoctorService if you have separate services
 import DoctorService from "../services/doctorService";
 
@@ -20,6 +21,7 @@ const ProfilePage: React.FC = () => {
     keyof DoctorProfileData | null
   >(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
 
   // Updated to reflect the doctor form fields
   const [profile, setProfile] = useState<DoctorProfileData>({
@@ -33,15 +35,23 @@ const ProfilePage: React.FC = () => {
     clinicLocation: "",
     clinicPhoneNumber: "",
     bio: "",
-    specialties: "", // Stored as a comma-separated string for easy editing in EditableDetailItem
+    licenseProofUrl: "",
+    idProofUrl: "",
+    degreeProofUrl: "",
+    specialties: [],
+    isVerified: false,
   });
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setIsLoading(true);
-        const DoctorProfileData = await DoctorService.getProfile();
+        const [DoctorProfileData, specialtiesList] = await Promise.all([
+          DoctorService.getProfile(),
+          DoctorService.getSpecialties(),
+        ]);
 
+        setAvailableSpecialties(specialtiesList.map((s) => s.name));
         setProfile((prev) => ({
           ...prev,
           fullName: DoctorProfileData.fullName,
@@ -49,14 +59,15 @@ const ProfilePage: React.FC = () => {
           nationalIdNumber: DoctorProfileData.nationalIdNumber,
           licenseNumber: DoctorProfileData.licenseNumber,
           licenseExpiryDate: DoctorProfileData.licenseExpiryDate,
-          yearsOfExperience: DoctorProfileData.yearsOfExperience,
+          yearsOfExperience: DoctorProfileData.yearsOfExperience !== null && DoctorProfileData.yearsOfExperience !== undefined ? DoctorProfileData.yearsOfExperience.toString() : "",
           clinicLocation: DoctorProfileData.clinicLocation,
           clinicPhoneNumber: DoctorProfileData.clinicPhoneNumber,
           bio: DoctorProfileData.bio,
-          // Convert array to comma-separated string if the API returns an array
-          specialties: Array.isArray(DoctorProfileData.specialties)
-            ? DoctorProfileData.specialties.join(", ")
-            : DoctorProfileData.specialties,
+          licenseProofUrl: DoctorProfileData.licenseProofUrl,
+          idProofUrl: DoctorProfileData.idProofUrl,
+          degreeProofUrl: DoctorProfileData.degreeProofUrl,
+          specialties: Array.isArray(DoctorProfileData.specialties) ? DoctorProfileData.specialties : [],
+          isVerified: DoctorProfileData.isVerified,
         }));
       } catch (error) {
         console.log("Error: " + error);
@@ -69,16 +80,21 @@ const ProfilePage: React.FC = () => {
 
   const handleSave = async (
     field: keyof DoctorProfileData,
-    value: string | undefined,
+    value: any,
   ) => {
     try {
       if (value !== undefined) {
-        await DoctorService.updateProfileField(field as string, value);
+        if (field === "specialties") {
+          await DoctorService.updateProfileField(field as string, JSON.stringify(value));
+        } else {
+          await DoctorService.updateProfileField(field as string, value);
+        }
         setProfile((prev) => ({ ...prev, [field]: value }));
       }
     } catch (error) {
       console.error("Failed to update profile field:", error);
       // Optional: Add a toast notification here
+      throw error;
     } finally {
       setEditingField(null);
     }
@@ -147,8 +163,9 @@ const ProfilePage: React.FC = () => {
           {/* Name & Handle */}
           <div className="flex-1 text-center sm:text-left flex flex-col justify-center w-full">
             <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#2A2455] truncate max-w-full">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#2A2455] truncate max-w-full flex items-center gap-2">
                 {profile.fullName}
+                {profile.isVerified && <MdVerified className="text-blue-500 text-2xl flex-shrink-0" title="Verified Doctor" />}
               </h1>
             </div>
             <div className="mt-0.5">
@@ -161,107 +178,171 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Details Grid Section */}
-        <div className="p-4 sm:p-8 bg-[#FBFAFF]/50 sm:rounded-b-2xl">
-          <h2 className="text-xl font-bold mb-4 text-[#6A5ACD] px-2 sm:px-0">
-            Professional Information
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <EditableDetailItem
-              icon={<FiHash />}
-              label="National ID Number"
-              value={profile.nationalIdNumber}
-              isEditing={editingField === "nationalIdNumber"}
-              onEdit={() => setEditingField("nationalIdNumber")}
-              onSave={(val) => handleSave("nationalIdNumber", val)}
-              onCancel={() => setEditingField(null)}
-              type="text"
-              fieldName="nationalIdNumber"
-            />
+        {/* Details Section */}
+        <div className="p-4 sm:p-8 bg-[#FBFAFF]/50 sm:rounded-b-2xl space-y-8">
+          
+          {/* Section 1: Bio, Experience, Specialties & Pricing */}
+          <div className="bg-white p-6 rounded-2xl border border-[#E6E1FF] shadow-sm space-y-6">
+            <h2 className="text-xl font-bold text-[#6A5ACD] flex items-center gap-2">
+              <FiUser className="text-lg" /> Professional Overview
+            </h2>
+            
+            {/* Bio takes full width */}
+            <div className="w-full">
+              <EditableDetailItem
+                icon={<FiAlignLeft />}
+                label="Professional Bio"
+                value={profile.bio}
+                isEditing={editingField === "bio"}
+                onEdit={() => setEditingField("bio")}
+                onSave={(val) => handleSave("bio", val)}
+                onCancel={() => setEditingField(null)}
+                type="textarea"
+                fieldName="bio"
+              />
+            </div>
 
-            <EditableDetailItem
-              icon={<MdAssignment />}
-              label="Medical License Number"
-              value={profile.licenseNumber}
-              isEditing={editingField === "licenseNumber"}
-              onEdit={() => setEditingField("licenseNumber")}
-              onSave={(val) => handleSave("licenseNumber", val)}
-              onCancel={() => setEditingField(null)}
-              type="text"
-              fieldName="licenseNumber"
-            />
+            {/* Experience */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <EditableDetailItem
+                icon={<FiBriefcase />}
+                label="Years of Experience"
+                value={profile.yearsOfExperience}
+                isEditing={editingField === "yearsOfExperience"}
+                onEdit={() => setEditingField("yearsOfExperience")}
+                onSave={(val) => handleSave("yearsOfExperience", val)}
+                onCancel={() => setEditingField(null)}
+                type="number"
+                fieldName="yearsOfExperience"
+              />
+            </div>
+            
+            <div className="border-t border-[#F4F1FF] pt-6">
+              <SpecialtyPricingManager
+                initialSpecialties={profile.specialties as SpecialtyWithPrices[]}
+                availableSpecialties={availableSpecialties}
+                onSave={(newSpecialties) => handleSave("specialties", newSpecialties)}
+                disabled={profile.isVerified}
+              />
+            </div>
+          </div>
 
-            <EditableDetailItem
-              icon={<FiCalendar />}
-              label="License Expiry Date"
-              value={profile.licenseExpiryDate}
-              isEditing={editingField === "licenseExpiryDate"}
-              onEdit={() => setEditingField("licenseExpiryDate")}
-              onSave={(val) => handleSave("licenseExpiryDate", val)}
-              onCancel={() => setEditingField(null)}
-              type="date"
-              fieldName="licenseExpiryDate"
-            />
+          {/* Section 2: Clinic & Contact Information */}
+          <div className="bg-white p-6 rounded-2xl border border-[#E6E1FF] shadow-sm">
+            <h2 className="text-xl font-bold mb-4 text-[#6A5ACD] flex items-center gap-2">
+              <MdLocationOn className="text-lg" /> Clinic & Contact Information
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <EditableDetailItem
+                icon={<MdLocationOn />}
+                label="Clinic Location"
+                value={profile.clinicLocation}
+                isEditing={editingField === "clinicLocation"}
+                onEdit={() => setEditingField("clinicLocation")}
+                onSave={(val) => handleSave("clinicLocation", val)}
+                onCancel={() => setEditingField(null)}
+                type="text"
+                fieldName="clinicLocation"
+              />
+              <EditableDetailItem
+                icon={<FiPhone />}
+                label="Clinic Phone Number"
+                value={profile.clinicPhoneNumber}
+                isEditing={editingField === "clinicPhoneNumber"}
+                onEdit={() => setEditingField("clinicPhoneNumber")}
+                onSave={(val) => handleSave("clinicPhoneNumber", val)}
+                onCancel={() => setEditingField(null)}
+                type="tel"
+                fieldName="clinicPhoneNumber"
+              />
+            </div>
+          </div>
 
-            <EditableDetailItem
-              icon={<FiBriefcase />}
-              label="Years of Experience"
-              value={profile.yearsOfExperience}
-              isEditing={editingField === "yearsOfExperience"}
-              onEdit={() => setEditingField("yearsOfExperience")}
-              onSave={(val) => handleSave("yearsOfExperience", val)}
-              onCancel={() => setEditingField(null)}
-              type="number"
-              fieldName="yearsOfExperience"
-            />
-
-            <EditableDetailItem
-              icon={<MdLocationOn />}
-              label="Clinic Location"
-              value={profile.clinicLocation}
-              isEditing={editingField === "clinicLocation"}
-              onEdit={() => setEditingField("clinicLocation")}
-              onSave={(val) => handleSave("clinicLocation", val)}
-              onCancel={() => setEditingField(null)}
-              type="text"
-              fieldName="clinicLocation"
-            />
-
-            <EditableDetailItem
-              icon={<FiPhone />}
-              label="Clinic Phone Number"
-              value={profile.clinicPhoneNumber}
-              isEditing={editingField === "clinicPhoneNumber"}
-              onEdit={() => setEditingField("clinicPhoneNumber")}
-              onSave={(val) => handleSave("clinicPhoneNumber", val)}
-              onCancel={() => setEditingField(null)}
-              type="tel"
-              fieldName="clinicPhoneNumber"
-            />
-
-            <EditableDetailItem
-              icon={<FiStar />}
-              label="Specialties"
-              value={profile.specialties}
-              isEditing={editingField === "specialties"}
-              onEdit={() => setEditingField("specialties")}
-              onSave={(val) => handleSave("specialties", val)}
-              onCancel={() => setEditingField(null)}
-              type="tags"
-              fieldName="specialties"
-            />
-
-            <EditableDetailItem
-              icon={<FiAlignLeft />}
-              label="Professional Bio"
-              value={profile.bio}
-              isEditing={editingField === "bio"}
-              onEdit={() => setEditingField("bio")}
-              onSave={(val) => handleSave("bio", val)}
-              onCancel={() => setEditingField(null)}
-              type="text"
-              fieldName="bio"
-            />
+          {/* Section 3: Paperwork & Verification Documents (At the Bottom) */}
+          <div className="bg-[#FBFAFF] p-6 rounded-2xl border-2 border-dashed border-[#B8A7FF] shadow-sm">
+            <h2 className="text-xl font-bold mb-1 text-[#6A5ACD] flex items-center gap-2">
+              <MdAssignment className="text-lg" /> Verification Documents & Paperwork
+            </h2>
+            <p className="text-sm text-[#2A2455]/70 mb-5">
+              Upload and verify your official credentials. These files are securely reviewed for authentication purposes.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <EditableDetailItem
+                icon={<FiHash />}
+                label="National ID Number"
+                value={profile.nationalIdNumber}
+                isEditing={editingField === "nationalIdNumber"}
+                onEdit={() => setEditingField("nationalIdNumber")}
+                onSave={(val) => handleSave("nationalIdNumber", val)}
+                onCancel={() => setEditingField(null)}
+                type="text"
+                fieldName="nationalIdNumber"
+                disabled={profile.isVerified}
+              />
+              <EditableDetailItem
+                icon={<FiHash />}
+                label="ID Proof Link"
+                value={profile.idProofUrl}
+                isEditing={editingField === "idProofUrl"}
+                onEdit={() => setEditingField("idProofUrl")}
+                onSave={(val) => handleSave("idProofUrl", val)}
+                onCancel={() => setEditingField(null)}
+                type="text"
+                fieldName="idProofUrl"
+                allowUpload={true}
+                disabled={profile.isVerified}
+              />
+              <EditableDetailItem
+                icon={<MdAssignment />}
+                label="Medical License Number"
+                value={profile.licenseNumber}
+                isEditing={editingField === "licenseNumber"}
+                onEdit={() => setEditingField("licenseNumber")}
+                onSave={(val) => handleSave("licenseNumber", val)}
+                onCancel={() => setEditingField(null)}
+                type="text"
+                fieldName="licenseNumber"
+                disabled={profile.isVerified}
+              />
+              <EditableDetailItem
+                icon={<MdAssignment />}
+                label="License Proof Link (Drive, Dropbox, etc)"
+                value={profile.licenseProofUrl}
+                isEditing={editingField === "licenseProofUrl"}
+                onEdit={() => setEditingField("licenseProofUrl")}
+                onSave={(val) => handleSave("licenseProofUrl", val)}
+                onCancel={() => setEditingField(null)}
+                type="text"
+                fieldName="licenseProofUrl"
+                allowUpload={true}
+                disabled={profile.isVerified}
+              />
+              <EditableDetailItem
+                icon={<FiCalendar />}
+                label="License Expiry Date"
+                value={profile.licenseExpiryDate}
+                isEditing={editingField === "licenseExpiryDate"}
+                onEdit={() => setEditingField("licenseExpiryDate")}
+                onSave={(val) => handleSave("licenseExpiryDate", val)}
+                onCancel={() => setEditingField(null)}
+                type="date"
+                fieldName="licenseExpiryDate"
+                disabled={profile.isVerified}
+              />
+              <EditableDetailItem
+                icon={<FiBriefcase />}
+                label="Medical Degree Proof Link"
+                value={profile.degreeProofUrl}
+                isEditing={editingField === "degreeProofUrl"}
+                onEdit={() => setEditingField("degreeProofUrl")}
+                onSave={(val) => handleSave("degreeProofUrl", val)}
+                onCancel={() => setEditingField(null)}
+                type="text"
+                fieldName="degreeProofUrl"
+                allowUpload={true}
+                disabled={profile.isVerified}
+              />
+            </div>
           </div>
         </div>
       </div>

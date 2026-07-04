@@ -1,4 +1,4 @@
-﻿using Google.GenAI;
+using Google.GenAI;
 using Google.GenAI.Types;
 using Type = Google.GenAI.Types.Type;
 
@@ -26,6 +26,7 @@ namespace Tabibi.Services
                            - Instead of escalating minor issues, provide highly actionable help: suggest specific home care strategies (rest, hydration, etc.) and provide general educational information on standard OTC active ingredients (e.g., mentioning ibuprofen or acetaminophen for pain, saline spray for congestion, or antacids for heartburn).
                            - Only classify as 'doctor_escalation' for true emergencies, necessary physical exams, symptoms persisting beyond typical recovery periods, or severe/red-flag symptoms (e.g., chest pain, shortness of breath, severe bleeding).
                            - The input text is a continuation to the case you already have.                            
+                           - IF escalating to a doctor, you MUST select the `recommended_departments` EXCLUSIVELY from the following list (do not invent any other departments): Dermatology, Dentistry, Psychiatry, Pediatrics and New Born, Neurology, Orthopedics, Gynaecology and Infertility, Ear Nose and Throat, Cardiology and Vascular Disease, Allergy and Immunology, Andrology and Male Infertility, Audiology, Cardiology and Thoracic Surgery, Chest and Respiratory, Diabetes and Endocrinology, Diagnostic Radiology, Dietitian and Nutrition, Family Medicine, Gastroenterology and Endoscopy, General Practice, General Surgery, Geriatrics, Hematology, Hepatology, Internal Medicine, Interventional Radiology, IVF and Infertility, Laboratories, Nephrology, Neurosurgery, Obesity and Laparoscopic Surgery, Oncology, Oncology Surgery, Ophthalmology, Osteopathy, Pain Management, Pediatric Surgery, Phoniatrics, Physiotherapy and Sport Injuries, Plastic Surgery, Rheumatology, Spinal Surgery, Urology, Vascular Surgery.
 
                         # JSON SCHEMA
                         {
@@ -78,7 +79,7 @@ namespace Tabibi.Services
                 };
 
             var response = await client.Models.GenerateContentAsync(
-                 model: "gemini-3.1-flash-lite-preview",
+                 model: "gemini-3.1-flash-lite",
                  contents: $"Previous Context: {prevContext}\nUser: {msg}",
                  config: generateContentConfig
                  );

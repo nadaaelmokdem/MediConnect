@@ -22,7 +22,11 @@ export interface DoctorProfileData {
   clinicLocation: string;
   clinicPhoneNumber: string;
   bio: string;
-  specialties: string;
+  licenseProofUrl?: string;
+  idProofUrl?: string;
+  degreeProofUrl?: string;
+  specialties: any[];
+  isVerified?: boolean;
 }
 
 export interface EditableHeaderFieldProps {
@@ -33,6 +37,7 @@ export interface EditableHeaderFieldProps {
   onCancel: () => void;
   textClass: string | undefined;
   prefix?: React.ReactNode;
+  disabled?: boolean;
 }
 
 export interface EditableDetailItemProps {
@@ -45,5 +50,8 @@ export interface EditableDetailItemProps {
   onCancel: () => void;
   type?: string | undefined;
   options?: string[];
+  tagOptions?: string[];
   fieldName?: string;
+  allowUpload?: boolean;
+  disabled?: boolean;
 }

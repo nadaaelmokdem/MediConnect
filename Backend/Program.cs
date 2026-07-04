@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,7 @@ using Tabibi.Data;
 using Tabibi.Models;
 using Tabibi.Services;
 using Tabibi.Shared;
+using Tabibi.Hubs;
 
 namespace Tabibi
 {
@@ -36,43 +36,74 @@ namespace Tabibi
             builder.Services.AddScoped<AuthUtils>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<AdminService>();
+            builder.Services.AddScoped<PublicService>();
             builder.Services.AddSingleton<ITokenStore, InMemoryTokenStore>();
+            builder.Services.AddHostedService<TokenCleanupService>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<ChatService>();
+builder.Services.AddSingleton<PresenceTracker>();
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(name: "React Frontend",
                                   policy =>
                                   {
-                                      policy
-                                             .WithOrigins("http://localhost:5173")
-                                            .WithOrigins("http://127.0.0.1:5500")
+                                      policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5500")
                                             .AllowAnyHeader()
                                             .AllowAnyMethod()
                                             .AllowCredentials();
                                   });
             });
 
+            var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+            if (string.IsNullOrEmpty(jwtSecret))
+            {
+                throw new InvalidOperationException("JWT Secret is not configured.");
+            }
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddJwtBearer(options =>
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JwtSettings:ValidIssuer"],
+                    ValidAudience = builder.Configuration["JwtSettings:ValidAudience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["JwtSettings:ValidIssuer"],
-                        ValidAudience = builder.Configuration["JwtSettings:ValidAudience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
-                    };
-                });
+                        var path = context.HttpContext.Request.Path;
+
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        else if (context.Request.Cookies.ContainsKey("X-Access-Token"))
+                        {
+                            context.Token = context.Request.Cookies["X-Access-Token"];
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
             var app = builder.Build();
 
@@ -86,12 +117,15 @@ namespace Tabibi
 
             app.UseCors("React Frontend");
 
+            app.UseStaticFiles();
+
             //app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/hubs/chat");
 
             // Seed roles
             using (var scope = app.Services.CreateScope())
@@ -107,14 +141,14 @@ namespace Tabibi
                 {
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Doctor));
                 }
-                
+
                 if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                 {
-                  await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
                 }
             }
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }
