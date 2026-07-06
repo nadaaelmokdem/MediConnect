@@ -33,22 +33,24 @@ namespace Tabibi.DTOs
     public class DoctorListDTO
     {
         public int DoctorId { get; set; }
+        public string UserId { get; set; } = "";
         public string FullName { get; set; } = "";
         public string? ProfilePictureUrl { get; set; }
         public decimal AverageRating { get; set; }
         public int? YearsOfExperience { get; set; }
         public string? ClinicLocation { get; set; }
         public string? Bio { get; set; }
-        public List<DoctorListSpecialtyDTO> Specialties { get; set; } = new List<DoctorListSpecialtyDTO>();
+        public decimal ClinicPrice { get; set; }
+        public bool IsClinicEnabled { get; set; }
+        public decimal ChatPrice { get; set; }
+        public bool IsChatEnabled { get; set; }
+        public decimal VideoPrice { get; set; }
+        public bool IsVideoEnabled { get; set; }
+        public decimal CallPrice { get; set; }
+        public bool IsCallEnabled { get; set; }
+
+        public List<SpecialtyDTO> Specialties { get; set; } = new List<SpecialtyDTO>();
     }
 
-    public class DoctorListSpecialtyDTO
-    {
-        public int SpecialtyId { get; set; }
-        public string Name { get; set; } = "";
-        public decimal ClinicPrice { get; set; }
-        public decimal ChatPrice { get; set; }
-        public decimal VideoPrice { get; set; }
-        public decimal CallPrice { get; set; }
-    }
+
 }

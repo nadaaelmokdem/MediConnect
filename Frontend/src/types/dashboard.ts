@@ -16,12 +16,12 @@ export interface RecentPrescription {
 export interface PatientDashboardData {
   fullName: string;
   upcomingAppointmentsCount: number;
-  pendingChatSessionsCount: number;
+  chatSessionsCount: number;
   upcomingAppointments: UpcomingAppointment[];
   recentPrescriptions: RecentPrescription[];
 }
 
-export interface PendingChatRequest {
+export interface ChatSession {
   sessionId: number;
   patientName: string;
   sessionSummary?: string;
@@ -31,10 +31,10 @@ export interface PendingChatRequest {
 export interface DoctorDashboardData {
   fullName: string;
   isVerified: boolean;
-  pendingChatRequestsCount: number;
+  chatSessionsCount: number;
   todaysAppointmentsCount: number;
   totalPatientsSeen: number;
-  pendingChatRequests: PendingChatRequest[];
+  chatSessions: ChatSession[];
   todaysAppointments: UpcomingAppointment[];
 }
 

@@ -6,4 +6,5 @@ export default interface Contact {
   time: string;
   unread: number;
   online: boolean;
+  specialty?: string;
 }

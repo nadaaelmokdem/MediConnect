@@ -12,9 +12,14 @@ const api = axios.create({
 });
 
 let onUnauthorized: (() => void) | null = null;
+let onForbidden: (() => void) | null = null;
 
 export const setUnauthorizedHandler = (handler: () => void) => {
   onUnauthorized = handler;
+};
+
+export const setForbiddenHandler = (handler: () => void) => {
+  onForbidden = handler;
 };
 
 // Response interceptor to handle 401 and refresh token
@@ -28,9 +33,9 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // If the error is 401
-    if (error.response?.status === 401) {
-      if (!originalRequest._retry) {
+    // If the error is 401 or 403
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
 
         try {
@@ -49,8 +54,14 @@ api.interceptors.response.use(
           }
           return Promise.reject(refreshError);
         }
+      } else if (error.response?.status === 403) {
+        if (onForbidden) {
+          onForbidden();
+        } else {
+          window.location.href = "/";
+        }
       } else {
-        // If it was already retried and still returned 401, redirect to login
+        // If it was already retried for 401, redirect to login
         localStorage.removeItem("user");
         if (onUnauthorized) {
           onUnauthorized();

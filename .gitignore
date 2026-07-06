@@ -6,3 +6,5 @@ Backend/bin/
 
 # Ignore node_modules specifically inside the frontend directory
 Frontend/node_modules/
+
+Booking-Branch/

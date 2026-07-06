@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,8 +20,6 @@ namespace Tabibi.Models
             public string Content { get; set; } = "";
 
             public DateTime SentAt { get; set; } = DateTime.UtcNow;
-
-            public int TokensUsed { get; set; } = 0;   // for billing tracking
 
             // Navigation
             [ForeignKey(nameof(SessionId))]

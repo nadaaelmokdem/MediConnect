@@ -32,6 +32,7 @@ namespace Tabibi
 
             builder.Services.AddScoped<AIDoctor>();
             builder.Services.AddScoped<PatientService>();
+            builder.Services.AddScoped<PatientAIService>();
             builder.Services.AddScoped<DoctorService>();
             builder.Services.AddScoped<AuthUtils>();
             builder.Services.AddScoped<AuthService>();

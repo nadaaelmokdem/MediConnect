@@ -1,0 +1,323 @@
+import React, { useState, useEffect } from "react";
+import { FiPlus, FiTrash2, FiSave, FiX } from "react-icons/fi";
+import type { DoctorProfileData } from "../../types/profilePageProps";
+
+interface Props {
+  profile: DoctorProfileData;
+  availableSpecialties: string[];
+  onSave: (updatedProfile: DoctorProfileData) => Promise<void>;
+  disabled?: boolean;
+}
+
+export const ServicesAndPricingManager: React.FC<Props> = ({
+  profile,
+  availableSpecialties,
+  onSave,
+  disabled,
+}) => {
+  const [formData, setFormData] = useState<DoctorProfileData>(profile);
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setFormData(profile);
+    }
+  }, [profile, isEditing]);
+
+  const handleAddSpecialty = () => {
+    if (availableSpecialties.length === 0) return;
+    if (formData.specialties.length >= 3) {
+      setError("You can only have up to 3 specialties.");
+      return;
+    }
+    const currentNames = formData.specialties.map(s => typeof s === 'string' ? s : s.name);
+    const available = availableSpecialties.find(s => !currentNames.includes(s)) || availableSpecialties[0];
+    
+    setFormData({
+      ...formData,
+      specialties: [...formData.specialties, available]
+    });
+  };
+
+  const handleRemoveSpecialty = (index: number) => {
+    const updated = [...formData.specialties];
+    updated.splice(index, 1);
+    setFormData({ ...formData, specialties: updated });
+  };
+
+  const handleSpecialtyChange = (index: number, value: string) => {
+    const updated = [...formData.specialties];
+    updated[index] = value;
+    setFormData({ ...formData, specialties: updated });
+  };
+
+  const handlePriceChange = (field: keyof DoctorProfileData, value: string | boolean) => {
+    if (typeof value === "boolean") {
+      setFormData({ ...formData, [field]: value });
+    } else {
+      const numValue = Number(value);
+      setFormData({ ...formData, [field]: numValue < 0 ? 0 : numValue });
+    }
+  };
+
+  const handleSave = async () => {
+    if (formData.specialties.length === 0) {
+      setError("Please add at least one specialty.");
+      return;
+    }
+    
+    const uniqueSpecialties = new Set(formData.specialties.map(s => typeof s === 'string' ? s : s.name));
+    if (uniqueSpecialties.size !== formData.specialties.length) {
+      setError("Duplicate specialties are not allowed.");
+      return;
+    }
+    
+    
+    if ((formData.isClinicEnabled && formData.clinicPrice <= 0) ||
+        (formData.isChatEnabled && formData.chatPrice <= 0) ||
+        (formData.isVideoEnabled && formData.videoPrice <= 0) ||
+        (formData.isCallEnabled && formData.callPrice <= 0)) {
+      setError("Prices must be greater than 0.");
+      return;
+    }
+
+    if ((formData.chatPrice > formData.clinicPrice && formData.isChatEnabled) ||
+        
+        (formData.videoPrice > formData.clinicPrice && formData.isVideoEnabled) ||
+        
+        (formData.callPrice > formData.clinicPrice && formData.isCallEnabled)) {
+      
+      setError(`Remote consultation prices cannot exceed clinic price (${formData.clinicPrice} EGP).`);
+      return;
+    }
+    
+    setError(null);
+    setIsSaving(true);
+    try {
+      await onSave(formData);
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.message || "Failed to save profile.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!isEditing) {
+    const specialtiesList = formData.specialties.map(s => typeof s === 'string' ? s : s.name);
+
+    return (
+      <div className="bg-white p-4 rounded-lg border border-[#E6E1FF] shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-[#6A5ACD] font-bold">Specialties & Pricing</h3>
+          {!disabled && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-sm bg-[#E6E1FF] text-[#2A2455] px-3 py-1 rounded hover:bg-[#B8A7FF] transition-colors cursor-pointer"
+            >
+              {formData.specialties.length === 0 ? "Add Specialties" : "Edit Details"}
+            </button>
+          )}
+        </div>
+        {formData.specialties.length === 0 ? (
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-3 my-2">
+            <p className="text-sm text-blue-700">
+              <strong>Tip:</strong> Please add your specialties and prices.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="border-l-4 border-[#6A5ACD] pl-3">
+              <p className="font-bold text-[#2A2455] mb-2">{specialtiesList.join(', ')}</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isClinicEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Clinic</span>
+
+                  <span className="text-sm font-semibold">{formData.isClinicEnabled ? `${formData.clinicPrice} EGP` : 'Disabled'}</span>
+                </div>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isChatEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Chat</span>
+
+                  <span className="text-sm font-semibold">{formData.isChatEnabled ? `${formData.chatPrice} EGP` : 'Disabled'}</span>
+                </div>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isVideoEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Video</span>
+
+                  <span className="text-sm font-semibold">{formData.isVideoEnabled ? `${formData.videoPrice} EGP` : 'Disabled'}</span>
+                </div>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isCallEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Call</span>
+
+                  <span className="text-sm font-semibold">{formData.isCallEnabled ? `${formData.callPrice} EGP` : 'Disabled'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#FBFAFF] p-4 rounded-lg border-2 border-[#B8A7FF] shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-[#6A5ACD] font-bold">
+          {profile.specialties.length === 0 ? "Add Specialties & Pricing" : "Edit Specialties & Pricing"}
+        </h3>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setIsEditing(false);
+              setError(null);
+              setFormData(profile);
+            }}
+            className="p-1.5 bg-[#E6E1FF] text-[#2A2455] rounded hover:bg-[#B8A7FF] cursor-pointer"
+            title="Cancel"
+          >
+            <FiX size={18} />
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="p-1.5 bg-[#6A5ACD] text-white rounded hover:bg-[#2A2455] disabled:opacity-50 cursor-pointer"
+            title="Save"
+          >
+            <FiSave size={18} />
+          </button>
+        </div>
+      </div>
+
+      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+
+      <div className="mb-4">
+        <label className="block text-xs font-bold text-[#B8A7FF] mb-2">Specialties (Max 3)</label>
+        {formData.specialties.map((spec, i) => (
+          <div key={i} className="flex gap-2 mb-2 items-center">
+            <select
+              value={typeof spec === 'string' ? spec : spec.name}
+              onChange={(e) => handleSpecialtyChange(i, e.target.value)}
+              className="flex-1 bg-white border border-[#6A5ACD] rounded px-2 py-2 text-sm font-semibold text-[#2A2455] focus:outline-none cursor-pointer"
+            >
+              {availableSpecialties.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => handleRemoveSpecialty(i)}
+              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+              title="Remove"
+            >
+              <FiTrash2 />
+            </button>
+          </div>
+        ))}
+        {formData.specialties.length < 3 && (
+          <button
+            onClick={handleAddSpecialty}
+            className="mt-2 flex items-center gap-1 text-sm text-[#6A5ACD] font-bold hover:text-[#2A2455] cursor-pointer"
+          >
+            <FiPlus /> Add Specialty
+          </button>
+        )}
+      </div>
+
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4 rounded">
+        <p className="text-xs text-yellow-800 font-medium">
+          Pricing applies to all your specialties. Remote prices cannot exceed clinic prices.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+
+              <input type="checkbox" checked={formData.isClinicEnabled ?? true} onChange={(e) => handlePriceChange("isClinicEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
+              <span className="block text-xs font-bold text-[#B8A7FF]">Clinic</span>
+            </label>
+          </div>
+
+          {formData.isClinicEnabled !== false && (
+            <input
+              type="number"
+              min="1"
+              
+              value={formData.clinicPrice || 0}
+              onChange={(e) => handlePriceChange("clinicPrice", e.target.value)}
+              placeholder="EGP"
+              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+            />
+          )}
+        </div>
+        
+        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+
+              <input type="checkbox" checked={formData.isChatEnabled ?? true} onChange={(e) => handlePriceChange("isChatEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
+              <span className="block text-xs font-bold text-[#B8A7FF]">Chat</span>
+            </label>
+          </div>
+
+          {formData.isChatEnabled !== false && (
+            <input
+              type="number"
+              min="1"
+              
+              value={formData.chatPrice || 0}
+              onChange={(e) => handlePriceChange("chatPrice", e.target.value)}
+              placeholder="EGP"
+              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+            />
+          )}
+        </div>
+
+        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+
+              <input type="checkbox" checked={formData.isVideoEnabled ?? true} onChange={(e) => handlePriceChange("isVideoEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
+              <span className="block text-xs font-bold text-[#B8A7FF]">Video</span>
+            </label>
+          </div>
+
+          {formData.isVideoEnabled !== false && (
+            <input
+              type="number"
+              min="1"
+              
+              value={formData.videoPrice || 0}
+              onChange={(e) => handlePriceChange("videoPrice", e.target.value)}
+              placeholder="EGP"
+              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+            />
+          )}
+        </div>
+
+        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+
+              <input type="checkbox" checked={formData.isCallEnabled ?? true} onChange={(e) => handlePriceChange("isCallEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
+              <span className="block text-xs font-bold text-[#B8A7FF]">Call</span>
+            </label>
+          </div>
+
+          {formData.isCallEnabled !== false && (
+            <input
+              type="number"
+              min="1"
+              
+              value={formData.callPrice || 0}
+              onChange={(e) => handlePriceChange("callPrice", e.target.value)}
+              placeholder="EGP"
+              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

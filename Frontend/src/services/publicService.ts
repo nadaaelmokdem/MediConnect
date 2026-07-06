@@ -14,6 +14,16 @@ export default class PublicService {
     }
   }
 
+  static async getDoctorById(id: number | string): Promise<DoctorListItem> {
+    try {
+      const response = await api.get(`public/doctors/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch doctor details:", error);
+      throw new Error("Failed to fetch doctor details.");
+    }
+  }
+
   static async getSpecialties(): Promise<{ specialtyId: number; name: string }[]> {
     try {
       const response = await api.get("specialties");

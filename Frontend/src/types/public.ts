@@ -19,14 +19,11 @@ export interface PaginatedResult<T> {
 export interface DoctorListSpecialty {
   specialtyId: number;
   name: string;
-  clinicPrice: number;
-  chatPrice: number;
-  videoPrice: number;
-  callPrice: number;
 }
 
 export interface DoctorListItem {
   doctorId: number;
+  userId: string;
   fullName: string;
   profilePictureUrl?: string;
   averageRating: number;
@@ -34,4 +31,12 @@ export interface DoctorListItem {
   clinicLocation?: string;
   bio?: string;
   specialties: DoctorListSpecialty[];
+  clinicPrice: number;
+  isClinicEnabled: boolean;
+  chatPrice: number;
+  isChatEnabled: boolean;
+  videoPrice: number;
+  isVideoEnabled: boolean;
+  callPrice: number;
+  isCallEnabled: boolean;
 }

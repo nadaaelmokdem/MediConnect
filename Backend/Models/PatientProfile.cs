@@ -33,6 +33,7 @@ namespace Tabibi.Models
 
         public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public PatientQuota? Quota { get; set; }
     }
 
     public enum GenderTypes { Male, Female }

@@ -7,8 +7,14 @@ export default class ChatService {
     return response.data;
   }
 
-  static async startSession(doctorId: number): Promise<number> {
-    const response = await api.post(`chat/start/${doctorId}`);
+  static async startSession(doctorId: number, isCompanyPaid: boolean = false, clinicalAssessment?: string | null): Promise<number> {
+    const body = clinicalAssessment ? { clinicalAssessment } : {};
+    const response = await api.post(`chat/start/${doctorId}?isCompanyPaid=${isCompanyPaid}`, body);
+    return response.data.sessionId;
+  }
+
+  static async followUp(sessionId: number): Promise<number> {
+    const response = await api.post(`chat/${sessionId}/followup`);
     return response.data.sessionId;
   }
 
@@ -19,6 +25,9 @@ export default class ChatService {
     patientName: string;
     doctorUserId: string;
     patientUserId: string;
+    isCompanyPaid: boolean;
+    isFollowUp: boolean;
+    startedAt: string;
   }> {
     const response = await api.get(`chat/${sessionId}/details`);
     return response.data;
@@ -28,6 +37,7 @@ export default class ChatService {
     sessionId: number;
     otherPartyName: string;
     otherPartyUserId: string;
+    otherPartySpecialty: string;
     lastMessage: string;
     lastMessageTime: string | null;
   }>> {

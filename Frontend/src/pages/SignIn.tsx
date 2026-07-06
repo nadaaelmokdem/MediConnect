@@ -91,11 +91,25 @@ export default function TabibiLogin({
 
       if (requiredRole && user?.roles && !user.roles.includes(requiredRole)) {
         Swal.fire({
-          title: `You are registered as a ${user.roles.join(", ")}.`,
-          text: `Do you want to sign in as a ${user.roles.join(", ")} or register as a ${requiredRole}?`,
+          title: `Role Conflict`,
+          html: `
+            <div class="mb-4">
+               <p class="text-gray-600">You are registered as a <span class="font-semibold text-gray-800">${user.roles.join(", ")}</span>.</p>
+               <p class="text-gray-600 mt-2">Do you want to sign in as a ${user.roles.join(", ")} or register as a ${requiredRole}?</p>
+            </div>
+          `,
           showCancelButton: true,
-          confirmButtonText: "Register here",
-          cancelButtonText: `Go to ${requiredRole === "Doctor" ? "User" : "Doctor"} login`,
+          confirmButtonText: `Register as ${requiredRole}`,
+          cancelButtonText: `Sign in as ${user.roles.join(", ")}`,
+          buttonsStyling: false,
+          customClass: {
+            popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-100',
+            title: 'text-2xl font-bold mb-4 text-gray-800 text-left w-full',
+            htmlContainer: 'w-full m-0 text-left',
+            confirmButton: 'w-full bg-[#6a5acd] hover:bg-[#5b4eb8] text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5',
+            cancelButton: 'w-full mt-3 py-3.5 border-2 border-gray-200 text-gray-600 font-bold hover:text-gray-800 hover:border-gray-300 hover:bg-gray-50 rounded-xl transition-colors',
+            actions: 'flex flex-col w-full m-0 mt-4'
+          }
         }).then(async (result) => {
           if (result.isConfirmed) {
             try {
@@ -112,6 +126,13 @@ export default function TabibiLogin({
               icon: "error",
               title: "Something went wrong",
               text: message,
+              buttonsStyling: false,
+              customClass: {
+                popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100',
+                title: 'text-2xl font-bold mb-2 text-gray-800',
+                htmlContainer: 'text-gray-600 mb-6 m-0',
+                confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
+              }
             });
           }
           } else {

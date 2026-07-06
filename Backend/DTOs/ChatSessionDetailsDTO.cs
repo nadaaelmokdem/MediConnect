@@ -1,3 +1,5 @@
+using System;
+
 namespace Tabibi.DTOs
 {
     public class ChatSessionDetailsDTO
@@ -8,5 +10,8 @@ namespace Tabibi.DTOs
         public string PatientName { get; set; } = string.Empty;
         public string DoctorUserId { get; set; } = string.Empty;
         public string PatientUserId { get; set; } = string.Empty;
+        public bool IsCompanyPaid { get; set; }
+        public bool IsFollowUp { get; set; }
+        public DateTime StartedAt { get; set; }
     }
 }

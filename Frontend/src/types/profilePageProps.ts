@@ -15,18 +15,26 @@ export interface DoctorProfileData {
   fullName: string;
   email: string;
   imageUrl: string;
-  nationalIdNumber: string;
-  licenseNumber: string;
-  licenseExpiryDate: string;
-  yearsOfExperience: string;
-  clinicLocation: string;
-  clinicPhoneNumber: string;
-  bio: string;
+  nationalIdNumber?: string;
+  licenseNumber?: string;
+  licenseExpiryDate?: string;
+  yearsOfExperience?: string;
+  clinicLocation?: string;
+  clinicPhoneNumber?: string;
+  bio?: string;
   licenseProofUrl?: string;
   idProofUrl?: string;
   degreeProofUrl?: string;
   specialties: any[];
   isVerified?: boolean;
+  clinicPrice?: number;
+  isClinicEnabled?: boolean;
+  chatPrice?: number;
+  isChatEnabled?: boolean;
+  videoPrice?: number;
+  isVideoEnabled?: boolean;
+  callPrice?: number;
+  isCallEnabled?: boolean;
 }
 
 export interface EditableHeaderFieldProps {

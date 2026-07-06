@@ -81,6 +81,13 @@ namespace Tabibi.Services
             {
                 return ServiceResult<LoginDTO?>.Failure("Phone number is required!");
             }
+
+            var phoneExists = await userManager.Users.AnyAsync(u => u.PhoneNumber == signupRequest.PhoneNumber);
+            if (phoneExists)
+            {
+                return ServiceResult<LoginDTO?>.Failure("Phone number is already registered!");
+            }
+
             var user = new AppUser
             {
                 UserName = signupRequest.Email,
@@ -108,7 +115,10 @@ namespace Tabibi.Services
                 else if (signupRequest.Role.Equals(UserRoles.Patient, StringComparison.CurrentCultureIgnoreCase))
                 {
                     await userManager.AddToRoleAsync(user, UserRoles.Patient);
-                    dbContext.PatientProfiles.Add(new PatientProfile { UserId = user.Id });
+                    var patientProfile = new PatientProfile { UserId = user.Id };
+                    dbContext.PatientProfiles.Add(patientProfile);
+                    // Add default quota
+                    dbContext.PatientQuotas.Add(new PatientQuota { Patient = patientProfile });
                 }
                 else
                 {
@@ -170,7 +180,9 @@ namespace Tabibi.Services
                     res = await userManager.AddToRoleAsync(user, UserRoles.Patient);
                     if (res.Succeeded && !dbContext.PatientProfiles.Any(p => p.UserId == user.Id))
                     {
-                        dbContext.PatientProfiles.Add(new PatientProfile { UserId = user.Id });
+                        var patientProfile = new PatientProfile { UserId = user.Id };
+                        dbContext.PatientProfiles.Add(patientProfile);
+                        dbContext.PatientQuotas.Add(new PatientQuota { Patient = patientProfile });
                     }
                 }
                 else

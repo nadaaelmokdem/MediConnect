@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   LuCalendarDays,
   LuFolderHeart,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/lu";
 import { MdMedicalServices, MdVerified } from "react-icons/md";
 import { useAuth } from "../context/AuthContext";
+import { HiOutlineSparkles } from "react-icons/hi";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout, switchRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const isDoctor = user?.activeRole?.toLowerCase() === "doctor";
   const hasBothRoles = user?.roles?.some(r => r.toLowerCase() === "doctor") && user?.roles?.some(r => r.toLowerCase() === "user");
@@ -31,9 +33,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: "Messages", icon: LuMessageSquare, path: "/messages" },
   ] : [
     { name: "User Dashboard", icon: LuLayoutDashboard, path: "/user-dashboard" },
+    { name: "Chat With AI", icon: HiOutlineSparkles, path: "/ai-chat" },
+    { name: "Doctor Chats", icon: MdMedicalServices, path: "/doctor-chats" },
     { name: "Appointments", icon: LuCalendarDays, path: "/appointments" },
-    { name: "Find a Doctor", icon: LuFolderHeart, path: "/doctors" },
-    { name: "Messages", icon: LuMessageSquare, path: "/messages" },
+    { name: "Browse Doctors", icon: LuFolderHeart, path: "/doctors" },
   ];
 
   const firstName = user?.fullName?.split(" ")[0] || "User";
@@ -111,7 +114,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={() => onClose()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ease-in-out active:scale-95 ${
-                    isActive
+                    isActive || ((item.path === "/doctor-chats" || item.path === "/messages") && location.pathname.startsWith("/chat/"))
                       ? "bg-surface-variant text-primary border-r-4 border-primary"
                       : "text-text-muted hover:bg-surface-variant/50 hover:text-text-main"
                   }`

@@ -19,5 +19,12 @@ namespace Tabibi.Controllers
             var result = await publicService.GetDoctorsAsync(filter);
             return Ok(result);
         }
+        [HttpGet("doctors/{doctorId}")]
+        public async Task<IActionResult> GetDoctorById(int doctorId)
+        {
+            var doctor = await publicService.GetDoctorByIdAsync(doctorId);
+            if (doctor == null) return NotFound("Doctor not found");
+            return Ok(doctor);
+        }
     }
 }

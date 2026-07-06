@@ -1,36 +1,29 @@
 import React from "react";
 import { FaStar, FaMapMarkerAlt, FaBriefcase, FaVideo, FaCommentDots, FaPhone, FaClinicMedical } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import type { DoctorListItem } from "../../types/public";
 
 interface DoctorCardProps {
   doctor: DoctorListItem;
-  onBookAppointment: (doctorId: number) => void;
   onStartChat: (doctorId: number) => void;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onBookAppointment, onStartChat }) => {
-  // Find minimum prices across all specialties for each consultation type
+const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const isSelf = user?.id === doctor.userId;
+  // Use prices directly from the doctor profile
   const minPrices = {
-    clinic: Infinity,
-    video: Infinity,
-    call: Infinity,
-    chat: Infinity,
+    clinic: doctor.isClinicEnabled && doctor.clinicPrice != null ? doctor.clinicPrice : null,
+    video: doctor.isVideoEnabled && doctor.videoPrice != null ? doctor.videoPrice : null,
+    call: doctor.isCallEnabled && doctor.callPrice != null ? doctor.callPrice : null,
+    chat: doctor.isChatEnabled && doctor.chatPrice != null ? doctor.chatPrice : null,
   };
 
-  if (doctor.specialties.length > 0) {
-    doctor.specialties.forEach(spec => {
-      if (spec.clinicPrice < minPrices.clinic) minPrices.clinic = spec.clinicPrice;
-      if (spec.chatPrice < minPrices.chat) minPrices.chat = spec.chatPrice;
-      if (spec.videoPrice < minPrices.video) minPrices.video = spec.videoPrice;
-      if (spec.callPrice < minPrices.call) minPrices.call = spec.callPrice;
-    });
-  }
-
-  const hasAnyPrice = 
-    minPrices.clinic !== Infinity || 
-    minPrices.video !== Infinity || 
-    minPrices.call !== Infinity || 
-    minPrices.chat !== Infinity;
+  const activePrices = [minPrices.clinic, minPrices.video, minPrices.call, minPrices.chat].filter((p): p is number => p !== null);
+  const hasAnyPrice = activePrices.length > 0;
 
   const handleStartChat = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,14 +31,15 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onBookAppointment, onSt
     onStartChat?.(doctor.doctorId);
   };
 
-  const handleBookAppointment = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onBookAppointment?.(doctor.doctorId);
+  const handleCardClick = () => {
+    navigate(`/doctors/${doctor.doctorId}`);
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/40 flex flex-col sm:flex-row gap-6 group">
+    <div 
+      onClick={handleCardClick}
+      className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/40 flex flex-col sm:flex-row gap-6 group cursor-pointer"
+    >
       <div className="flex-shrink-0 flex justify-center items-center">
         {doctor.profilePictureUrl ? (
           <img
@@ -63,8 +57,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onBookAppointment, onSt
       <div className="flex-grow flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors cursor-pointer">
-              Dr. {doctor.fullName}
+            <h3 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors">
+              Dr. {doctor.fullName} {isSelf && <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-md font-semibold tracking-wide uppercase">You</span>}
             </h3>
             <div className="flex items-center bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs font-semibold">
               <FaStar className="mr-1" /> {doctor.averageRating.toFixed(1)}
@@ -90,57 +84,36 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onBookAppointment, onSt
 
           {/* Consultation Types Icons */}
           <div className="flex gap-3 text-gray-400 mb-4">
-             <FaClinicMedical title="Clinic Visit" className="hover:text-primary transition-colors cursor-pointer" />
-             <FaVideo title="Video Call" className="hover:text-primary transition-colors cursor-pointer" />
-             <FaPhone title="Voice Call" className="hover:text-primary transition-colors cursor-pointer" />
-             <FaCommentDots title="Chat" onClick={handleStartChat} className="hover:text-primary transition-colors cursor-pointer" />
+             {minPrices.clinic !== null && <FaClinicMedical title="Clinic Visit" className="hover:text-primary transition-colors cursor-pointer" />}
+             {minPrices.video !== null && <FaVideo title="Video Call" className="hover:text-primary transition-colors cursor-pointer" />}
+             {minPrices.call !== null && <FaPhone title="Voice Call" className="hover:text-primary transition-colors cursor-pointer" />}
+             {minPrices.chat !== null && <FaCommentDots title="Chat" onClick={handleStartChat} className="hover:text-primary transition-colors cursor-pointer" />}
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mt-2 border-t border-gray-100 pt-4 gap-4">
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-gray-700 font-medium w-full sm:w-auto">
             {!hasAnyPrice && <span className="text-sm text-gray-400">Price not set</span>}
-            {minPrices.clinic !== Infinity && (
+            {hasAnyPrice && (
               <div className="flex flex-col">
-                <span className="text-xs text-gray-500 uppercase">Clinic</span>
-                <span className="text-sm font-bold text-primary">{minPrices.clinic} EGP</span>
-              </div>
-            )}
-            {minPrices.video !== Infinity && (
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500 uppercase">Video</span>
-                <span className="text-sm font-bold text-primary">{minPrices.video} EGP</span>
-              </div>
-            )}
-            {minPrices.call !== Infinity && (
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500 uppercase">Call</span>
-                <span className="text-sm font-bold text-primary">{minPrices.call} EGP</span>
-              </div>
-            )}
-            {minPrices.chat !== Infinity && (
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500 uppercase">Chat</span>
-                <span className="text-sm font-bold text-primary">{minPrices.chat} EGP</span>
+                <span className="text-xs text-gray-500 uppercase tracking-wider">Starting From</span>
+                <span className="text-lg font-extrabold text-primary">
+                  {Math.min(...activePrices)} EGP
+                </span>
               </div>
             )}
           </div>
-          <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
-            <button 
-              type="button"
-              onClick={handleStartChat}
-              className="flex-1 sm:flex-none bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-medium hover:bg-purple-200 transition-colors cursor-pointer flex items-center justify-center gap-2"
-            >
-              <FaCommentDots /> Chat
-            </button>
-            <button 
-              type="button"
-              onClick={handleBookAppointment}
-              className="flex-1 sm:flex-none bg-gradient-to-r from-primary to-blue-600 text-white px-6 py-2 rounded-full font-medium shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all cursor-pointer"
-            >
-              Book
-            </button>
-          </div>
+          {!isSelf && doctor.isChatEnabled && (
+            <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+              <button 
+                type="button"
+                onClick={handleStartChat}
+                className="w-full sm:w-auto bg-gradient-to-r from-primary to-blue-600 text-white px-8 py-2.5 rounded-full font-medium shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <FaCommentDots className="text-lg" /> Chat
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

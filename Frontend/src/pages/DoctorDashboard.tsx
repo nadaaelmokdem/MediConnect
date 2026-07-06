@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   MdAttachMoney,
-  MdHourglassEmpty,
   MdCalendarMonth,
   MdChevronRight,
   MdDescription,
@@ -65,6 +64,7 @@ export default function Dashboard() {
         import("../services/chatHubService").then(m => m.unsubscribeFromPresence(s.otherPartyUserId).catch(() => {}));
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCancelAppointment = (id: number) => {
@@ -111,10 +111,10 @@ export default function Dashboard() {
           icon={MdAttachMoney}
         />
         <StatCard
-          title="Pending Consultations"
-          value={requests.length}
-          subtext="Requires action"
-          icon={MdHourglassEmpty}
+          title="Chats"
+          value={sessions.length}
+          subtext="Active conversations"
+          icon={MdChatBubble}
         />
         <StatCard
           title="Today's Appointments"

@@ -206,7 +206,7 @@ namespace Tabibi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -230,6 +230,10 @@ namespace Tabibi.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -284,7 +288,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("PatientId", "DoctorId");
 
-                    b.ToTable("Appointments", (string)null);
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("Tabibi.Models.ChatMessage", b =>
@@ -310,14 +314,11 @@ namespace Tabibi.Migrations
                     b.Property<int>("SessionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TokensUsed")
-                        .HasColumnType("int");
-
                     b.HasKey("MessageId");
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("ChatMessages", (string)null);
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("Tabibi.Models.ChatSession", b =>
@@ -331,10 +332,7 @@ namespace Tabibi.Migrations
                     b.Property<int>("ConsultationType")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("DoctorAccepted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("DoctorId")
+                    b.Property<int?>("DoctorId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("DoctorResponseAt")
@@ -342,6 +340,12 @@ namespace Tabibi.Migrations
 
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCompanyPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFollowUp")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFreeMessage")
                         .HasColumnType("bit");
@@ -356,8 +360,7 @@ namespace Tabibi.Migrations
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("SessionSummary")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("datetime2");
@@ -373,7 +376,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("PaymentId");
 
-                    b.ToTable("ChatSessions", (string)null);
+                    b.ToTable("ChatSessions");
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorAvailability", b =>
@@ -406,7 +409,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("DoctorAvailabilities", (string)null);
+                    b.ToTable("DoctorAvailabilities");
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorProfile", b =>
@@ -423,11 +426,20 @@ namespace Tabibi.Migrations
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("CallPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal>("ChatPrice")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<string>("ClinicLocation")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClinicPhoneNumber")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ClinicPrice")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("DegreeProofUrl")
                         .HasColumnType("nvarchar(max)");
@@ -438,7 +450,19 @@ namespace Tabibi.Migrations
                     b.Property<bool>("IsAvailableNow")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsCallEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsChatEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsClinicEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVideoEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LicenseExpiryDate")
@@ -460,6 +484,9 @@ namespace Tabibi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<decimal>("VideoPrice")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<int?>("YearsOfExperience")
                         .HasColumnType("int");
 
@@ -468,7 +495,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("DoctorProfiles", (string)null);
+                    b.ToTable("DoctorProfiles");
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorReview", b =>
@@ -497,7 +524,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("AppointmentId")
                         .IsUnique();
 
-                    b.ToTable("DoctorReviews", (string)null);
+                    b.ToTable("DoctorReviews");
                 });
 
             modelBuilder.Entity("Tabibi.Models.DoctorSpecialty", b =>
@@ -508,35 +535,11 @@ namespace Tabibi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("CallPrice")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal>("ChatPrice")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal>("ClinicPrice")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsCallEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsChatEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsClinicEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsVideoEnabled")
-                        .HasColumnType("bit");
-
                     b.Property<int>("SpecialtyId")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("VideoPrice")
-                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
 
@@ -544,7 +547,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("SpecialtyId");
 
-                    b.ToTable("DoctorSpecialties", (string)null);
+                    b.ToTable("DoctorSpecialties");
                 });
 
             modelBuilder.Entity("Tabibi.Models.PatientProfile", b =>
@@ -584,7 +587,41 @@ namespace Tabibi.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("PatientProfiles", (string)null);
+                    b.ToTable("PatientProfiles");
+                });
+
+            modelBuilder.Entity("Tabibi.Models.PatientQuota", b =>
+                {
+                    b.Property<int>("QuotaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuotaId"));
+
+                    b.Property<int>("AvailableAiMessages")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AvailableFreeGpMessages")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AvailablePremiumAiMessages")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastAiMessageReset")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastFreeGpMessageReset")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuotaId");
+
+                    b.HasIndex("PatientId")
+                        .IsUnique();
+
+                    b.ToTable("PatientQuotas");
                 });
 
             modelBuilder.Entity("Tabibi.Models.Payment", b =>
@@ -624,7 +661,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("AppointmentId")
                         .IsUnique();
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("Tabibi.Models.Prescription", b =>
@@ -661,7 +698,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("AppointmentId")
                         .IsUnique();
 
-                    b.ToTable("Prescriptions", (string)null);
+                    b.ToTable("Prescriptions");
                 });
 
             modelBuilder.Entity("Tabibi.Models.PrescriptionItem", b =>
@@ -699,7 +736,7 @@ namespace Tabibi.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.ToTable("PrescriptionItems", (string)null);
+                    b.ToTable("PrescriptionItems");
                 });
 
             modelBuilder.Entity("Tabibi.Models.Specialty", b =>
@@ -717,7 +754,7 @@ namespace Tabibi.Migrations
 
                     b.HasKey("SpecialtyId");
 
-                    b.ToTable("Specialties", (string)null);
+                    b.ToTable("Specialties");
 
                     b.HasData(
                         new
@@ -984,7 +1021,7 @@ namespace Tabibi.Migrations
                     b.HasIndex("SessionId")
                         .IsUnique();
 
-                    b.ToTable("SymptomAnalyses", (string)null);
+                    b.ToTable("SymptomAnalyses");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1079,8 +1116,7 @@ namespace Tabibi.Migrations
                     b.HasOne("Tabibi.Models.DoctorProfile", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Tabibi.Models.PatientProfile", "Patient")
                         .WithMany("ChatSessions")
@@ -1160,6 +1196,17 @@ namespace Tabibi.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Tabibi.Models.PatientQuota", b =>
+                {
+                    b.HasOne("Tabibi.Models.PatientProfile", "Patient")
+                        .WithOne("Quota")
+                        .HasForeignKey("Tabibi.Models.PatientQuota", "PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Tabibi.Models.Payment", b =>
@@ -1250,6 +1297,8 @@ namespace Tabibi.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("ChatSessions");
+
+                    b.Navigation("Quota");
                 });
 
             modelBuilder.Entity("Tabibi.Models.Prescription", b =>

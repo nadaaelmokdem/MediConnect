@@ -39,7 +39,9 @@ namespace Tabibi.Hubs
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = GetUserId();
-            presenceTracker.UserDisconnected(userId, Context.ConnectionId);
+            if (userId != null)
+            {
+                presenceTracker.UserDisconnected(userId, Context.ConnectionId);
                 bool stillOnline = presenceTracker.IsUserOnline(userId);
                 if (!stillOnline)
                 {
@@ -49,6 +51,7 @@ namespace Tabibi.Hubs
                 }
                 // Notify the user (caller) of their current online status
                 await Clients.Caller.SendAsync("UserPresenceChanged", userId, stillOnline);
+            }
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -133,6 +136,18 @@ namespace Tabibi.Hubs
             // message (correct MessageId/SentAt from the DB) instead of trusting
             // its own optimistic local copy.
             await Clients.Group(GroupName(request.SessionId)).SendAsync("ReceiveMessage", payload);
+
+            // Determine the other party's user ID to notify them specifically (and the sender)
+            var sessionDetails = await chatService.GetSessionDetails(request.SessionId);
+            if (sessionDetails != null)
+            {
+                // We send a generic event to both users to update their session list
+                await Clients.User(sessionDetails.PatientUserId).SendAsync("UpdateSessionList", payload);
+                if (sessionDetails.DoctorUserId != "AI")
+                {
+                    await Clients.User(sessionDetails.DoctorUserId).SendAsync("UpdateSessionList", payload);
+                }
+            }
         }
     }
 }

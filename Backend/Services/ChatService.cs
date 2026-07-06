@@ -24,7 +24,7 @@ namespace Tabibi.Services
             }
 
             // Determine if the same user is both patient and doctor in this session
-            var isDual = session.Patient.UserId == userId && session.Doctor.UserId == userId;
+            var isDual = session.Doctor != null && session.Patient.UserId == userId && session.Doctor.UserId == userId;
 
             if (isDual)
             {
@@ -41,7 +41,7 @@ namespace Tabibi.Services
                 };
             }
 
-            if (session.Doctor.UserId == userId)
+            if (session.Doctor != null && session.Doctor.UserId == userId)
             {
                 return new ChatAccessResult
                 {
@@ -68,7 +68,7 @@ namespace Tabibi.Services
                     SenderRole = m.Role,
                     SenderName = m.Role == UserRoles.Patient
                         ? m.Session.Patient.User.FullName
-                        : m.Session.Doctor.User.FullName,
+                        : (m.Session.Doctor != null ? m.Session.Doctor.User.FullName : "AI Doctor"),
                     Content = m.Content,
                     SentAt = m.SentAt
                 })
@@ -84,11 +84,14 @@ namespace Tabibi.Services
                     .Select(s => new ChatSessionDetailsDTO
                     {
                         SessionId = s.SessionId,
-                        DoctorName = s.Doctor.User.FullName,
-                        DoctorSpecialty = s.Doctor.DoctorSpecialties.FirstOrDefault() != null ? s.Doctor.DoctorSpecialties.FirstOrDefault()!.Specialty.Name : "",
+                        DoctorName = s.Doctor != null ? s.Doctor.User.FullName : "AI Medical Assistant",
+                        DoctorSpecialty = s.Doctor != null && s.Doctor.DoctorSpecialties.Any() ? string.Join(", ", s.Doctor.DoctorSpecialties.Select(ds => ds.Specialty.Name)) : "AI",
                         PatientName = s.Patient.User.FullName,
-                        DoctorUserId = s.Doctor.UserId,
-                        PatientUserId = s.Patient.UserId
+                        DoctorUserId = s.Doctor != null ? s.Doctor.UserId : "AI",
+                        PatientUserId = s.Patient.UserId,
+                        IsCompanyPaid = s.IsCompanyPaid,
+                        IsFollowUp = s.IsFollowUp,
+                        StartedAt = s.StartedAt
                     })
                     .FirstOrDefaultAsync();
             }
@@ -114,8 +117,13 @@ namespace Tabibi.Services
                 .Select(s => new
                 {
                     s.SessionId,
-                    OtherPartyName = role == UserRoles.Patient ? s.Doctor.User.FullName : s.Patient.User.FullName,
-                    OtherPartyUserId = role == UserRoles.Patient ? s.Doctor.UserId : s.Patient.UserId,
+                    DoctorName = s.Doctor != null ? s.Doctor.User.FullName : null,
+                    DoctorUserId = s.Doctor != null ? s.Doctor.UserId : null,
+                    DoctorSpecialties = s.Doctor != null 
+                        ? s.Doctor.DoctorSpecialties.Select(ds => ds.Specialty.Name).ToList()
+                        : new List<string>(),
+                    PatientName = s.Patient.User.FullName,
+                    PatientUserId = s.Patient.UserId,
                     LastMessage = dbContext.ChatMessages
                         .Where(m => m.SessionId == s.SessionId)
                         .OrderByDescending(m => m.SentAt)
@@ -126,8 +134,9 @@ namespace Tabibi.Services
             return sessions.Select(s => new ChatSessionSummaryDTO
             {
                 SessionId = s.SessionId,
-                OtherPartyName = s.OtherPartyName,
-                OtherPartyUserId = s.OtherPartyUserId,
+                OtherPartyName = role == UserRoles.Patient ? (s.DoctorName ?? "AI Medical Assistant") : s.PatientName,
+                OtherPartyUserId = role == UserRoles.Patient ? (s.DoctorUserId ?? "AI") : s.PatientUserId,
+                OtherPartySpecialty = role == UserRoles.Patient ? (s.DoctorSpecialties.Any() ? string.Join(", ", s.DoctorSpecialties) : "AI") : "",
                 LastMessage = s.LastMessage?.Content ?? "",
                 LastMessageTime = s.LastMessage?.SentAt
             })
@@ -135,8 +144,47 @@ namespace Tabibi.Services
             .ToList();
         }
 
-        public async Task<ChatMessage> SaveMessage(int sessionId, string role, string content)
+        public async Task<ChatMessage> SaveMessage(int sessionId, string role, string content, bool isSystemMessage = false)
         {
+            var session = await dbContext.ChatSessions.FirstOrDefaultAsync(s => s.SessionId == sessionId);
+            if (session == null) throw new Exception("Session not found");
+
+            // 24-hour expiry check
+            if (DateTime.UtcNow - session.StartedAt > TimeSpan.FromDays(1))
+            {
+                throw new Exception("Session has expired. Please follow up or start a new session.");
+            }
+
+            // Free GP 1-message rule
+            if (session.IsCompanyPaid && role == UserRoles.Patient && !isSystemMessage && !content.StartsWith("Clinical Assessment:"))
+            {
+                var patientMessageCount = await dbContext.ChatMessages
+                    .CountAsync(m => m.SessionId == sessionId && m.Role == UserRoles.Patient && !m.Content.StartsWith("Clinical Assessment:"));
+                
+                if (patientMessageCount == 0)
+                {
+                    var patient = await dbContext.PatientProfiles.Include(p => p.Quota).FirstOrDefaultAsync(p => p.PatientId == session.PatientId);
+                    if (patient?.Quota != null)
+                    {
+                        if (DateTime.UtcNow.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.UtcNow.Year != patient.Quota.LastFreeGpMessageReset.Year)
+                        {
+                            patient.Quota.AvailableFreeGpMessages = 2;
+                            patient.Quota.LastFreeGpMessageReset = DateTime.UtcNow;
+                        }
+
+                        if (patient.Quota.AvailableFreeGpMessages <= 0)
+                        {
+                            throw new Exception("No free GP messages available for this month.");
+                        }
+                        patient.Quota.AvailableFreeGpMessages--;
+                    }
+                }
+                else if (patientMessageCount >= 1)
+                {
+                    throw new Exception("You can only send one message in a free company-paid session.");
+                }
+            }
+
             var message = new ChatMessage
             {
                 SessionId = sessionId,
@@ -151,7 +199,83 @@ namespace Tabibi.Services
             return message;
         }
 
-        public async Task<ChatSession> StartOrGetSessionAsync(string patientUserId, int doctorId)
+        public async Task<ChatSession> StartOrGetSessionAsync(string patientUserId, int doctorId, bool isCompanyPaid = false)
+        {
+            var patient = await dbContext.PatientProfiles.Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == patientUserId);
+            if (patient == null)
+            {
+                throw new Exception("Patient not found.");
+            }
+
+            // Verify doctor exists and prevent self-chat
+            var doctor = await dbContext.DoctorProfiles.Include(d => d.DoctorSpecialties).FirstOrDefaultAsync(d => d.DoctorId == doctorId);
+            if (doctor == null)
+            {
+                throw new Exception("Doctor not found.");
+            }
+
+            if (doctor.UserId == patientUserId)
+            {
+                throw new Exception("You cannot start a chat session with yourself.");
+            }
+
+            // Check for existing active session first for both paid and unpaid
+            var existingSession = await dbContext.ChatSessions
+                .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.DoctorId == doctorId && s.IsCompanyPaid == isCompanyPaid && s.Status == SessionStatus.Active && s.StartedAt >= DateTime.UtcNow.AddDays(-1));
+            
+            if (existingSession != null)
+            {
+                return existingSession;
+            }
+
+            if (isCompanyPaid)
+            {
+                var hasNonGP = doctor.DoctorSpecialties.Any(ds => ds.SpecialtyId != 18 && ds.SpecialtyId != 20);
+                var hasGP = doctor.DoctorSpecialties.Any(ds => ds.SpecialtyId == 18 || ds.SpecialtyId == 20);
+                if (hasNonGP || !hasGP) 
+                {
+                    throw new Exception("This doctor is not eligible for free GP messages.");
+                }
+
+                if (patient.Quota == null)
+                {
+                    patient.Quota = new PatientQuota { PatientId = patient.PatientId };
+                    dbContext.PatientQuotas.Add(patient.Quota);
+                }
+                
+                // reset logic for GP
+                if (DateTime.UtcNow.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.UtcNow.Year != patient.Quota.LastFreeGpMessageReset.Year)
+                {
+                    patient.Quota.AvailableFreeGpMessages = 2;
+                    patient.Quota.LastFreeGpMessageReset = DateTime.UtcNow;
+                }
+
+                if (patient.Quota.AvailableFreeGpMessages <= 0)
+                {
+                    throw new Exception("No free GP messages available for this month.");
+                }
+
+                // Quota will be decremented when the first message is sent
+            }
+
+            var newSession = new ChatSession
+            {
+                PatientId = patient.PatientId,
+                DoctorId = doctorId,
+                ConsultationType = ConsultationType.Chat,
+                Status = SessionStatus.Active,
+                StartedAt = DateTime.UtcNow,
+                IsCompanyPaid = isCompanyPaid,
+                IsFreeMessage = isCompanyPaid
+            };
+
+            dbContext.ChatSessions.Add(newSession);
+            await dbContext.SaveChangesAsync();
+
+            return newSession;
+        }
+
+        public async Task<ChatSession> StartOrGetAISessionAsync(string patientUserId, int? sessionId = null)
         {
             var patient = await dbContext.PatientProfiles.FirstOrDefaultAsync(p => p.UserId == patientUserId);
             if (patient == null)
@@ -159,25 +283,21 @@ namespace Tabibi.Services
                 throw new Exception("Patient not found.");
             }
 
-            // Verify doctor exists
-            var doctorExists = await dbContext.DoctorProfiles.AnyAsync(d => d.DoctorId == doctorId);
-            if (!doctorExists)
+            if (sessionId.HasValue)
             {
-                throw new Exception("Doctor not found.");
-            }
+                var existingSession = await dbContext.ChatSessions
+                    .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.SessionId == sessionId.Value && s.DoctorId == null);
 
-            var existingSession = await dbContext.ChatSessions
-                .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.DoctorId == doctorId);
-
-            if (existingSession != null)
-            {
-                return existingSession;
+                if (existingSession != null)
+                {
+                    return existingSession;
+                }
             }
 
             var newSession = new ChatSession
             {
                 PatientId = patient.PatientId,
-                DoctorId = doctorId,
+                DoctorId = null,
                 ConsultationType = ConsultationType.Chat,
                 Status = SessionStatus.Active,
                 StartedAt = DateTime.UtcNow
@@ -187,6 +307,28 @@ namespace Tabibi.Services
             await dbContext.SaveChangesAsync();
 
             return newSession;
+        }
+
+        public async Task<ChatSession> FollowUpSessionAsync(int sessionId, string patientUserId)
+        {
+            var session = await dbContext.ChatSessions
+                .Include(s => s.Patient)
+                .Include(s => s.Doctor)
+                .ThenInclude(d => d.DoctorSpecialties)
+                .FirstOrDefaultAsync(s => s.SessionId == sessionId && s.Patient.UserId == patientUserId);
+
+            if (session == null) throw new Exception("Session not found or access denied.");
+            
+            // "Follow-Up pricing tier: users can pay 40% of the original chat price"
+            // For now, we simulate this by just updating the session.
+            var doctorChatPrice = session.Doctor?.ChatPrice ?? 0;
+            session.Price = doctorChatPrice * 0.4m;
+            session.IsFollowUp = true;
+            session.IsCompanyPaid = false; // It's no longer free company paid, it's paid now.
+            session.StartedAt = DateTime.UtcNow; // Reset clock
+
+            await dbContext.SaveChangesAsync();
+            return session;
         }
     }
 }

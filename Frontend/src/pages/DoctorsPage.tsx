@@ -1,18 +1,21 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaFilter, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PublicService from "../services/publicService";
 import type { DoctorListItem, DoctorSearchFilter } from "../types/public";
 import DoctorCard from "../components/Doctor/DoctorCard";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ChatService from "../services/chatService";
+import { getAiQuota } from "../services/AIChat";
 
 const DoctorsPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [doctors, setDoctors] = useState<DoctorListItem[]>([]);
   const [specialties, setSpecialties] = useState<{ specialtyId: number; name: string }[]>([]);
+  const [freeGpMessages, setFreeGpMessages] = useState<number>(0);
   
   const [filter, setFilter] = useState<DoctorSearchFilter>({
     page: 1,
@@ -38,30 +41,59 @@ const DoctorsPage: React.FC = () => {
   ];
 
   useEffect(() => {
+    if (isAuthenticated) {
+      getAiQuota().then(quota => {
+        setFreeGpMessages(quota.freeGpMessages || 0);
+      }).catch(console.error);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     const fetchSpecialties = async () => {
       const sp = await PublicService.getSpecialties();
       setSpecialties(sp);
+
+      // Check for department in URL
+      const searchParams = new URLSearchParams(location.search);
+      const departmentQuery = searchParams.get("department");
+      if (departmentQuery) {
+        const exactMatch = sp.find(s => {
+          const baseName = s.name.split('(')[0].trim().toLowerCase();
+          return baseName === departmentQuery.toLowerCase() || s.name.toLowerCase() === departmentQuery.toLowerCase();
+        });
+        const matchingSp = exactMatch || sp.find(s => s.name.toLowerCase().includes(departmentQuery.toLowerCase()));
+        if (matchingSp) {
+          setSelectedSpecialty(matchingSp.specialtyId);
+          setFilter(prev => ({
+            ...prev,
+            specialtyId: matchingSp.specialtyId
+          }));
+        }
+      }
     };
     fetchSpecialties();
-  }, []);
-
-  const fetchDoctors = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const result = await PublicService.getDoctors(filter);
-      setDoctors(result.items);
-      setTotalCount(result.totalCount);
-      setTotalPages(result.totalPages);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filter]);
+  }, [location.search]);
 
   useEffect(() => {
-    fetchDoctors();
-  }, [fetchDoctors]);
+    let active = true;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const result = await PublicService.getDoctors(filter);
+        if (active) {
+          setDoctors(result.items);
+          setTotalCount(result.totalCount);
+          setTotalPages(result.totalPages);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [filter]);
 
   const handleSearch = () => {
     setFilter(prev => ({
@@ -91,18 +123,10 @@ const DoctorsPage: React.FC = () => {
     }
   };
 
-  const handleBookAppointment = (doctorId: number) => {
-    if (!isAuthenticated) {
-      navigate("/login", { state: { returnUrl: "/doctors" } });
-    } else if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot book appointments.");
-    } else {
-      // In a real app, this would open a booking modal or navigate to a booking page
-      alert(`Booking appointment with doctor ID: ${doctorId}`);
-    }
-  };
 
-  const handleStartChat = async (doctorId: number) => {
+  const [selectedDoctorForChat, setSelectedDoctorForChat] = useState<DoctorListItem | null>(null);
+
+  const handleStartChat = async (doctorId: number, doctor?: DoctorListItem) => {
     if (!isAuthenticated) {
       navigate("/login", { state: { returnUrl: "/doctors" } });
       return;
@@ -112,13 +136,40 @@ const DoctorsPage: React.FC = () => {
       return;
     }
     
+    if (doctor) {
+      if (!doctor.isChatEnabled) {
+        alert("This doctor does not offer chat consultations.");
+        return;
+      }
+      setSelectedDoctorForChat(doctor);
+      return;
+    }
+
     try {
-      const sessionId = await ChatService.startSession(doctorId);
+      const assessment = localStorage.getItem("clinical_assessment");
+      const sessionId = await ChatService.startSession(doctorId, false, assessment);
       navigate(`/chat/${sessionId}`);
     } catch (err: any) {
       alert(err.response?.data || "Failed to start chat session.");
     }
   };
+
+  const confirmStartChat = async (isCompanyPaid: boolean) => {
+    if (!selectedDoctorForChat) return;
+    try {
+      const assessment = localStorage.getItem("clinical_assessment");
+      const sessionId = await ChatService.startSession(selectedDoctorForChat.doctorId, isCompanyPaid, assessment);
+      navigate(`/chat/${sessionId}`);
+    } catch (err: any) {
+      alert(err.response?.data || "Failed to start chat session.");
+    } finally {
+      setSelectedDoctorForChat(null);
+    }
+  };
+
+  const hasNonGP = selectedDoctorForChat?.specialties.some(s => s.specialtyId !== 18 && s.specialtyId !== 20) || false;
+  const hasGP = selectedDoctorForChat?.specialties.some(s => s.specialtyId === 18 || s.specialtyId === 20) || false;
+  const isEligibleForFreeGP = hasGP && !hasNonGP;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -226,8 +277,7 @@ const DoctorsPage: React.FC = () => {
               <DoctorCard 
                 key={doctor.doctorId} 
                 doctor={doctor} 
-                onBookAppointment={handleBookAppointment} 
-                onStartChat={handleStartChat}
+                onStartChat={(id) => handleStartChat(id, doctor)}
               />
             ))}
             
@@ -287,6 +337,73 @@ const DoctorsPage: React.FC = () => {
         )}
 
       </div>
+
+      {/* Chat Modals */}
+      {selectedDoctorForChat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-md w-full border border-gray-100">
+            {isEligibleForFreeGP && freeGpMessages > 0 ? (
+              <>
+                <h3 className="text-2xl font-bold mb-3 text-gray-800">Start Consultation</h3>
+                <p className="mb-6 text-gray-600">
+                  You selected Dr. <span className="font-semibold text-gray-800">{selectedDoctorForChat.fullName}</span>. 
+                  How would you like to proceed?
+                </p>
+                <div className="flex flex-col gap-4">
+                  <button 
+                    onClick={() => confirmStartChat(true)}
+                    className="w-full text-left p-4 rounded-xl border-2 border-green-100 hover:border-green-500 bg-green-50 hover:bg-green-100 transition-all group"
+                  >
+                    <div className="font-bold text-green-700 mb-1 flex justify-between items-center">
+                      <span>Free Company-Paid Session</span>
+                      <span className="text-xs px-2 py-1 rounded-full transition-colors bg-green-200 text-green-800 group-hover:bg-green-500 group-hover:text-white">{freeGpMessages} left</span>
+                    </div>
+                    <p className="text-sm text-green-600 leading-snug">Use one of your monthly free GP messages. One initial message.</p>
+                  </button>
+                  <button 
+                    onClick={() => confirmStartChat(false)}
+                    className="w-full text-left p-4 rounded-xl border-2 border-blue-100 hover:border-blue-500 bg-blue-50 hover:bg-blue-100 transition-all group"
+                  >
+                    <div className="font-bold text-blue-700 mb-1 flex justify-between items-center">
+                      <span>Paid Chat Session</span>
+                      <span className="text-primary font-extrabold">{selectedDoctorForChat.chatPrice} EGP</span>
+                    </div>
+                    <p className="text-sm text-blue-600 leading-snug">Start a standard 24-hour consultation session with unlimited messages.</p>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-20 h-20 bg-[var(--color-primary-light)]/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-800">Start Chat Consultation</h3>
+                  <p className="text-gray-600 text-lg">
+                    Start a chat with Dr. <span className="font-semibold text-gray-800">{selectedDoctorForChat.fullName}</span> for <span className="font-bold text-primary bg-[var(--color-primary-light)]/20 px-3 py-1 rounded-full">{selectedDoctorForChat.chatPrice} EGP</span>?
+                  </p>
+                </div>
+                <button 
+                  onClick={() => confirmStartChat(false)}
+                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  Start Chat
+                </button>
+              </>
+            )}
+            <div className={`flex gap-3 ${isEligibleForFreeGP && freeGpMessages > 0 ? 'mt-6' : 'mt-3'}`}>
+              <button 
+                onClick={() => {
+                  setSelectedDoctorForChat(null);
+                }}
+                className="w-full py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

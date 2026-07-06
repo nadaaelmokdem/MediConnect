@@ -1,7 +1,7 @@
 export interface ReceivedMessage {
   messageId: number;
   sessionId: number;
-  senderRole: "User" | "Doctor";
+  senderRole: string;
   senderName: string;
   content: string;
   sentAt: string;

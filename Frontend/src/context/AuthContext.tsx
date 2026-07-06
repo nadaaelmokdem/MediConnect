@@ -9,7 +9,7 @@ import React, {
 import authService from "../services/authService";
 import { type AppUser, type AuthContextType } from "../types/auth";
 import { useNavigate } from "react-router-dom";
-import { setUnauthorizedHandler } from "../services/api";
+import { setUnauthorizedHandler, setForbiddenHandler } from "../services/api";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -24,11 +24,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const initializingRef = useRef(false);
 
-  // Handle global 401 unauthorized redirections
+  // Handle global 401 unauthorized redirections and 403 forbidden redirections
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setUser(null);
       navigate("/login");
+    });
+    setForbiddenHandler(() => {
+      navigate("/");
     });
   }, [navigate]);
 

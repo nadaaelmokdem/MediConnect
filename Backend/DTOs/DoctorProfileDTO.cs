@@ -21,6 +21,14 @@ namespace Tabibi.DTOs
         public bool IsVerified { get; set; }
         public bool IsAvailableNow { get; set; }
 
-        public ICollection<SpecialtyPriceDTO> Specialties { get; set; } = new List<SpecialtyPriceDTO>();
-    }
+        public decimal ClinicPrice { get; set; }
+        public bool IsClinicEnabled { get; set; }
+        public decimal ChatPrice { get; set; }
+        public bool IsChatEnabled { get; set; }
+        public decimal VideoPrice { get; set; }
+        public bool IsVideoEnabled { get; set; }
+        public decimal CallPrice { get; set; }
+        public bool IsCallEnabled { get; set; }
+
+        public ICollection<SpecialtyDTO> Specialties { get; set; } = new List<SpecialtyDTO>();    }
 }

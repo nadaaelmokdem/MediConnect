@@ -18,6 +18,9 @@ export function getChatConnection(): signalR.HubConnection {
     .configureLogging(signalR.LogLevel.Warning)
     .build();
 
+  // Register a default no-op handler to suppress the missing client method warning
+  connection.on("UserPresenceChanged", () => {});
+
   return connection;
 }
 
@@ -78,4 +81,14 @@ export function onUserPresenceChanged(callback: (userId: string, isOnline: boole
 export function offUserPresenceChanged(callback: (userId: string, isOnline: boolean) => void): void {
   if (!connection) return;
   connection.off("UserPresenceChanged", callback);
+}
+
+export function onUpdateSessionList(callback: (payload: ReceivedMessage) => void): void {
+  const conn = getChatConnection();
+  conn.on("UpdateSessionList", callback);
+}
+
+export function offUpdateSessionList(callback: (payload: ReceivedMessage) => void): void {
+  if (!connection) return;
+  connection.off("UpdateSessionList", callback);
 }

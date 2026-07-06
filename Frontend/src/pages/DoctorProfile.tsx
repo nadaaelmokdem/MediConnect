@@ -11,8 +11,7 @@ import {
 import { MdLocationOn, MdAssignment, MdVerified } from "react-icons/md";
 import type { DoctorProfileData } from "../types/profilePageProps";
 import { EditableDetailItem } from "../components/Profile/EditableDetail";
-import { SpecialtyPricingManager } from "../components/Profile/SpecialtyPricingManager";
-import type { SpecialtyWithPrices } from "../components/Profile/SpecialtyPricingManager";
+import { ServicesAndPricingManager } from "../components/Profile/ServicesAndPricingManager";
 // Note: You might want to update this to DoctorService if you have separate services
 import DoctorService from "../services/doctorService";
 
@@ -56,18 +55,26 @@ const ProfilePage: React.FC = () => {
           ...prev,
           fullName: DoctorProfileData.fullName,
           email: DoctorProfileData.email,
-          nationalIdNumber: DoctorProfileData.nationalIdNumber,
-          licenseNumber: DoctorProfileData.licenseNumber,
-          licenseExpiryDate: DoctorProfileData.licenseExpiryDate,
+          nationalIdNumber: DoctorProfileData.nationalIdNumber ?? "",
+          licenseNumber: DoctorProfileData.licenseNumber ?? "",
+          licenseExpiryDate: DoctorProfileData.licenseExpiryDate ?? "",
           yearsOfExperience: DoctorProfileData.yearsOfExperience !== null && DoctorProfileData.yearsOfExperience !== undefined ? DoctorProfileData.yearsOfExperience.toString() : "",
-          clinicLocation: DoctorProfileData.clinicLocation,
-          clinicPhoneNumber: DoctorProfileData.clinicPhoneNumber,
-          bio: DoctorProfileData.bio,
-          licenseProofUrl: DoctorProfileData.licenseProofUrl,
-          idProofUrl: DoctorProfileData.idProofUrl,
-          degreeProofUrl: DoctorProfileData.degreeProofUrl,
+          clinicLocation: DoctorProfileData.clinicLocation ?? "",
+          clinicPhoneNumber: DoctorProfileData.clinicPhoneNumber ?? "",
+          bio: DoctorProfileData.bio ?? "",
+          licenseProofUrl: DoctorProfileData.licenseProofUrl ?? "",
+          idProofUrl: DoctorProfileData.idProofUrl ?? "",
+          degreeProofUrl: DoctorProfileData.degreeProofUrl ?? "",
           specialties: Array.isArray(DoctorProfileData.specialties) ? DoctorProfileData.specialties : [],
           isVerified: DoctorProfileData.isVerified,
+          
+          clinicPrice: DoctorProfileData.clinicPrice, isClinicEnabled: DoctorProfileData.isClinicEnabled,
+          
+          chatPrice: DoctorProfileData.chatPrice, isChatEnabled: DoctorProfileData.isChatEnabled,
+          
+          videoPrice: DoctorProfileData.videoPrice, isVideoEnabled: DoctorProfileData.isVideoEnabled,
+          
+          callPrice: DoctorProfileData.callPrice, isCallEnabled: DoctorProfileData.isCallEnabled,
         }));
       } catch (error) {
         console.log("Error: " + error);
@@ -77,6 +84,31 @@ const ProfilePage: React.FC = () => {
     };
     fetchProfile();
   }, []);
+
+  const handleBulkSave = async (updatedProfile: DoctorProfileData) => {
+    try {
+      const payload = {
+        ...updatedProfile,
+        licenseExpiryDate: updatedProfile.licenseExpiryDate || null,
+        yearsOfExperience: updatedProfile.yearsOfExperience ? parseInt(updatedProfile.yearsOfExperience) : null,
+        specialties: updatedProfile.specialties.map(s => typeof s === 'string' ? s : s.name),
+        // include prices (ts-ignore since we extended the type dynamically)
+        
+        clinicPrice: updatedProfile.clinicPrice, isClinicEnabled: updatedProfile.isClinicEnabled,
+        
+        chatPrice: updatedProfile.chatPrice, isChatEnabled: updatedProfile.isChatEnabled,
+        
+        videoPrice: updatedProfile.videoPrice, isVideoEnabled: updatedProfile.isVideoEnabled,
+        
+        callPrice: updatedProfile.callPrice, isCallEnabled: updatedProfile.isCallEnabled,
+      };
+      await DoctorService.bulkUpdateProfile(payload);
+      setProfile(updatedProfile);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      throw error;
+    }
+  };
 
   const handleSave = async (
     field: keyof DoctorProfileData,
@@ -218,10 +250,10 @@ const ProfilePage: React.FC = () => {
             </div>
             
             <div className="border-t border-[#F4F1FF] pt-6">
-              <SpecialtyPricingManager
-                initialSpecialties={profile.specialties as SpecialtyWithPrices[]}
+              <ServicesAndPricingManager
+                profile={profile}
                 availableSpecialties={availableSpecialties}
-                onSave={(newSpecialties) => handleSave("specialties", newSpecialties)}
+                onSave={handleBulkSave}
                 disabled={profile.isVerified}
               />
             </div>

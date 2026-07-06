@@ -46,12 +46,12 @@ namespace Tabibi.Services
                 var min = filter.MinPrice ?? 0;
                 var max = filter.MaxPrice ?? decimal.MaxValue;
 
-                query = query.Where(d => d.DoctorSpecialties.Any(ds =>
-                    (types.Contains(ConsultationType.Clinic) && ds.IsClinicEnabled && ds.ClinicPrice >= min && ds.ClinicPrice <= max) ||
-                    (types.Contains(ConsultationType.Chat) && ds.IsChatEnabled && ds.ChatPrice >= min && ds.ChatPrice <= max) ||
-                    (types.Contains(ConsultationType.Video) && ds.IsVideoEnabled && ds.VideoPrice >= min && ds.VideoPrice <= max) ||
-                    (types.Contains(ConsultationType.Call) && ds.IsCallEnabled && ds.CallPrice >= min && ds.CallPrice <= max)
-                ));
+                query = query.Where(d => 
+                    (types.Contains(ConsultationType.Clinic) && d.IsClinicEnabled && d.ClinicPrice >= min && d.ClinicPrice <= max) ||
+                    (types.Contains(ConsultationType.Chat) && d.IsChatEnabled && d.ChatPrice >= min && d.ChatPrice <= max) ||
+                    (types.Contains(ConsultationType.Video) && d.IsVideoEnabled && d.VideoPrice >= min && d.VideoPrice <= max) ||
+                    (types.Contains(ConsultationType.Call) && d.IsCallEnabled && d.CallPrice >= min && d.CallPrice <= max)
+                );
             }
 
             var totalCount = await query.CountAsync();
@@ -63,20 +63,25 @@ namespace Tabibi.Services
                 .Select(d => new DoctorListDTO
                 {
                     DoctorId = d.DoctorId,
+                    UserId = d.UserId,
                     FullName = d.User.FullName,
                     ProfilePictureUrl = d.ProfilePictureUrl,
                     AverageRating = d.AverageRating,
                     YearsOfExperience = d.YearsOfExperience,
                     ClinicLocation = d.ClinicLocation,
                     Bio = d.Bio,
-                    Specialties = d.DoctorSpecialties.Select(ds => new DoctorListSpecialtyDTO
+                    ClinicPrice = d.ClinicPrice,
+                    IsClinicEnabled = d.IsClinicEnabled,
+                    ChatPrice = d.ChatPrice,
+                    IsChatEnabled = d.IsChatEnabled,
+                    VideoPrice = d.VideoPrice,
+                    IsVideoEnabled = d.IsVideoEnabled,
+                    CallPrice = d.CallPrice,
+                    IsCallEnabled = d.IsCallEnabled,
+                    Specialties = d.DoctorSpecialties.Select(ds => new SpecialtyDTO
                     {
                         SpecialtyId = ds.SpecialtyId,
-                        Name = ds.Specialty.Name,
-                        ClinicPrice = ds.ClinicPrice,
-                        ChatPrice = ds.ChatPrice,
-                        VideoPrice = ds.VideoPrice,
-                        CallPrice = ds.CallPrice
+                        Name = ds.Specialty.Name
                     }).ToList()
                 })
                 .ToListAsync();
@@ -87,6 +92,41 @@ namespace Tabibi.Services
                 TotalCount = totalCount,
                 Page = filter.Page,
                 PageSize = filter.PageSize
+            };
+        }
+        public async Task<DoctorListDTO?> GetDoctorByIdAsync(int doctorId)
+        {
+            var d = await dbContext.DoctorProfiles
+                .Include(dp => dp.User)
+                .Include(dp => dp.DoctorSpecialties)
+                .ThenInclude(ds => ds.Specialty)
+                .FirstOrDefaultAsync(dp => dp.DoctorId == doctorId);
+
+            if (d == null) return null;
+
+            return new DoctorListDTO
+            {
+                DoctorId = d.DoctorId,
+                UserId = d.UserId,
+                FullName = d.User.FullName,
+                ProfilePictureUrl = d.ProfilePictureUrl,
+                AverageRating = d.AverageRating,
+                YearsOfExperience = d.YearsOfExperience,
+                ClinicLocation = d.ClinicLocation,
+                Bio = d.Bio,
+                ClinicPrice = d.ClinicPrice,
+                IsClinicEnabled = d.IsClinicEnabled,
+                ChatPrice = d.ChatPrice,
+                IsChatEnabled = d.IsChatEnabled,
+                VideoPrice = d.VideoPrice,
+                IsVideoEnabled = d.IsVideoEnabled,
+                CallPrice = d.CallPrice,
+                IsCallEnabled = d.IsCallEnabled,
+                Specialties = d.DoctorSpecialties.Select(ds => new SpecialtyDTO
+                {
+                    SpecialtyId = ds.SpecialtyId,
+                    Name = ds.Specialty.Name
+                }).ToList()
             };
         }
     }

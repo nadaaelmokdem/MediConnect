@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -15,8 +15,8 @@ namespace Tabibi.Models
             [Required]
             public int PatientId { get; set; }
 
-            [Required]
-            public int DoctorId { get; set; }
+            public int? DoctorId { get; set; }
+
 
             [Required]
             public ConsultationType ConsultationType { get; set; } = ConsultationType.Chat;
@@ -24,7 +24,8 @@ namespace Tabibi.Models
             [Required]
             public bool IsFreeMessage { get; set; } = true;
 
-            public bool? DoctorAccepted { get; set; } = null;  // null = pending, true = accepted, false = declined
+            public bool IsFollowUp { get; set; } = false;
+            public bool IsCompanyPaid { get; set; } = false;
 
             [Column(TypeName = "decimal(10,2)")]
             public decimal? Price { get; set; } = null;  // null for free message
@@ -37,7 +38,6 @@ namespace Tabibi.Models
 
             public SessionStatus Status { get; set; } = SessionStatus.Active;
 
-            [MaxLength(2000)]
             public string? SessionSummary { get; set; }   // AI-generated summary
 
             // Navigation
@@ -45,14 +45,15 @@ namespace Tabibi.Models
             public PatientProfile Patient { get; set; } = null!;
 
             [ForeignKey(nameof(DoctorId))]
-            public DoctorProfile Doctor { get; set; } = null!;
+            public DoctorProfile? Doctor { get; set; }
+
 
             public ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
             public SymptomAnalysis? SymptomAnalysis { get; set; }
             public Payment? Payment { get; set; }
         }
 
-        public enum SessionStatus { Active, Completed, Abandoned, PendingDoctorResponse, Declined }
+        public enum SessionStatus { Active, Completed, Abandoned }
         //public enum ConsultationType { Chat, Video, Call, Clinic }
     }
 

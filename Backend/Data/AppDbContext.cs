@@ -20,6 +20,7 @@ namespace Tabibi.Data
         public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<SymptomAnalysis> SymptomAnalyses { get; set; }
+        public DbSet<PatientQuota> PatientQuotas { get; set; }
 
         // Appointments & Healthcare
         public DbSet<Appointment> Appointments { get; set; }
@@ -42,6 +43,10 @@ namespace Tabibi.Data
                 .HasForeignKey<PatientProfile>(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<AppUser>()
+                .HasIndex(u => u.PhoneNumber)
+                .IsUnique();
+
             // ==================== PatientProfile Configurations ====================
             
             // PatientProfile to ChatSession (1:many)
@@ -56,6 +61,7 @@ namespace Tabibi.Data
                 .HasOne(cs => cs.Doctor)
                 .WithMany()
                 .HasForeignKey(cs => cs.DoctorId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // PatientProfile to Appointment (1:many)
@@ -64,6 +70,13 @@ namespace Tabibi.Data
                 .WithOne(a => a.Patient)
                 .HasForeignKey(a => a.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // PatientProfile to PatientQuota (1:1)
+            modelBuilder.Entity<PatientProfile>()
+                .HasOne(p => p.Quota)
+                .WithOne(q => q.Patient)
+                .HasForeignKey<PatientQuota>(q => q.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // ==================== DoctorProfile Configurations ====================
             

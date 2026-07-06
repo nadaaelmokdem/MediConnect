@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Tabibi.Data;
 using Tabibi.DTOs;
@@ -219,14 +219,14 @@ namespace Tabibi.Services
                 })
                 .ToListAsync();
 
-            var pendingChatSessionsCount = await dbContext.ChatSessions
-                .CountAsync(cs => cs.PatientId == patient.PatientId && cs.DoctorAccepted == null);
+            var chatSessionsCount = await dbContext.ChatSessions
+                .CountAsync(cs => cs.PatientId == patient.PatientId && cs.Status == SessionStatus.Active);
 
             return new PatientDashboardDTO
             {
                 FullName = patient.User.FullName,
                 UpcomingAppointmentsCount = upcomingAppointments.Count,
-                PendingChatSessionsCount = pendingChatSessionsCount,
+                ChatSessionsCount = chatSessionsCount,
                 UpcomingAppointments = upcomingAppointments,
                 RecentPrescriptions = recentPrescriptions
             };

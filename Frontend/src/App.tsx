@@ -2,11 +2,11 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { LangProvider } from "./context/LangContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import ConsultationChat from "./pages/ConsultationChat";
+import DoctorChatPage from "./pages/DoctorChatPage";
 import MainLayout from "./components/Layout/MainLayout";
 import { USER_AUTH_CONFIG, DOCTOR_AUTH_CONFIG } from "./config/authConfig";
 import HomePage from "./pages/HomePage";
-import ChatPage from "./pages/ChatPage";
+import AIChatPage from "./pages/AIChatPage";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -17,7 +17,9 @@ import DoctorsPage from "./pages/DoctorsPage";
 import DoctorAdditionalData from "./pages/DoctorAdditionalData";
 import PatientDashboard from "./pages/PatientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import MessagesPage from "./pages/MessagesPage";
+import DoctorMessagesPage from "./pages/DoctorMessagesPage";
+import DoctorDetailsPage from "./pages/DoctorDetailsPage";
+import UserDoctorChatsPage from "./pages/UserDoctorChatsPage";
 
 function App() {
   return (
@@ -52,17 +54,26 @@ function App() {
               <Route
                 path="/messages"
                 element={
-                  <ProtectedRoute>
-                    <MessagesPage />
+                  <ProtectedRoute allowedRoles={["Doctor"]}>
+                    <DoctorMessagesPage />
                   </ProtectedRoute>
                 }
               />
               <Route path="/doctors" element={<DoctorsPage />} />
+              <Route path="/doctors/:id" element={<DoctorDetailsPage />} />
               <Route
                 path="/ai-chat"
                 element={
-                  <ProtectedRoute>
-                    <ChatPage />
+                  <ProtectedRoute allowedRoles={["User"]}>
+                    <AIChatPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/ai-chat/:sessionId"
+                element={
+                  <ProtectedRoute allowedRoles={["User"]}>
+                    <AIChatPage />
                   </ProtectedRoute>
                 }
               />
@@ -70,7 +81,23 @@ function App() {
                 path="/chat/:sessionId"
                 element={
                   <ProtectedRoute>
-                    <ConsultationChat />
+                    <DoctorChatPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/doctor-chats"
+                element={
+                  <ProtectedRoute allowedRoles={["User"]}>
+                    <UserDoctorChatsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/doctor-chats/:sessionId"
+                element={
+                  <ProtectedRoute allowedRoles={["User"]}>
+                    <UserDoctorChatsPage />
                   </ProtectedRoute>
                 }
               />

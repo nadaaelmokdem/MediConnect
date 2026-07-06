@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Tabibi.Services;
 using Tabibi.Shared;
 using Tabibi.Extensions;
-using System.Threading.Tasks;
-using System;
+using Tabibi.DTOs;
 
 namespace Tabibi.Controllers
 {
@@ -14,7 +13,7 @@ namespace Tabibi.Controllers
     {
         [HttpPost("start/{doctorId}")]
         [Authorize(Roles = UserRoles.Patient)]
-        public async Task<IActionResult> StartSession(int doctorId)
+        public async Task<IActionResult> StartSession(int doctorId, [FromQuery] bool isCompanyPaid = false, [FromBody] StartSessionRequest? request = null)
         {
             var userId = User.GetId();
             if (string.IsNullOrEmpty(userId))
@@ -24,7 +23,8 @@ namespace Tabibi.Controllers
 
             try
             {
-                var session = await chatService.StartOrGetSessionAsync(userId, doctorId);
+                var session = await chatService.StartOrGetSessionAsync(userId, doctorId, isCompanyPaid);
+                // Auto-send removed; handled by UI now
                 return Ok(new { sessionId = session.SessionId });
             }
             catch (Exception ex)
@@ -88,6 +88,31 @@ namespace Tabibi.Controllers
             var sessions = await chatService.GetUserSessions(userId, role);
             
             return Ok(sessions);
+        }
+
+        [HttpPost("{sessionId}/followup")]
+        [Authorize(Roles = UserRoles.Patient)]
+        public async Task<IActionResult> FollowUp(int sessionId)
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            try
+            {
+                var access = await chatService.ValidateAccess(sessionId, userId);
+                if (!access.Allowed) return Forbid();
+
+                // Here we would ideally integrate with a payment gateway.
+                // For now, we update the session to be a follow-up.
+                // It resets the StartedAt clock and marks IsFollowUp.
+
+                var updatedSession = await chatService.FollowUpSessionAsync(sessionId, userId);
+                return Ok(new { message = "Follow up initiated", sessionId = updatedSession.SessionId });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

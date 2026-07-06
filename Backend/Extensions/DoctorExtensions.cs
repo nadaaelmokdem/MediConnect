@@ -5,19 +5,12 @@ namespace Tabibi.Extensions
 {
     public static class DoctorExtensions
     {
-        public static SpecialtyPriceDTO ToDTO(this DoctorSpecialty specialty)
+        public static SpecialtyDTO ToDTO(this DoctorSpecialty specialty)
         {
-            return new SpecialtyPriceDTO
+            return new SpecialtyDTO
             {
-                SpecialtyName = specialty.Specialty?.Name ?? "",
-                ClinicPrice = specialty.ClinicPrice,
-                ChatPrice = specialty.ChatPrice,
-                VideoPrice = specialty.VideoPrice,
-                CallPrice = specialty.CallPrice,
-                IsClinicEnabled = specialty.IsClinicEnabled,
-                IsChatEnabled = specialty.IsChatEnabled,
-                IsVideoEnabled = specialty.IsVideoEnabled,
-                IsCallEnabled = specialty.IsCallEnabled
+                SpecialtyId = specialty.SpecialtyId,
+                Name = specialty.Specialty?.Name ?? ""
             };
         }
 
@@ -41,6 +34,14 @@ namespace Tabibi.Extensions
                 AverageRating = doctor.AverageRating,
                 IsVerified = doctor.IsVerified,
                 IsAvailableNow = doctor.IsAvailableNow,
+                ClinicPrice = doctor.ClinicPrice,
+                IsClinicEnabled = doctor.IsClinicEnabled,
+                ChatPrice = doctor.ChatPrice,
+                IsChatEnabled = doctor.IsChatEnabled,
+                VideoPrice = doctor.VideoPrice,
+                IsVideoEnabled = doctor.IsVideoEnabled,
+                CallPrice = doctor.CallPrice,
+                IsCallEnabled = doctor.IsCallEnabled,
                 Specialties = doctor.DoctorSpecialties
                     .Select(s => s.ToDTO())
                     .ToList()

@@ -97,6 +97,12 @@
   --font-weight-h3: 600;
   --font-weight-h2: 600;
   --font-weight-h1: 700;
+
+  @keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(5%, 5%) scale(1.1); }
+    100% { transform: translate(-5%, -5%) scale(0.95); }
+  }
 }
 
 /* --- Components & Utilities --- */
@@ -104,4 +110,8 @@
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+button, a {
+  cursor: pointer;
 }

@@ -126,9 +126,15 @@ export default function DoctorAdditionalData() {
     }
 
     // Specialties Validation
+    const seenSpecialties = new Set<string>();
     formData.specialties.forEach((spec: string, index: any) => {
-      if (!spec.trim()) {
+      const trimmedSpec = spec.trim();
+      if (!trimmedSpec) {
         newErrors[`specialty_${index}`] = "Specialty name is required.";
+      } else if (seenSpecialties.has(trimmedSpec)) {
+        newErrors[`specialty_${index}`] = "Duplicate specialties are not allowed.";
+      } else {
+        seenSpecialties.add(trimmedSpec);
       }
     });
 

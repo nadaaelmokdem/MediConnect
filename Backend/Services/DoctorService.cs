@@ -10,63 +10,7 @@ namespace Tabibi.Services
 {
     public class DoctorService(AppDbContext dbContext)
     {
-        public UpdateSpecialtyPriceResponseDTO UpdateSpecialtyPrices(DoctorSpecialty specialty, UpdateSpecialtyPriceDTO updateDTO)
-        {
-            var response = new UpdateSpecialtyPriceResponseDTO { Success = true };
-            var errors = new Dictionary<string, string>();
 
-            if (updateDTO.ClinicPrice.HasValue)
-            {
-                if (updateDTO.ClinicPrice.Value <= 0)
-                    errors["ClinicPrice"] = "Clinic price must be greater than 0";
-                else
-                    specialty.ClinicPrice = updateDTO.ClinicPrice.Value;
-            }
-
-            if (updateDTO.ChatPrice.HasValue)
-            {
-                if (updateDTO.ChatPrice.Value < 0)
-                    errors["ChatPrice"] = "Chat price cannot be negative";
-                else if (updateDTO.ChatPrice.Value > specialty.ClinicPrice)
-                    errors["ChatPrice"] = $"Chat price cannot exceed clinic price ({specialty.ClinicPrice:C})";
-                else
-                    specialty.ChatPrice = updateDTO.ChatPrice.Value;
-            }
-
-            if (updateDTO.VideoPrice.HasValue)
-            {
-                if (updateDTO.VideoPrice.Value < 0)
-                    errors["VideoPrice"] = "Video price cannot be negative";
-                else if (updateDTO.VideoPrice.Value > specialty.ClinicPrice)
-                    errors["VideoPrice"] = $"Video price cannot exceed clinic price ({specialty.ClinicPrice:C})";
-                else
-                    specialty.VideoPrice = updateDTO.VideoPrice.Value;
-            }
-
-            if (updateDTO.CallPrice.HasValue)
-            {
-                if (updateDTO.CallPrice.Value < 0)
-                    errors["CallPrice"] = "Call price cannot be negative";
-                else if (updateDTO.CallPrice.Value > specialty.ClinicPrice)
-                    errors["CallPrice"] = $"Call price cannot exceed clinic price ({specialty.ClinicPrice:C})";
-                else
-                    specialty.CallPrice = updateDTO.CallPrice.Value;
-            }
-
-            if (errors.Count > 0)
-            {
-                response.Success = false;
-                response.Message = "Some prices failed validation";
-                response.Errors = errors;
-            }
-            else
-            {
-                response.Message = "Prices updated successfully";
-                response.UpdatedSpecialty = specialty.ToDTO();
-            }
-
-            return response;
-        }
 
         public async Task<DoctorProfileDTO?> GetProfile(string userId)
         {
@@ -130,28 +74,31 @@ namespace Tabibi.Services
                         break;
                     case "licenseexpirydate":
                         if (doctor.IsVerified) return ServiceResult.Failure("Cannot edit sensitive data while verified.");
-                        if (DateTime.TryParse(value, out DateTime expiry))
+                        if (string.IsNullOrWhiteSpace(value))
+                        {
+                            doctor.LicenseExpiryDate = null;
+                        }
+                        else if (DateTime.TryParse(value, out DateTime expiry))
                         {
                             doctor.LicenseExpiryDate = expiry;
                         }
                         break;
                     case "specialties":
                         if (doctor.IsVerified) return ServiceResult.Failure("Cannot edit sensitive data while verified.");
-                        List<SpecialtyWithPricesDTO> inputSpecialties = new();
-                        try
+                        
+                        var names = value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                        
+                        if (names.Distinct(StringComparer.OrdinalIgnoreCase).Count() != names.Count)
                         {
-                            inputSpecialties = JsonSerializer.Deserialize<List<SpecialtyWithPricesDTO>>(value, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<SpecialtyWithPricesDTO>();
+                            return ServiceResult.Failure("Duplicate specialties are not allowed.");
                         }
-                        catch
+                        
+                        if (names.Count > 3)
                         {
-                            // Fallback to comma separated string
-                            var names = value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
-                            inputSpecialties = names.Select(n => new SpecialtyWithPricesDTO { SpecialtyName = n }).ToList();
+                            return ServiceResult.Failure("A doctor can have a maximum of 3 specialties.");
                         }
 
-                        var inputSpecialtyNames = inputSpecialties.Select(s => s.SpecialtyName).ToList();
-                        
-                        var allSpecialties = await dbContext.Specialties.Where(s => inputSpecialtyNames.Contains(s.Name)).ToListAsync();
+                        var allSpecialties = await dbContext.Specialties.Where(s => names.Contains(s.Name)).ToListAsync();
                         var newSpecialtyIds = allSpecialties.Select(s => s.SpecialtyId).ToList();
 
                         var currentSpecialties = doctor.DoctorSpecialties.ToList();
@@ -163,43 +110,7 @@ namespace Tabibi.Services
                         var toAddIds = newSpecialtyIds.Where(id => !currentSpecialtyIds.Contains(id)).ToList();
                         foreach (var id in toAddIds)
                         {
-                            var specDto = inputSpecialties.FirstOrDefault(s => s.SpecialtyName == allSpecialties.First(a => a.SpecialtyId == id).Name);
-                            var ds = new DoctorSpecialty { DoctorId = doctor.DoctorId, SpecialtyId = id };
-                            if (specDto != null)
-                            {
-                                ds.ClinicPrice = specDto.ClinicPrice;
-                                ds.IsClinicEnabled = specDto.IsClinicEnabled;
-                                ds.ChatPrice = specDto.ChatPrice;
-                                ds.IsChatEnabled = specDto.IsChatEnabled;
-                                ds.VideoPrice = specDto.VideoPrice;
-                                ds.IsVideoEnabled = specDto.IsVideoEnabled;
-                                ds.CallPrice = specDto.CallPrice;
-                                ds.IsCallEnabled = specDto.IsCallEnabled;
-                            }
-                            else
-                            {
-                                ds.ClinicPrice = 500;
-                            }
-                            doctor.DoctorSpecialties.Add(ds);
-                        }
-
-                        // Also update existing ones if prices changed
-                        var toUpdateIds = newSpecialtyIds.Where(id => currentSpecialtyIds.Contains(id)).ToList();
-                        foreach (var id in toUpdateIds)
-                        {
-                            var ds = doctor.DoctorSpecialties.First(d => d.SpecialtyId == id);
-                            var specDto = inputSpecialties.FirstOrDefault(s => s.SpecialtyName == allSpecialties.First(a => a.SpecialtyId == id).Name);
-                            if (specDto != null)
-                            {
-                                ds.ClinicPrice = specDto.ClinicPrice;
-                                ds.IsClinicEnabled = specDto.IsClinicEnabled;
-                                ds.ChatPrice = specDto.ChatPrice;
-                                ds.IsChatEnabled = specDto.IsChatEnabled;
-                                ds.VideoPrice = specDto.VideoPrice;
-                                ds.IsVideoEnabled = specDto.IsVideoEnabled;
-                                ds.CallPrice = specDto.CallPrice;
-                                ds.IsCallEnabled = specDto.IsCallEnabled;
-                            }
+                            doctor.DoctorSpecialties.Add(new DoctorSpecialty { DoctorId = doctor.DoctorId, SpecialtyId = id });
                         }
                         break;
                     case "licenseproofurl":
@@ -242,34 +153,55 @@ namespace Tabibi.Services
                 return ServiceResult<DoctorProfileDTO>.Failure("Doctor profile not found!");
             }
 
+            if ((profileData.IsClinicEnabled && profileData.ClinicPrice <= 0) ||
+                (profileData.IsChatEnabled && profileData.ChatPrice <= 0) ||
+                (profileData.IsVideoEnabled && profileData.VideoPrice <= 0) ||
+                (profileData.IsCallEnabled && profileData.CallPrice <= 0))
+            {
+                return ServiceResult<DoctorProfileDTO>.Failure("Prices must be greater than 0.");
+            }
+
             try
             {
                 doctor.ClinicLocation = profileData.ClinicLocation;
                 doctor.ClinicPhoneNumber = profileData.ClinicPhoneNumber;
-                if (!string.IsNullOrEmpty(profileData.ProfilePictureUrl)) doctor.ProfilePictureUrl = profileData.ProfilePictureUrl;
-                if (!string.IsNullOrEmpty(profileData.Bio)) doctor.Bio = profileData.Bio;
-                if (profileData.YearsOfExperience >= 0) doctor.YearsOfExperience = profileData.YearsOfExperience;
+                doctor.ProfilePictureUrl = profileData.ProfilePictureUrl;
+                doctor.Bio = profileData.Bio;
+                doctor.YearsOfExperience = profileData.YearsOfExperience;
 
                 if (!doctor.IsVerified)
                 {
                     doctor.LicenseNumber = profileData.LicenseNumber;
                     doctor.NationalIdNumber = profileData.NationalIdNumber;
-                    if (!string.IsNullOrEmpty(profileData.LicenseProofUrl)) doctor.LicenseProofUrl = profileData.LicenseProofUrl;
-                    if (!string.IsNullOrEmpty(profileData.IdProofUrl)) doctor.IdProofUrl = profileData.IdProofUrl;
-                    if (!string.IsNullOrEmpty(profileData.DegreeProofUrl)) doctor.DegreeProofUrl = profileData.DegreeProofUrl;
-                    if (profileData.LicenseExpiryDate.HasValue) doctor.LicenseExpiryDate = profileData.LicenseExpiryDate.Value;
+                    doctor.LicenseProofUrl = profileData.LicenseProofUrl;
+                    doctor.IdProofUrl = profileData.IdProofUrl;
+                    doctor.DegreeProofUrl = profileData.DegreeProofUrl;
+                    doctor.LicenseExpiryDate = profileData.LicenseExpiryDate;
                 }
 
                 if (!doctor.IsVerified)
                 {
-                    // Handle Specialties array mapping
                     if (profileData.Specialties != null && profileData.Specialties.Any())
                     {
-                        // Find matching specialties by name
-                        var requestedNames = profileData.Specialties.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim().ToLower()).ToList();
+                        var requestedNames = profileData.Specialties
+                            .Where(s => !string.IsNullOrWhiteSpace(s))
+                            .Select(s => s.Trim())
+                            .ToList();
+                            
+                        if (requestedNames.Distinct(StringComparer.OrdinalIgnoreCase).Count() != requestedNames.Count)
+                        {
+                            return ServiceResult<DoctorProfileDTO>.Failure("Duplicate specialties are not allowed.");
+                        }
+
+                        if (requestedNames.Count > 3)
+                        {
+                            return ServiceResult<DoctorProfileDTO>.Failure("A doctor can have a maximum of 3 specialties.");
+                        }
+
+                        var lowerRequestedNames = requestedNames.Select(s => s.ToLower()).ToList();
                         
                         var existingDbSpecialties = await dbContext.Specialties
-                            .Where(s => requestedNames.Contains(s.Name.ToLower()))
+                            .Where(s => lowerRequestedNames.Contains(s.Name.ToLower()))
                             .ToListAsync();
 
                         var existingDbSpecialtyIds = existingDbSpecialties.Select(s => s.SpecialtyId).ToList();
@@ -288,8 +220,7 @@ namespace Tabibi.Services
                             doctor.DoctorSpecialties.Add(new DoctorSpecialty
                             {
                                 DoctorId = doctor.DoctorId,
-                                SpecialtyId = id,
-                                ClinicPrice = 500 // Default price as before
+                                SpecialtyId = id
                             });
                         }
                     }
@@ -298,6 +229,15 @@ namespace Tabibi.Services
                         doctor.DoctorSpecialties.Clear();
                     }
                 }
+                
+                doctor.ClinicPrice = profileData.ClinicPrice;
+                doctor.IsClinicEnabled = profileData.IsClinicEnabled;
+                doctor.ChatPrice = profileData.ChatPrice;
+                doctor.IsChatEnabled = profileData.IsChatEnabled;
+                doctor.VideoPrice = profileData.VideoPrice;
+                doctor.IsVideoEnabled = profileData.IsVideoEnabled;
+                doctor.CallPrice = profileData.CallPrice;
+                doctor.IsCallEnabled = profileData.IsCallEnabled;
 
                 await dbContext.SaveChangesAsync();
                 
@@ -318,13 +258,13 @@ namespace Tabibi.Services
 
             if (doctor == null) return null;
 
-            var pendingChatRequests = await dbContext.ChatSessions
+            var chatSessions = await dbContext.ChatSessions
                 .Include(cs => cs.Patient).ThenInclude(p => p.User)
                 .Include(cs => cs.SymptomAnalysis)
-                .Where(cs => cs.DoctorId == doctor.DoctorId && cs.DoctorAccepted == null)
+                .Where(cs => cs.DoctorId == doctor.DoctorId && cs.Status == SessionStatus.Active)
                 .OrderBy(cs => cs.StartedAt)
                 .Take(10)
-                .Select(cs => new PendingChatRequestDTO
+                .Select(cs => new ChatSessionDTO
                 {
                     SessionId = cs.SessionId,
                     PatientName = cs.Patient.User.FullName,
@@ -359,10 +299,10 @@ namespace Tabibi.Services
             {
                 FullName = doctor.User.FullName,
                 IsVerified = doctor.IsVerified,
-                PendingChatRequestsCount = pendingChatRequests.Count,
+                ChatSessionsCount = chatSessions.Count,
                 TodaysAppointmentsCount = todaysAppointments.Count,
                 TotalPatientsSeen = totalPatientsSeen,
-                PendingChatRequests = pendingChatRequests,
+                ChatSessions = chatSessions,
                 TodaysAppointments = todaysAppointments
             };
         }
