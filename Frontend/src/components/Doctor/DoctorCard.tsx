@@ -1,5 +1,5 @@
 import React from "react";
-import { FaStar, FaMapMarkerAlt, FaBriefcase, FaVideo, FaCommentDots, FaPhone, FaClinicMedical } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaBriefcase, FaVideo, FaCommentDots, FaPhone, FaClinicMedical, FaCalendarCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import type { DoctorListItem } from "../../types/public";
@@ -7,9 +7,10 @@ import type { DoctorListItem } from "../../types/public";
 interface DoctorCardProps {
   doctor: DoctorListItem;
   onStartChat: (doctorId: number) => void;
+  onBookAppointment?: (doctorId: number) => void;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat }) => {
+const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat, onBookAppointment }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
@@ -29,6 +30,12 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat }) => {
     e.preventDefault();
     e.stopPropagation();
     onStartChat?.(doctor.doctorId);
+  };
+
+  const handleBookAppointment = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onBookAppointment?.(doctor.doctorId);
   };
 
   const handleCardClick = () => {
@@ -103,15 +110,26 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat }) => {
               </div>
             )}
           </div>
-          {!isSelf && doctor.isChatEnabled && (
+          {!isSelf && (doctor.isChatEnabled || doctor.isClinicEnabled || doctor.isVideoEnabled || doctor.isCallEnabled) && (
             <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
-              <button 
-                type="button"
-                onClick={handleStartChat}
-                className="w-full sm:w-auto bg-gradient-to-r from-primary to-blue-600 text-white px-8 py-2.5 rounded-full font-medium shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <FaCommentDots className="text-lg" /> Chat
-              </button>
+              {onBookAppointment && (doctor.isClinicEnabled || doctor.isVideoEnabled || doctor.isCallEnabled) && (
+                <button
+                  type="button"
+                  onClick={handleBookAppointment}
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-blue-600 text-white px-6 py-2.5 rounded-full font-medium shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <FaCalendarCheck className="text-base" /> Book
+                </button>
+              )}
+              {doctor.isChatEnabled && (
+                <button
+                  type="button"
+                  onClick={handleStartChat}
+                  className="w-full sm:w-auto bg-white border-2 border-primary text-primary px-6 py-2.5 rounded-full font-medium shadow hover:shadow-md hover:bg-primary/5 transform hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <FaCommentDots className="text-base" /> Chat
+                </button>
+              )}
             </div>
           )}
         </div>

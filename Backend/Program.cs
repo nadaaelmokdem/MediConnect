@@ -18,7 +18,10 @@ namespace Tabibi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<Tabibi.Filters.ApiResponseFilter>();
+            });
 
             // DbContext
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -46,6 +49,10 @@ namespace Tabibi
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddSignalR();
             builder.Services.AddScoped<ChatService>();
+            builder.Services.AddScoped<AppointmentService>();
+            builder.Services.AddScoped<SlotService>();
+            builder.Services.AddScoped<PricingService>();
+            builder.Services.AddScoped<AppointmentNotificationService>();
 builder.Services.AddSingleton<PresenceTracker>();
 
             builder.Services.AddCors(options =>
@@ -53,7 +60,10 @@ builder.Services.AddSingleton<PresenceTracker>();
                 options.AddPolicy(name: "React Frontend",
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5500")
+                                      policy.WithOrigins(
+                               "http://localhost:5173",
+                               "http://localhost:5174",
+                               "http://127.0.0.1:5500")
                                             .AllowAnyHeader()
                                             .AllowAnyMethod()
                                             .AllowCredentials();
@@ -127,6 +137,7 @@ builder.Services.AddSingleton<PresenceTracker>();
 
             app.MapControllers();
             app.MapHub<ChatHub>("/hubs/chat");
+            app.MapHub<AppointmentHub>("/hubs/appointments");
 
             // Seed roles
             using (var scope = app.Services.CreateScope())

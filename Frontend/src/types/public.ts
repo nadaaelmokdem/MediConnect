@@ -30,6 +30,7 @@ export interface DoctorListItem {
   yearsOfExperience?: number;
   clinicLocation?: string;
   bio?: string;
+  isVerified?: boolean;
   specialties: DoctorListSpecialty[];
   clinicPrice: number;
   isClinicEnabled: boolean;
