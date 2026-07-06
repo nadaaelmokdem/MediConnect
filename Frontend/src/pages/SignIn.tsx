@@ -87,6 +87,16 @@ export default function TabibiLogin({
     try {
       const user = await login(email, password);
 
+      // Admin credentials work from any login page (patient, doctor, or
+      // admin) - skip the role-mismatch flow below, which was built for
+      // patient/doctor accounts only and doesn't have a sane resolution
+      // for an Admin account (no "register as admin" or third login page
+      // to bounce to).
+      if (user?.roles?.some((r) => r.toLowerCase() === "admin")) {
+        navigate("/admin-dashboard");
+        return;
+      }
+
       if (requiredRole && user?.roles && !user.roles.includes(requiredRole)) {
         Swal.fire({
           title: `You are registered as a ${user.roles.join(", ")}.`,
