@@ -1,0 +1,216 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Tabibi.DTOs;
+using Tabibi.Services;
+using Tabibi.Extensions;
+using Tabibi.Shared;
+
+namespace Tabibi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize(Roles = UserRoles.Doctor)]
+    public class DoctorController(DoctorService doctorService) : ControllerBase
+    {
+        [HttpPatch("profile-field")]
+        public async Task<IActionResult> UpdateProfileField([FromBody] DoctorProfileFieldDTO fieldData)
+        {
+            var userId = User.GetId();
+            
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            if (string.IsNullOrEmpty(fieldData.FieldName) || string.IsNullOrEmpty(fieldData.Value))
+            {
+                return BadRequest("Field name and value are required");
+            }
+            var res = (await doctorService.UpdateProfileField(userId, fieldData.FieldName, fieldData.Value));
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
+            }
+
+            return Ok($"{fieldData.FieldName} updated successfully");
+        }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetDoctorProfile()
+        {
+            var userId = User.GetId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            var profile = await doctorService.GetProfile(userId);
+
+            if (profile is not null)
+            {
+                return Ok(profile);
+            }
+            return NotFound("Doctor does not exist!");
+        }
+        [HttpPost("availability")]
+public async Task<IActionResult> AddAvailability(
+    [FromBody] DoctorAvailabilityCreateDTO dto)
+{
+    var userId = User.GetId();
+
+    if (string.IsNullOrEmpty(userId))
+    {
+        return Unauthorized("User not authenticated");
+    }
+
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+
+    var result = await doctorService.AddAvailability(userId, dto);
+
+    if (!result.IsSuccess)
+    {
+        return BadRequest(result.ErrorMessage);
+    }
+
+    return Ok(result);
+}
+
+        [HttpPut("profile")]
+        public async Task<IActionResult> BulkUpdateProfile([FromBody] DoctorProfileBulkUpdateDTO profileData)
+        {
+            var userId = User.GetId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var res = await doctorService.BulkUpdateProfile(userId, profileData);
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
+            }
+
+            return Ok(res.Data);
+        }
+           
+        [HttpGet("dashboard-summary")]
+        public async Task<IActionResult> GetDashboard()
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+ 
+            var dashboard = await doctorService.GetDashboard(userId);
+            if (dashboard is null)
+            {
+                return NotFound("Doctor does not exist!");
+            }
+            return Ok(dashboard);
+        }
+
+        [HttpPost("upload-proof")]
+        public async Task<IActionResult> UploadProof(IFormFile file, [FromForm] string fieldName)
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated");
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded");
+            }
+
+            // Valid field names for proofs
+            var validFields = new[] { "licenseProofUrl", "idProofUrl", "degreeProofUrl", "profilePictureUrl" };
+            if (!validFields.Contains(fieldName))
+            {
+                return BadRequest("Invalid field name for file upload");
+            }
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "proofs");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Return relative URL assuming static files are served from wwwroot
+            var fileUrl = $"/proofs/{uniqueFileName}";
+
+            // Update the profile field with this URL
+            var res = await doctorService.UpdateProfileField(userId, fieldName, fileUrl);
+            if (!res.IsSuccess)
+            {
+                return BadRequest(res.ErrorMessage);
+            }
+
+            return Ok(new { url = fileUrl, field = fieldName });
+        }
+        [HttpGet("availability")]
+public async Task<IActionResult> GetAvailability()
+{
+    var userId = User.GetId();
+
+    if (string.IsNullOrEmpty(userId))
+    {
+        return Unauthorized("User not authenticated");
+    }
+
+    var result = await doctorService.GetAvailabilities(userId);
+
+    return Ok(result);
+}[HttpPut("availability/{id}")]
+public async Task<IActionResult> UpdateAvailability(
+    int id,
+    [FromBody] DoctorAvailabilityUpdateDTO dto)
+{
+    var userId = User.GetId();
+
+    if (string.IsNullOrEmpty(userId))
+        return Unauthorized();
+
+    var result = await doctorService.UpdateAvailability(userId, id, dto);
+
+    if (!result.IsSuccess)
+        return BadRequest(result.ErrorMessage);
+
+    return Ok(result);
+}
+[HttpDelete("availability/{id}")]
+public async Task<IActionResult> DeleteAvailability(int id)
+{
+    var userId = User.GetId();
+
+    if (string.IsNullOrEmpty(userId))
+        return Unauthorized();
+
+    var result = await doctorService.DeleteAvailability(userId, id);
+
+    if (!result.IsSuccess)
+        return BadRequest(result.ErrorMessage);
+
+    return Ok(result);
+}
+    }
+}
