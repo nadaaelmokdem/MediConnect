@@ -67,7 +67,7 @@ export default function AdminDashboard() {
               <Skeleton className="h-24 w-full" />
             </div>
           )}
-          {error && !loading && <NetworkError message={`Couldn't load dashboard. ${error}`} />}
+          {error && !loading && <NetworkError />}
           {data && !loading && (
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <StatCard title="Patients" value={data.totalPatients} icon={MdPeopleAlt} isPrimary />

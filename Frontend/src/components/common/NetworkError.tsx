@@ -4,7 +4,7 @@ interface NetworkErrorProps {
   message?: string;
 }
 
-export default function NetworkError({ message = "Oops! Looks like you're offline. We're ready when you are." }: NetworkErrorProps) {
+export default function NetworkError({ message = "Oops! Looks like you're offline!" }: NetworkErrorProps) {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
       <div className="bg-red-50 p-4 rounded-full mb-4">

@@ -19,6 +19,7 @@ import { onUserPresenceChanged, subscribeToPresence } from "../services/chatHubS
 import { useAuth } from "../context/AuthContext";
 import DoctorService from "../services/doctorService";
 import type { DoctorDashboardData } from "../types/dashboard";
+import Skeleton from "../components/common/Skeleton";
 
 function formatLastMessagePreview(
   lastMessage: string,
@@ -106,7 +107,16 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="p-8 text-on-surface-variant/60">Loading your dashboard...</div>;
+    return (
+      <div className="flex-1 p-8 max-w-[1440px] z-10 relative">
+        <Skeleton className="h-48 w-full mb-6" />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <Skeleton className="col-span-1 md:col-span-12 h-40" />
+          <Skeleton className="col-span-1 md:col-span-6 h-64" />
+          <Skeleton className="col-span-1 md:col-span-6 h-64" />
+        </div>
+      </div>
+    );
   }
 
   const doctorFirstName =
