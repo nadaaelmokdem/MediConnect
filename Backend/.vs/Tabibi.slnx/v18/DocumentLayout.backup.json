@@ -3,13 +3,14 @@
   "WorkspaceRootPath": "C:\\My Files\\Tabibi\\Backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.SymptomAnalyses.sql||{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.ChatMessages.sql||{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"
+      "AbsoluteMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|c:\\my files\\tabibi\\backend\\models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|solutionrelative:models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.ChatSessions.sql||{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.SymptomAnalyses.sql||{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\My Files\\Tabibi\\Backend\\Migrations\\20260708141912_adminOptimization.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -31,10 +32,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|c:\\my files\\tabibi\\backend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|c:\\my files\\tabibi\\backend\\models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|solutionrelative:models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C7176386-DE94-834D-7920-A9E2B3B01587}|Tabibi.csproj|c:\\my files\\tabibi\\backend\\extensions\\doctorextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -80,7 +77,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -88,7 +85,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "dbo.SymptomAnalyses [Data]",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.SymptomAnalyses.sql",
               "ToolTip": "dbo.SymptomAnalyses [Data]",
@@ -99,34 +96,11 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "dbo.ChatMessages [Data]",
-              "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.ChatMessages.sql",
-              "ToolTip": "dbo.ChatMessages [Data]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-07-08T14:53:31.15Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "dbo.ChatSessions [Data]",
               "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/Tabibi/True/SqlTable/dbo.ChatSessions.sql",
               "ToolTip": "dbo.ChatSessions [Data]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
               "WhenOpened": "2026-07-08T14:31:09.514Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "20260708141912_adminOptimization.cs",
-              "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Migrations\\20260708141912_adminOptimization.cs",
-              "RelativeDocumentMoniker": "Migrations\\20260708141912_adminOptimization.cs",
-              "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Migrations\\20260708141912_adminOptimization.cs",
-              "RelativeToolTip": "Migrations\\20260708141912_adminOptimization.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAzwAEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T14:19:12.192Z",
               "EditorCaption": ""
             },
             {
@@ -154,7 +128,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 0,
+              "Title": "DoctorProfile.cs",
+              "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Models\\DoctorProfile.cs",
+              "RelativeDocumentMoniker": "Models\\DoctorProfile.cs",
+              "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Models\\DoctorProfile.cs",
+              "RelativeToolTip": "Models\\DoctorProfile.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAewEkAAABqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T11:00:11.113Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "20260708141912_adminOptimization.cs",
+              "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Migrations\\20260708141912_adminOptimization.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260708141912_adminOptimization.cs",
+              "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Migrations\\20260708141912_adminOptimization.cs",
+              "RelativeToolTip": "Migrations\\20260708141912_adminOptimization.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAzwAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T14:19:12.192Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "PublicDTOs.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\DTOs\\PublicDTOs.cs",
               "RelativeDocumentMoniker": "DTOs\\PublicDTOs.cs",
@@ -167,7 +167,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 11,
               "Title": "DoctorProfileDTO.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\DTOs\\DoctorProfileDTO.cs",
               "RelativeDocumentMoniker": "DTOs\\DoctorProfileDTO.cs",
@@ -180,7 +180,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 16,
               "Title": "PatientController.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Controllers\\PatientController.cs",
               "RelativeDocumentMoniker": "Controllers\\PatientController.cs",
@@ -189,19 +189,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-08T11:15:59.451Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "DoctorProfile.cs",
-              "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Models\\DoctorProfile.cs",
-              "RelativeDocumentMoniker": "Models\\DoctorProfile.cs",
-              "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Models\\DoctorProfile.cs",
-              "RelativeToolTip": "Models\\DoctorProfile.cs",
-              "ViewState": "AgIAACgAAAAAAAAAAAA9wCsAAABUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T11:00:11.113Z",
               "EditorCaption": ""
             },
             {
@@ -222,14 +209,14 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAKYAAAAAAAAAAAAkwK0AAABhAAAAAAAAAA==",
+              "ViewState": "AgIAAKcAAAAAAAAAAAAkwK4AAABhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-08T09:28:19.353Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 15,
               "Title": "DoctorController.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Controllers\\DoctorController.cs",
               "RelativeDocumentMoniker": "Controllers\\DoctorController.cs",
@@ -252,7 +239,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 9,
               "Title": "DoctorExtensions.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Extensions\\DoctorExtensions.cs",
               "RelativeDocumentMoniker": "Extensions\\DoctorExtensions.cs",
@@ -265,7 +252,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 14,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
@@ -278,33 +265,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 17,
               "Title": "AppDbContext.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Data\\AppDbContext.cs",
               "RelativeDocumentMoniker": "Data\\AppDbContext.cs",
               "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Data\\AppDbContext.cs",
               "RelativeToolTip": "Data\\AppDbContext.cs",
-              "ViewState": "AgIAAPoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-08T09:29:07.317Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 13,
               "Title": "DoctorService.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Services\\DoctorService.cs",
               "RelativeDocumentMoniker": "Services\\DoctorService.cs",
               "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Services\\DoctorService.cs",
               "RelativeToolTip": "Services\\DoctorService.cs",
-              "ViewState": "AgIAACcAAAAAAAAAAAAawCsAAAAlAAAAAAAAAA==",
+              "ViewState": "AgIAACgAAAAAAAAAAAAawCwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-08T11:28:07.561Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 12,
               "Title": "AuthService.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Services\\AuthService.cs",
               "RelativeDocumentMoniker": "Services\\AuthService.cs",

@@ -19,7 +19,7 @@ namespace Tabibi.Controllers
             {
                 return BadRequest(res.ErrorMessage);
             }
-            return Ok(res.Value);
+            return Ok(res.Data);
         }
 
         [HttpPost]

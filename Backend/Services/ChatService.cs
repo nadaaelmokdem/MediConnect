@@ -15,7 +15,7 @@ namespace Tabibi.Services
         {
             var session = await dbContext.ChatSessions
                 .Include(s => s.Patient).ThenInclude(p => p.User)
-                .Include(s => s.Doctor).ThenInclude(d => d.User)
+                .Include(s => s.Doctor).ThenInclude(d => d!.User)
                 .FirstOrDefaultAsync(s => s.SessionId == sessionId);
 
             if (session == null)
@@ -107,7 +107,7 @@ namespace Tabibi.Services
             }
             else
             {
-                query = query.Where(s => s.Doctor.UserId == userId);
+                query = query.Where(s => s.Doctor!.UserId == userId);
             }
 
             var sessions = await query
@@ -319,7 +319,7 @@ namespace Tabibi.Services
             var session = await dbContext.ChatSessions
                 .Include(s => s.Patient)
                 .Include(s => s.Doctor)
-                .ThenInclude(d => d.DoctorSpecialties)
+                .ThenInclude(d => d!.DoctorSpecialties)
                 .FirstOrDefaultAsync(s => s.SessionId == sessionId && s.Patient.UserId == patientUserId);
 
             if (session == null) throw new Exception("Session not found or access denied.");

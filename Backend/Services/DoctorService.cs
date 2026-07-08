@@ -425,8 +425,6 @@ namespace Tabibi.Services
                 })
                 .ToListAsync();
 
-            var todayStart = DateTime.UtcNow.Date;
-            var todayEnd = todayStart.AddDays(1);
 
             var todaysAppointments = await dbContext.Appointments
                 .Include(a => a.Patient).ThenInclude(p => p.User)
