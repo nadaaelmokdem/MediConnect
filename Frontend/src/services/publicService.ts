@@ -39,7 +39,10 @@ export default class PublicService {
       const response = await api.get(`reviews/doctor/${doctorId}`, {
         params: { page, pageSize }
       });
-      return response.data;
+      return {
+        ...response.data,
+        items: response.data.reviews || []
+      };
     } catch (error) {
       console.error("Failed to fetch doctor reviews:", error);
       throw new Error("Failed to fetch doctor reviews.");

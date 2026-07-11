@@ -12,8 +12,9 @@ interface DetailReadViewProps {
 
 const isImageUrl = (url: string | undefined | null): boolean => {
   if (!url) return false;
-  const trimmed = url.trim();
-  return /\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i.test(trimmed) || trimmed.startsWith("data:image/") || trimmed.includes("/uploads/proof-");
+  const trimmed = url.trim().toLowerCase();
+  if (trimmed.endsWith(".pdf") || trimmed.includes(".pdf?")) return false;
+  return /\.(jpg|jpeg|png|webp|heic|heif)($|\?)/.test(trimmed) || trimmed.startsWith("data:image/") || (trimmed.includes("/uploads/proof-") && !trimmed.endsWith(".pdf"));
 };
 
 export const DetailReadView: React.FC<DetailReadViewProps> = ({
@@ -60,6 +61,17 @@ export const DetailReadView: React.FC<DetailReadViewProps> = ({
               >
                 View Photo
               </button>
+            </div>
+          ) : value?.includes("/uploads/proof-") || value?.includes("http") ? (
+             <div className="flex items-center gap-3">
+              <a
+                href={value}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-semibold text-[#6A5ACD] hover:underline text-left truncate max-w-[160px] sm:max-w-xs cursor-pointer bg-[#F3F0FF] px-3 py-1.5 rounded-md"
+              >
+                View Document
+              </a>
             </div>
           ) : type === "textarea" ? (
             <p className="text-md font-medium text-[#2A2455] leading-relaxed whitespace-pre-wrap break-words">

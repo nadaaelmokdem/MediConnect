@@ -1,6 +1,6 @@
 import { MdLocationOn, MdContacts } from "react-icons/md";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type patientExtraData from "../types/extraDataPatient";
 import { useAuth } from "../context/AuthContext";
 import PatientService from "../services/patientService";
@@ -28,7 +28,7 @@ export default function ContinueData() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState("");
 
-  const hasAccess = useRef(location.state?.fromSignIn);
+  const [hasAccess] = useState(location.state?.fromSignIn);
 
   useEffect(() => {
     if (location.state?.fromSignIn) {
@@ -38,7 +38,7 @@ export default function ContinueData() {
     }
   }, [location.pathname, location.state, navigate]);
 
-  if (!hasAccess.current) {
+  if (!hasAccess) {
     return <Navigate to="/patient-profile" replace />;
   }
 

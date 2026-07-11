@@ -25,11 +25,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (activeTab !== "Overview") return;
-    setLoading(true);
+    let active = true;
+    setTimeout(() => { if (active) setLoading(true); }, 0);
     AdminService.getDashboard()
-      .then(setData)
-      .catch((err) => setError(err.message ?? "Failed to load dashboard"))
-      .finally(() => setLoading(false));
+      .then(res => { if (active) setData(res); })
+      .catch((err) => { if (active) setError(err.message ?? "Failed to load dashboard"); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [activeTab]);
 
   return (

@@ -14,7 +14,8 @@ import { useAuth } from "../context/AuthContext";
 import { TbLayoutSidebarLeftCollapse, TbLayoutSidebarRightCollapse, TbArrowLeft } from "react-icons/tb";
 import { HiSparkles } from "react-icons/hi";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
-import { formatTimeTo12Hour } from "../utils/dateUtils";
+import { formatTimeTo12Hour, formatChatSessionTime } from "../utils/dateUtils";
+import { formatMessagePreview } from "../utils/textUtils";
 
 const CURRENT_USER_ID = "user1";
 
@@ -249,15 +250,30 @@ export default function AIChatPage() {
   };
 
   useEffect(() => {
-    if (location.state?.initialPrompt && !initialPromptHandled && !isLoading) {
+    if ((location.state?.initialPrompt || location.state?.attachedFile) && !initialPromptHandled && !isLoading) {
       setInitialPromptHandled(true);
-      const promptText = location.state.initialPrompt;
+      const promptText = location.state.initialPrompt || "";
       const attachedFile = location.state.attachedFile;
-      let fullMessage = promptText;
+      
       if (attachedFile) {
-        fullMessage += `\n[Attached File: ${attachedFile.name}]`;
+        setIsLoading(true);
+        ChatService.uploadFile(attachedFile, () => {}).then(fileUrl => {
+          setIsLoading(false);
+          let fullMessage = promptText;
+          if (fullMessage.trim()) {
+            fullMessage += `\n${fileUrl}`;
+          } else {
+            fullMessage = fileUrl;
+          }
+          handleSendMessage(fullMessage);
+        }).catch(err => {
+          console.error("Failed to upload attached file", err);
+          setIsLoading(false);
+          if (promptText.trim()) handleSendMessage(promptText);
+        });
+      } else if (promptText.trim()) {
+        handleSendMessage(promptText);
       }
-      handleSendMessage(fullMessage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state, initialPromptHandled, isLoading]);
@@ -313,17 +329,17 @@ export default function AIChatPage() {
                       <HiSparkles className="text-[#6a5acd] mt-1 flex-shrink-0" /> {session.otherPartyName}
                     </span>
                     <span className="text-xs font-medium text-[#787584] shrink-0">
-                      {session.lastMessageTime ? new Date(session.lastMessageTime).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : ''}
+                      {session.lastMessageTime ? formatChatSessionTime(session.lastMessageTime) : ''}
                     </span>
                   </div>
-                  <p className="text-sm text-[#474553] line-clamp-2">{session.lastMessage || "No messages"}</p>
+                  <p className="text-sm text-[#474553] line-clamp-2">{formatMessagePreview(session.lastMessage) || "No messages"}</p>
                 </div>
              ))
           )}
         </div>
       </aside>
 
-      <section className={`flex-1 flex flex-col bg-[#fcf8ff] relative min-w-0 ${!numericSessionId && recentSessions.length > 0 && false ? 'hidden md:flex' : 'flex'}`}>
+      <section className={`flex-1 flex flex-col bg-[#fcf8ff] relative min-w-0 ${!numericSessionId && recentSessions.length > 0 ? 'hidden md:flex' : 'flex'}`}>
         <div className="bg-white px-4 sm:px-6 py-4 border-b border-[#e5deff] flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 sticky top-0 z-20 shadow-sm shrink-0">
           <div className="flex items-center gap-3 w-full lg:w-auto">
             <button onClick={() => navigate(-1)} className="md:hidden text-[#474553] p-1 -ml-2 rounded-lg hover:bg-[#eae5ff] transition-colors">
@@ -456,8 +472,12 @@ export default function AIChatPage() {
         <ChatInput 
           onSendMessage={handleSendMessage} 
           isLoading={isLoading} 
-          acceptedFileTypes=".jpg,.jpeg,.png,.pdf"
-          onFileUpload={(file) => alert(`Selected ${file.name} for AI analysis.`)}
+          acceptedFileTypes=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf"
+          onFileUpload={async (file, onProgress) => {
+            return await ChatService.uploadFile(file, (e: any) => {
+              if (e.total) onProgress(Math.round((e.loaded * 100) / e.total));
+            });
+          }}
         />
       </section>
 

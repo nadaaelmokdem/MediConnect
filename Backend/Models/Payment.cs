@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tabibi.Models
@@ -22,6 +22,9 @@ namespace Tabibi.Models
         [MaxLength(200)]
         public string? GatewayTransactionId { get; set; }
 
+        [MaxLength(200)]
+        public string? ExternalOrderId { get; set; }
+
         public DateTime? PaidAt { get; set; }
 
         // Navigation
@@ -30,5 +33,5 @@ namespace Tabibi.Models
     }
 
     public enum PaymentStatus { Pending, Paid, Refunded, Failed }
-    public enum PaymentGateway { Stripe, PayPal }
+    public enum PaymentGateway { Stripe, PayPal, Kasheir }
 }

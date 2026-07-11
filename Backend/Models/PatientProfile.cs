@@ -24,6 +24,8 @@ namespace Tabibi.Models
         [MaxLength(10)]
         public GenderTypes? Gender { get; set; }
 
+        public string? ProfilePictureUrl { get; set; }
+
         [MaxLength(200)]
         public string? EmergencyContact { get; set; }
 

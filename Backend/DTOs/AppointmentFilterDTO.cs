@@ -14,6 +14,7 @@ public class AppointmentFilterDTO
 
 public class AppointmentListDTO
 {
+    public int DoctorId { get; set; }
     public int AppointmentId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
     public string PatientName { get; set; } = string.Empty;
@@ -27,4 +28,6 @@ public class AppointmentListDTO
     public string? DoctorProfilePictureUrl { get; set; }
     public string? PatientProfilePictureUrl { get; set; }
     public int? SessionId { get; set; }
+    public int? ReviewRating { get; set; }
+    public string? ReviewComment { get; set; }
 }

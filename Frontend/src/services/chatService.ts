@@ -45,4 +45,16 @@ export default class ChatService {
     const response = await api.get(`chat/sessions`, { params: { activeRole } });
     return response.data;
   }
+
+  static async uploadFile(file: File, onProgress?: (progressEvent: any) => void): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post("chat/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: onProgress,
+    });
+    return response.data.url;
+  }
 }

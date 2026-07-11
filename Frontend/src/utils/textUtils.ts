@@ -8,3 +8,17 @@ export function getTextDirection(text: string): "ltr" | "rtl" {
   }
   return "ltr";
 }
+
+export function formatMessagePreview(message: string): string {
+  if (!message) return "";
+  const mediaRegex = /((?:(?:\/api\/files\/|\/chats\/)|https?:\/\/)[^\n]+?\.(?:jpg|jpeg|png|webp|heic|heif|mp4|mov|avi|webm|wmv|mpeg|mpg|flv|3gpp|pdf))/i;
+  const match = message.match(mediaRegex);
+  if (match) {
+    const textContent = message.replace(match[1], '').trim();
+    if (textContent) {
+      return `${textContent} <Attachment>`;
+    }
+    return "<Attachment>";
+  }
+  return message;
+}

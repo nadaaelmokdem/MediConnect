@@ -138,6 +138,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Safeguard: if user has no name, log them out and navigate to login
+  useEffect(() => {
+    if (user && !user.fullName) {
+      logout()
+        .then(() => navigate("/login"))
+        .catch(() => navigate("/login"));
+    }
+  }, [user, logout, navigate]);
+
   const updateUser = useCallback((patch: Partial<AppUser>) => {
     setUser((prevUser) => {
       if (!prevUser) return null;

@@ -52,6 +52,7 @@ namespace Tabibi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient();
             builder.Services.AddSignalR();
             builder.Services.AddSingleton<IUserIdProvider, SubClaimUserIdProvider>();
             builder.Services.AddScoped<ChatService>();
@@ -60,6 +61,9 @@ namespace Tabibi
             builder.Services.AddScoped<PricingService>();
             builder.Services.AddScoped<AppointmentNotificationService>();
             builder.Services.AddScoped<ReviewService>();
+            builder.Services.AddScoped<IFileService, S3FileService>();
+            builder.Services.AddHttpClient<Tabibi.Services.Payments.KasheirPaymentStrategy>();
+            builder.Services.AddScoped<Tabibi.Services.Payments.PaymentGatewayResolver>();
             builder.Services.AddSingleton<PresenceTracker>();
 
             builder.Services.AddCors(options =>
@@ -70,7 +74,8 @@ namespace Tabibi
                                       policy.WithOrigins(
                                "http://localhost:5173",
                                "http://localhost:5174",
-                               "http://127.0.0.1:5500")
+                               "http://127.0.0.1:5500",
+                               "https://bankbook-kleenex-retake.ngrok-free.dev")
                                             .AllowAnyHeader()
                                             .AllowAnyMethod()
                                             .AllowCredentials();
@@ -134,8 +139,6 @@ namespace Tabibi
             }
 
             app.UseCors("React Frontend");
-
-            app.UseStaticFiles();
 
             //app.UseHttpsRedirection();
 

@@ -9,7 +9,7 @@ namespace Tabibi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ChatController(ChatService chatService) : ControllerBase
+    public class ChatController(ChatService chatService, IFileService fileService) : ControllerBase
     {
         [HttpPost("start/{doctorId}")]
         [Authorize(Roles = UserRoles.Patient)]
@@ -113,6 +113,17 @@ namespace Tabibi.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("upload")]
+        [Authorize]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var fileUrl = await fileService.UploadFileAsync(file, "chats");
+            return Ok(new { url = fileUrl, name = file.FileName });
         }
     }
 }

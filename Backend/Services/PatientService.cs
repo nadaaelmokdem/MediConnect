@@ -6,7 +6,7 @@ using Tabibi.Models;
 
 namespace Tabibi.Services
 {
-    public class PatientService(AppDbContext dbContext)
+    public class PatientService(AppDbContext dbContext, IFileService fileService)
     {
         public async Task<ServiceResult> UpdateProfileField(string userId, string fieldName, string value)
         {
@@ -58,6 +58,14 @@ namespace Tabibi.Services
 
                     case "address":
                         patient.Address = value;
+                        break;
+
+                    case "profilepictureurl":
+                        if (!string.IsNullOrEmpty(patient.ProfilePictureUrl) && patient.ProfilePictureUrl != value)
+                        {
+                            await fileService.DeleteFileAsync(patient.ProfilePictureUrl);
+                        }
+                        patient.ProfilePictureUrl = value;
                         break;
 
                     default:
@@ -178,7 +186,8 @@ namespace Tabibi.Services
                 Weight = user.Weight.ToString(),
                 Height = user.Height.ToString(),
                 Emergency = user.EmergencyContact,
-                Address = user.Address
+                Address = user.Address,
+                ImageUrl = user.ProfilePictureUrl
             };
         }
 
@@ -190,7 +199,7 @@ namespace Tabibi.Services
 
             if (patient == null) return null;
 
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var todayStart = now.Date;
             var todayEnd = todayStart.AddDays(1);
 
@@ -214,7 +223,7 @@ namespace Tabibi.Services
 
             var upcomingAppointments = await dbContext.Appointments
                 .Include(a => a.Doctor).ThenInclude(d => d.User)
-                .Where(a => a.PatientId == patient.PatientId && a.ScheduledAt >= DateTime.UtcNow)
+                .Where(a => a.PatientId == patient.PatientId && a.ScheduledAt >= DateTime.Now)
                 .OrderBy(a => a.ScheduledAt)
                 .Take(5)
                 .Select(a => new UpcomingAppointmentDTO
@@ -246,19 +255,18 @@ namespace Tabibi.Services
 
             var unreviewedAppointments = await dbContext.Appointments
                 .Include(a => a.Doctor).ThenInclude(d => d.User)
+                .Include(a => a.Review)
                 .Where(a => a.PatientId == patient.PatientId 
                          && a.Status == AppointmentStatus.Completed 
-                         && a.Review == null
-                         && dbContext.ChatSessions.Any(cs => cs.PatientId == patient.PatientId 
-                                                          && cs.DoctorId == a.DoctorId 
-                                                          && cs.Messages.Any(m => m.Role == Tabibi.Shared.UserRoles.Patient)))
+                         && a.Review == null)
                 .OrderByDescending(a => a.ScheduledAt)
                 .Select(a => new UnreviewedAppointmentDTO
                 {
                     AppointmentId = a.AppointmentId,
                     DoctorId = a.DoctorId,
                     DoctorName = a.Doctor.User.FullName,
-                    ScheduledAt = a.ScheduledAt
+                    ScheduledAt = a.ScheduledAt,
+                    doctorProfilePictureUrl = a.Doctor.ProfilePictureUrl
                 })
                 .ToListAsync();
 

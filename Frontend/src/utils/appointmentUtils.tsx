@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   MdAccessTime,
   MdLocalHospital,
@@ -13,6 +14,7 @@ export type AppointmentStatusName = "Confirmed" | "Completed" | "Cancelled";
 
 export interface AppointmentListItem {
   appointmentId: number;
+  doctorId?: number;
   doctorName?: string;
   patientName?: string;
   scheduledAt: string;

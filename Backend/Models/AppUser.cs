@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Tabibi.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -13,7 +13,7 @@ namespace Tabibi.Models
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // Navigation
         public PatientProfile? PatientProfile { get; set; }

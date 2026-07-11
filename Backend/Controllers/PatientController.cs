@@ -10,7 +10,7 @@ namespace Tabibi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = UserRoles.Patient)]
-    public class PatientController(PatientService patientService) : ControllerBase
+    public class PatientController(PatientService patientService, IFileService fileService) : ControllerBase
     {
         [HttpPut("change-patient-data")]
         public async Task<IActionResult> ChangePatientData(PatientExtraDTO patientData)
@@ -95,7 +95,23 @@ namespace Tabibi.Controllers
             return Ok(dashboard);
         }
  
+        [HttpPost("upload-profile-picture")]
+        public async Task<IActionResult> UploadProfilePicture(IFormFile file)
+        {
+            var userId = User.GetId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User not authenticated");
 
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
 
+            var fileUrl = await fileService.UploadFileAsync(file, "avatars");
+
+            var res = await patientService.UpdateProfileField(userId, "profilePictureUrl", fileUrl);
+            if (!res.IsSuccess)
+                return BadRequest(res.ErrorMessage);
+
+            return Ok(new { url = fileUrl });
+        }
     }
 }

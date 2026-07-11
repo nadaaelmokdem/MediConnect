@@ -1,4 +1,6 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LangProvider } from "./context/LangContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -17,12 +19,11 @@ import DoctorsPage from "./pages/DoctorsPage";
 import DoctorAdditionalData from "./pages/DoctorAdditionalData";
 import PatientDashboard from "./pages/PatientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import DoctorMessagesPage from "./pages/DoctorMessagesPage";
 import DoctorDetailsPage from "./pages/DoctorDetailsPage";
-import UserDoctorChatsPage from "./pages/UserDoctorChatsPage";
 import DoctorAvailabilityPage from "./pages/DoctorAvailabilityPage";
 import DoctorAppointmentsPage from "./pages/DoctorAppointmentsPage";
 import PatientAppointmentsPage from "./pages/PatientAppointmentsPage";
+import PaymentResultPage from "./pages/PaymentResultPage";
 
 function AppointmentsRedirect() {
   const { user } = useAuth();
@@ -87,14 +88,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/messages"
-                element={
-                  <ProtectedRoute allowedRoles={["Doctor"]}>
-                    <DoctorMessagesPage />
-                  </ProtectedRoute>
-                }
-              />
+
               <Route path="/doctors" element={<DoctorsPage />} />
               <Route path="/doctors/:id" element={<DoctorDetailsPage />} />
               <Route
@@ -114,7 +108,7 @@ function App() {
                 }
               />
               <Route
-                path="/chat/:sessionId"
+                path="/chat"
                 element={
                   <ProtectedRoute>
                     <DoctorChatPage />
@@ -122,18 +116,10 @@ function App() {
                 }
               />
               <Route
-                path="/doctor-chats"
+                path="/chat/:sessionId"
                 element={
-                  <ProtectedRoute allowedRoles={["User"]}>
-                    <UserDoctorChatsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/doctor-chats/:sessionId"
-                element={
-                  <ProtectedRoute allowedRoles={["User"]}>
-                    <UserDoctorChatsPage />
+                  <ProtectedRoute>
+                    <DoctorChatPage />
                   </ProtectedRoute>
                 }
               />
@@ -201,11 +187,13 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/payment-result" element={<PaymentResultPage />} />
             </Route>
             
             {/* Catch-all Route for invalid URLs */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
         </LangProvider>
       </AuthProvider>
     </BrowserRouter>

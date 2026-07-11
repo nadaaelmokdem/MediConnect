@@ -18,6 +18,7 @@ export interface UnreviewedAppointment {
   appointmentId: number;
   doctorId: number;
   doctorName: string;
+  doctorProfilePictureUrl?: string;
   scheduledAt: string;
 }
 

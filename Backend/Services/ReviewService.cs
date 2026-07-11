@@ -15,7 +15,9 @@ namespace Tabibi.Services
             if (pageSize > 50) pageSize = 50;
 
             var query = dbContext.DoctorReviews
-                .Include(r => r.Appointment).ThenInclude(a => a.Patient).ThenInclude(p => p.User)
+                .Include(r => r.Appointment)
+                .ThenInclude(a => a.Patient)
+                .ThenInclude(p => p.User)
                 .Where(r => r.Appointment.DoctorId == doctorId);
 
             var totalCount = await query.CountAsync();
@@ -36,7 +38,8 @@ namespace Tabibi.Services
                     Rating = r.Rating,
                     Comment = r.Comment,
                     PatientName = r.Appointment.Patient.User.FullName,
-                    CreatedAt = r.CreatedAt
+                    CreatedAt = r.CreatedAt,
+                    ConsultationType = r.Appointment.ConsultationType
                 })
                 .ToListAsync();
 
@@ -62,39 +65,58 @@ namespace Tabibi.Services
 
             var appointment = await dbContext.Appointments
                 .Include(a => a.Review)
-                .FirstOrDefaultAsync(a => a.AppointmentId == dto.AppointmentId && a.PatientId == patient.PatientId);
+                .FirstOrDefaultAsync(a => a.AppointmentId == dto.AppointmentId);
 
-            if (appointment == null) return ServiceResult.Failure("Appointment not found.");
-            
+            if (appointment == null)
+            {
+                return ServiceResult.Failure("Appointment not found.");
+            }
+
+            if (appointment.PatientId != patient.PatientId)
+            {
+                return ServiceResult.Failure("You can only review your own appointments.");
+            }
+
             if (appointment.Status != AppointmentStatus.Completed)
             {
                 return ServiceResult.Failure("You can only review completed appointments.");
             }
 
-            if (appointment.Review != null)
+            var doctorId = appointment.DoctorId;
+            var doctor = await dbContext.DoctorProfiles.FirstOrDefaultAsync(d => d.DoctorId == doctorId);
+            
+            if (doctor != null)
             {
-                return ServiceResult.Failure("You have already reviewed this appointment.");
+                var oldRating = appointment.Review?.Rating;
+
+                if (appointment.Review != null)
+                {
+                    // It's an update
+                    if (doctor.ReviewCount > 0)
+                    {
+                        doctor.AverageRating = ((doctor.AverageRating * doctor.ReviewCount) - (decimal)oldRating! + (decimal)dto.Rating) / doctor.ReviewCount;
+                    }
+                    appointment.Review.Rating = dto.Rating;
+                    appointment.Review.Comment = dto.Comment;
+                }
+                else
+                {
+                    // It's a new review
+                    doctor.AverageRating = ((doctor.AverageRating * doctor.ReviewCount) + (decimal)dto.Rating) / (doctor.ReviewCount + 1);
+                    doctor.ReviewCount++;
+
+                    var review = new DoctorReview
+                    {
+                        AppointmentId = dto.AppointmentId,
+                        Rating = dto.Rating,
+                        Comment = dto.Comment
+                    };
+
+                    dbContext.DoctorReviews.Add(review);
+                }
+
+                await dbContext.SaveChangesAsync();
             }
-
-            bool hasChatted = await dbContext.ChatSessions.AnyAsync(cs => 
-                cs.PatientId == patient.PatientId && 
-                cs.DoctorId == appointment.DoctorId && 
-                cs.Messages.Any(m => m.Role == UserRoles.Patient));
-
-            if (!hasChatted)
-            {
-                return ServiceResult.Failure("You can only review doctors you have chatted with.");
-            }
-
-            var review = new DoctorReview
-            {
-                AppointmentId = appointment.AppointmentId,
-                Rating = dto.Rating,
-                Comment = dto.Comment
-            };
-
-            dbContext.DoctorReviews.Add(review);
-            await dbContext.SaveChangesAsync();
 
             return ServiceResult.Success();
         }

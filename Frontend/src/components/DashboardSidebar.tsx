@@ -1,3 +1,4 @@
+import { CachedImage } from "./common/CachedImage";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   LuCalendarDays,
@@ -12,6 +13,7 @@ import {
 import { MdMedicalServices, MdVerified } from "react-icons/md";
 import { useAuth } from "../context/AuthContext";
 import { HiOutlineSparkles } from "react-icons/hi";
+import { getFileUrl } from "../utils/fileUtils";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -33,11 +35,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: "Doctor Dashboard", icon: LuLayoutDashboard, path: "/doctor-dashboard" },
     { name: "Appointments", icon: LuCalendarDays, path: "/doctor-appointments" },
     { name: "Availability", icon: LuCalendarDays, path: "/doctor-availability" },
-    { name: "Messages", icon: LuMessageSquare, path: "/messages" },
+    { name: "Messages", icon: LuMessageSquare, path: "/chat" },
   ] : [
     { name: "User Dashboard", icon: LuLayoutDashboard, path: "/user-dashboard" },
     { name: "Chat With AI", icon: HiOutlineSparkles, path: "/ai-chat" },
-    { name: "Doctor Chats", icon: MdMedicalServices, path: "/doctor-chats" },
+    { name: "Chats", icon: MdMedicalServices, path: "/chat" },
     { name: "Appointments", icon: LuCalendarDays, path: "/patient-appointments" },
     { name: "Browse Doctors", icon: LuFolderHeart, path: "/doctors" },
   ];
@@ -74,11 +76,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
             <div className="flex items-center gap-3 mb-6">
               <div className="relative shrink-0">
-                {user?.profilePictureUrl ? (
-                  <img
+                {isDoctor && user?.profilePictureUrl ? (
+                  <CachedImage
                     alt="Avatar"
                     className="w-12 h-12 rounded-full object-cover shadow-sm"
-                    src={user.profilePictureUrl}
+                    src={getFileUrl(user.profilePictureUrl)}
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xl shadow-sm">
@@ -124,7 +126,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={() => onClose()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ease-in-out active:scale-95 ${
-                    isActive || ((item.path === "/doctor-chats" || item.path === "/messages") && location.pathname.startsWith("/chat/"))
+                    isActive || (item.path === "/chat" && location.pathname.startsWith("/chat/"))
                       ? "bg-surface-variant text-primary border-r-4 border-primary"
                       : "text-text-muted hover:bg-surface-variant/50 hover:text-text-main"
                   }`

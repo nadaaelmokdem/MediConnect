@@ -1,18 +1,19 @@
+import { CachedImage } from "../common/CachedImage";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  MdClose,
-  MdVerified,
-  MdErrorOutline,
-  MdLocationOn,
-  MdWork,
-  MdStar,
-  MdEventAvailable,
-  MdLocalHospital,
-  MdVideocam,
-  MdPhone,
-  MdChat,
-  MdAccessTime,
-} from "react-icons/md";
+  FaTimes,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaMapMarkerAlt,
+  FaBriefcase,
+  FaStar,
+  FaCalendarCheck,
+  FaClinicMedical,
+  FaVideo,
+  FaPhone,
+  FaCommentDots,
+  FaClock,
+} from "react-icons/fa";
 import type { DoctorListItem } from "../../types/public";
 import type { BookingFeedback, SelectedSlot, SlotWithMeta } from "../../types/booking";
 import WeekDayPicker from "./WeekDayPicker";
@@ -24,6 +25,7 @@ import {
   loadSlotsForDay,
   buildMockSlotsForDay,
 } from "../../utils/slotUtils";
+import { getFileUrl } from "../../utils/fileUtils";
 
 type ConsultationType = "clinic" | "video" | "call" | "chat";
 
@@ -36,10 +38,10 @@ interface ConsultTypeConfig {
 }
 
 const CONSULT_TYPES: ConsultTypeConfig[] = [
-  { id: "clinic", label: "Clinic", icon: <MdLocalHospital size={14} className="shrink-0" />, priceKey: "clinicPrice", enabledKey: "isClinicEnabled" },
-  { id: "video",  label: "Video",  icon: <MdVideocam size={14} className="shrink-0" />,          priceKey: "videoPrice",  enabledKey: "isVideoEnabled"  },
-  { id: "call",   label: "Phone",  icon: <MdPhone size={14} className="shrink-0" />,          priceKey: "callPrice",   enabledKey: "isCallEnabled"   },
-  { id: "chat",   label: "Chat",   icon: <MdChat size={14} className="shrink-0" />,    priceKey: "chatPrice",   enabledKey: "isChatEnabled"   },
+  { id: "clinic", label: "Clinic", icon: <FaClinicMedical size={14} className="shrink-0" />, priceKey: "clinicPrice", enabledKey: "isClinicEnabled" },
+  { id: "video",  label: "Video",  icon: <FaVideo size={14} className="shrink-0" />,          priceKey: "videoPrice",  enabledKey: "isVideoEnabled"  },
+  { id: "call",   label: "Phone",  icon: <FaPhone size={14} className="shrink-0" />,          priceKey: "callPrice",   enabledKey: "isCallEnabled"   },
+  { id: "chat",   label: "Chat",   icon: <FaCommentDots size={14} className="shrink-0" />,    priceKey: "chatPrice",   enabledKey: "isChatEnabled"   },
 ];
 
 interface BookingScheduleModalProps {
@@ -52,7 +54,7 @@ interface BookingScheduleModalProps {
   onClose: () => void;
   onSlotsLoaded: (slots: SlotWithMeta[]) => void;
   onSelectSlot: (slot: SlotWithMeta, dateKey: string) => void;
-  onConfirm: (type: ConsultationType) => void;
+  onConfirm: (type: ConsultationType, paymentMethod: number) => void;
   onPickAlternative: (slot: SlotWithMeta, dateKey: string) => void;
 }
 
@@ -75,6 +77,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
   );
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [consultType, setConsultType] = useState<ConsultationType>("clinic");
+  const [paymentMethod, setPaymentMethod] = useState<number>(1); // 1 = Online, 2 = OnSite
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   const primarySpecialty = doctor.specialties[0]?.name ?? "General Practice";
@@ -174,8 +177,8 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
             <div className="min-w-0 flex items-start gap-3">
               <div className="shrink-0 w-12 h-12 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center text-white font-bold text-lg overflow-hidden">
                 {doctor.profilePictureUrl ? (
-                  <img
-                    src={doctor.profilePictureUrl}
+                  <CachedImage
+                    src={getFileUrl(doctor.profilePictureUrl)}
                     alt={doctor.fullName}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -191,7 +194,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
                   </h2>
                   {(doctor as { isVerified?: boolean }).isVerified && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20">
-                      <MdVerified size={14} />
+                      <FaCheckCircle size={14} />
                       Verified
                     </span>
                   )}
@@ -200,16 +203,16 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
                 <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-on-primary/80">
                   {doctor.clinicLocation && (
                     <span className="flex items-center gap-1">
-                      <MdLocationOn size={14} className="shrink-0" /> {doctor.clinicLocation}
+                      <FaMapMarkerAlt size={14} className="shrink-0" /> {doctor.clinicLocation}
                     </span>
                   )}
                   {doctor.yearsOfExperience != null && (
                     <span className="flex items-center gap-1">
-                      <MdWork size={14} className="shrink-0" /> {doctor.yearsOfExperience} yrs
+                      <FaBriefcase size={14} className="shrink-0" /> {doctor.yearsOfExperience} yrs
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <MdStar size={14} className="text-yellow-300 shrink-0" />
+                    <FaStar size={14} className="text-yellow-300 shrink-0" />
                     {doctor.averageRating.toFixed(1)}
                   </span>
                 </div>
@@ -222,7 +225,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
               className="p-2 rounded-full hover:bg-white/20 transition-colors cursor-pointer shrink-0 mt-0.5"
               aria-label="Close booking modal"
             >
-              <MdClose size={22} />
+              <FaTimes size={22} />
             </button>
           </div>
 
@@ -313,9 +316,9 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
             >
               <div>
                 {feedback.type === "success" ? (
-                  <MdVerified className="shrink-0 mt-0.5 text-green-500 text-lg" />
+                  <FaCheckCircle className="shrink-0 mt-0.5 text-green-500 text-lg" />
                 ) : (
-                  <MdErrorOutline className="shrink-0 mt-0.5 text-red-500 text-lg" />
+                  <FaExclamationCircle className="shrink-0 mt-0.5 text-red-500 text-lg" />
                 )}
               </div>
               <div className="min-w-0">
@@ -333,7 +336,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
                           onClick={() => onPickAlternative(alt, selectedDateKey)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-current hover:bg-white/80 transition-colors cursor-pointer"
                         >
-                          <MdAccessTime size={12} />
+                          <FaClock size={12} />
                           {alt.timeLabel}
                         </button>
                       ))}
@@ -350,7 +353,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
             <div className="mb-3 p-3 bg-white rounded-2xl border border-primary/20 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <MdEventAvailable size={20} />
+                  <FaCalendarCheck size={20} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-gray-800 truncate">
@@ -358,7 +361,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
                     <span className="text-primary ml-2">{selectedSlot.timeLabel}</span>
                   </p>
                   <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MdAccessTime size={12} />
+                    <FaClock size={12} />
                     30 min session
                     {consultPrice && (
                       <>
@@ -378,22 +381,42 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
             </p>
           )}
 
-          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={!selectedSlot}
-              onClick={() => onConfirm(consultType)}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-on-primary font-semibold shadow-lg hover:shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer hover:-translate-y-0.5"
-            >
-              Confirm Booking
-            </button>
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-between w-full">
+            
+            {consultType === "clinic" ? (
+              <div className="flex items-center gap-4 border border-gray-200 p-2 rounded-xl bg-white shadow-sm">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+                  <input type="radio" name="payment" value={1} checked={paymentMethod === 1} onChange={() => setPaymentMethod(1)} className="text-primary focus:ring-primary h-4 w-4" />
+                  Pay Online
+                </label>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+                  <input type="radio" name="payment" value={2} checked={paymentMethod === 2} onChange={() => setPaymentMethod(2)} className="text-primary focus:ring-primary h-4 w-4" />
+                  Pay at Clinic
+                </label>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 border border-green-200 p-2 rounded-xl bg-green-50 shadow-sm text-green-700 text-sm font-semibold">
+                Online Payment Required
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!selectedSlot}
+                onClick={() => onConfirm(consultType, paymentMethod)}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-on-primary font-semibold shadow-lg hover:shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer hover:-translate-y-0.5"
+              >
+                Confirm Booking
+              </button>
+            </div>
           </div>
         </div>
       </div>

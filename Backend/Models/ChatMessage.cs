@@ -19,7 +19,7 @@ namespace Tabibi.Models
             [Required]
             public string Content { get; set; } = "";
 
-            public DateTime SentAt { get; set; } = DateTime.UtcNow;
+            public DateTime SentAt { get; set; } = DateTime.Now;
 
             // Navigation
             [ForeignKey(nameof(SessionId))]

@@ -8,4 +8,5 @@ export interface PatientProfileResponse {
   height: string;
   emergency: string;
   address: string;
+  imageUrl?: string;
 }

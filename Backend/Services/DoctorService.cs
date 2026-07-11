@@ -8,7 +8,7 @@ using Tabibi.Extensions;
 
 namespace Tabibi.Services
 {
-    public class DoctorService(AppDbContext dbContext)
+    public class DoctorService(AppDbContext dbContext, IFileService fileService)
     {
 
 
@@ -190,6 +190,10 @@ namespace Tabibi.Services
                         }
                         break;
                     case "profilepictureurl":
+                        if (!string.IsNullOrEmpty(doctor.ProfilePictureUrl) && doctor.ProfilePictureUrl != value)
+                        {
+                            await fileService.DeleteFileAsync(doctor.ProfilePictureUrl);
+                        }
                         doctor.ProfilePictureUrl = value;
                         break;
                     default:
@@ -244,6 +248,11 @@ namespace Tabibi.Services
 
                 doctor.ClinicLocation = profileData.ClinicLocation;
                 doctor.ClinicPhoneNumber = profileData.ClinicPhoneNumber;
+                
+                if (!string.IsNullOrEmpty(doctor.ProfilePictureUrl) && doctor.ProfilePictureUrl != profileData.ProfilePictureUrl)
+                {
+                    await fileService.DeleteFileAsync(doctor.ProfilePictureUrl);
+                }
                 doctor.ProfilePictureUrl = profileData.ProfilePictureUrl;
                 doctor.Bio = profileData.Bio;
                 doctor.YearsOfExperience = profileData.YearsOfExperience;
@@ -388,7 +397,7 @@ namespace Tabibi.Services
 
             if (doctor == null) return null;
 
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var todayStart = now.Date;
             var todayEnd = todayStart.AddDays(1);
 
@@ -604,7 +613,7 @@ namespace Tabibi.Services
                 FieldName = fieldName,
                 OldValue = oldValue,
                 NewValue = newValue,
-                ChangedAt = DateTime.UtcNow,
+                ChangedAt = DateTime.Now,
                 ChangedByUserId = changedByUserId
             });
         }

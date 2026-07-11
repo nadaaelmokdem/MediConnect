@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import PatientService from "../services/patientService";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { format } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 import { MdSearch, MdFilterList, MdClear, MdAccessTime, MdChat } from "react-icons/md";
 import { useAuth } from "../context/AuthContext";
 import { LuCalendarDays } from "react-icons/lu";
 import AppointmentDetailModal from "../components/Appointments/AppointmentDetailModal";
+import NetworkError from "../components/common/NetworkError";
 import {
   CONSULTATION_TYPE_OPTIONS,
   STATUS_OPTIONS,
@@ -19,12 +19,15 @@ import {
   isChatConsultation,
   MdCircle,
 } from "../utils/appointmentUtils";
+import { CachedImage } from "../components/common/CachedImage";
+import { getFileUrl } from "../utils/fileUtils";
 
 export default function PatientAppointmentsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({ status: "", type: "", fromDate: "", toDate: "", search: "" });
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentListItem | null>(null);
 
@@ -33,13 +36,15 @@ export default function PatientAppointmentsPage() {
     try {
       const data = await PatientService.getAppointments(filters);
       setAppointments(data);
-    } catch {
+    } catch (err: any) {
       toast.error("Failed to load appointments.");
+      setError(err.message || "Network Error");
     } finally {
       setLoading(false);
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAppointments(); }, [filters, user?.id, user?.activeRole]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,8 +59,6 @@ export default function PatientAppointmentsPage() {
 
   return (
     <div className="w-full bg-[#FBFAFF] p-4 md:p-8 min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} />
-
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
@@ -200,7 +203,9 @@ export default function PatientAppointmentsPage() {
 
         {/* Results */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#E6E1FF] overflow-hidden">
-          {loading ? (
+          {error ? (
+            <NetworkError message="Failed to load appointments. Please check your connection and try again." />
+          ) : loading ? (
             <div className="p-12 text-center text-gray-400">
               <LuCalendarDays className="mx-auto text-3xl mb-3 opacity-30" />
               Loading appointments...
@@ -244,7 +249,11 @@ export default function PatientAppointmentsPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             {app.doctorProfilePictureUrl ? (
-                              <img src={`http://localhost:5124${app.doctorProfilePictureUrl}`} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-[#E6E1FF]" />
+                             <CachedImage
+                                src={getFileUrl(app.doctorProfilePictureUrl)}
+                                alt={app.doctorName}
+                                className="w-9 h-9 rounded-full object-cover ring-2 ring-[#E6E1FF]"
+                              />
                             ) : (
                               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#6A5ACD] to-[#9B8DE8] flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                 {(app.doctorName || "D")[0].toUpperCase()}

@@ -1,5 +1,7 @@
+import { CachedImage } from "../common/CachedImage";
 import React from "react";
 import { FiX } from "react-icons/fi";
+import { getFileUrl } from "../../utils/fileUtils";
 
 interface PhotoPreviewModalProps {
   isOpen: boolean;
@@ -36,8 +38,8 @@ export const PhotoPreviewModal: React.FC<PhotoPreviewModalProps> = ({
           </button>
         </div>
         <div className="p-4 flex justify-center bg-gray-50 max-h-[70vh] overflow-auto">
-          <img
-            src={imageUrl}
+          <CachedImage
+            src={getFileUrl(imageUrl)}
             alt={label}
             className="max-w-full max-h-[60vh] object-contain rounded-lg"
           />

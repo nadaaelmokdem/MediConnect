@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import DoctorService from "../services/doctorService";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { MdSearch, MdFilterList, MdClear, MdAccessTime, MdChat } from "react-icons/md";
-import { useAuth } from "../context/AuthContext";
+
 import { LuCalendarDays } from "react-icons/lu";
 import AppointmentDetailModal from "../components/Appointments/AppointmentDetailModal";
 import {
@@ -21,7 +20,6 @@ import {
 } from "../utils/appointmentUtils";
 
 export default function DoctorAppointmentsPage() {
-  const { user } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ status: "", type: "", fromDate: "", toDate: "", search: "" });
@@ -40,7 +38,8 @@ export default function DoctorAppointmentsPage() {
     }
   };
 
-  useEffect(() => { fetchAppointments(); }, [filters, user?.id, user?.activeRole]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAppointments(); }, [filters]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -73,8 +72,6 @@ export default function DoctorAppointmentsPage() {
 
   return (
     <div className="w-full bg-[#FBFAFF] p-4 md:p-8 min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} />
-
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">

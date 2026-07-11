@@ -54,6 +54,7 @@ namespace Tabibi.Services
                 {
                     var doctor = await dbContext.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
                     userResponse.IsVerified = doctor?.IsVerified ?? false;
+                    userResponse.ProfilePictureUrl = doctor?.ProfilePictureUrl;
                 }
 
                 var refreshToken = authUtils.GenerateRefreshToken();
@@ -143,6 +144,7 @@ namespace Tabibi.Services
             {
                 var doctor = await dbContext.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
                 userResponse.IsVerified = doctor?.IsVerified ?? false;
+                userResponse.ProfilePictureUrl = doctor?.ProfilePictureUrl;
             }
 
             var refreshToken = authUtils.GenerateRefreshToken();

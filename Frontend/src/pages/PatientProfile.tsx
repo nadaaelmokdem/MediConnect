@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  FiCamera,
   FiCalendar,
   FiUser,
   FiPhone,
@@ -45,6 +44,7 @@ const ProfilePage: React.FC = () => {
           height: profileData.height,
           emergencyContact: profileData.emergency,
           address: profileData.address,
+          imageUrl: profileData.imageUrl || "",
         }));
       } catch (error) {
         console.log("Error: " + error);
@@ -69,10 +69,6 @@ const ProfilePage: React.FC = () => {
     } finally {
       setEditingField(null);
     }
-  };
-
-  const handleImageClick = () => {
-    alert("Image upload trigger goes here.");
   };
 
   if (isLoading) {
@@ -113,24 +109,11 @@ const ProfilePage: React.FC = () => {
         {/* Header Section */}
         <div className="p-4 sm:p-6 border-b border-[#E6E1FF] bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
           {/* Avatar Container */}
-          <div
-            className="relative cursor-pointer flex-shrink-0"
-            onClick={handleImageClick}
-          >
+          <div className="relative flex-shrink-0">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-[#E6E1FF] bg-[#FBFAFF] flex items-center justify-center">
-              {profile.imageUrl ? (
-                <img
-                  src={profile.imageUrl}
-                  alt={profile.fullName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <FiUser className="text-[#B8A7FF] text-4xl" />
-              )}
-            </div>
-            {/* Camera icon overlay */}
-            <div className="absolute bottom-0 right-0 bg-[#6A5ACD] p-1.5 rounded-full border-2 border-white shadow-sm hover:bg-[#2A2455] transition-colors">
-              <FiCamera className="text-white text-sm" />
+                <span className="text-[#6A5ACD] text-4xl font-bold uppercase">
+                  {profile.fullName ? profile.fullName.charAt(0) : "U"}
+                </span>
             </div>
           </div>
 

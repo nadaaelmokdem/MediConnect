@@ -6,10 +6,11 @@ namespace Tabibi.Extensions
         private const string AccessTokenCookieName = "X-Access-Token";
 
         private static bool UseSecureCookies =>
-            !string.Equals(
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-                "Development",
-                StringComparison.OrdinalIgnoreCase);
+            //!string.Equals(
+            //    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+            //    "Development",
+            //    StringComparison.OrdinalIgnoreCase);
+            true;
 
         public static void SetRefreshTokenCookie(this IResponseCookies cookies, string token, int days = 7)
         {
@@ -17,8 +18,8 @@ namespace Tabibi.Extensions
             {
                 HttpOnly = true,
                 Secure = UseSecureCookies,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddDays(days)
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddDays(days)
             };
 
             cookies.Append(RefreshTokenCookieName, token, cookieOptions);
@@ -30,8 +31,8 @@ namespace Tabibi.Extensions
             {
                 HttpOnly = true,
                 Secure = UseSecureCookies,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddDays(-1)
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddDays(-1)
             };
 
             cookies.Append(RefreshTokenCookieName, "", cookieOptions);
@@ -43,8 +44,8 @@ namespace Tabibi.Extensions
             {
                 HttpOnly = true,
                 Secure = UseSecureCookies,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddMinutes(minutes)
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddMinutes(minutes)
             };
 
             cookies.Append(AccessTokenCookieName, token, cookieOptions);
@@ -56,8 +57,8 @@ namespace Tabibi.Extensions
             {
                 HttpOnly = true,
                 Secure = UseSecureCookies,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddDays(-1)
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddDays(-1)
             };
 
             cookies.Append(AccessTokenCookieName, "", cookieOptions);

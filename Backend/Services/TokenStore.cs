@@ -22,7 +22,7 @@ namespace Tabibi.Services
 
         public Task<string?> GetUserIdByTokenAsync(string token)
         {
-            if (_tokens.TryGetValue(token, out var data) && data.ExpiresAt > DateTimeOffset.UtcNow)
+            if (_tokens.TryGetValue(token, out var data) && data.ExpiresAt > DateTimeOffset.Now)
             {
                 return Task.FromResult<string?>(data.UserId);
             }
@@ -31,7 +31,7 @@ namespace Tabibi.Services
 
         public Task<string?> GetActiveReplacementAsync(string token)
         {
-            if (_replacements.TryGetValue(token, out var data) && data.ExpiresAt > DateTimeOffset.UtcNow)
+            if (_replacements.TryGetValue(token, out var data) && data.ExpiresAt > DateTimeOffset.Now)
             {
                 return Task.FromResult<string?>(data.NewToken);
             }
@@ -42,13 +42,13 @@ namespace Tabibi.Services
         {
             lock (_syncRoot)
             {
-                if (!_tokens.TryGetValue(oldToken, out var oldData) || oldData.ExpiresAt <= DateTimeOffset.UtcNow)
+                if (!_tokens.TryGetValue(oldToken, out var oldData) || oldData.ExpiresAt <= DateTimeOffset.Now)
                 {
                     return Task.FromResult(false);
                 }
 
-                _tokens[newToken] = new TokenData { UserId = userId, ExpiresAt = DateTimeOffset.UtcNow.Add(lifetime) };
-                _replacements[oldToken] = new ReplacementData { NewToken = newToken, ExpiresAt = DateTimeOffset.UtcNow.Add(gracePeriod) };
+                _tokens[newToken] = new TokenData { UserId = userId, ExpiresAt = DateTimeOffset.Now.Add(lifetime) };
+                _replacements[oldToken] = new ReplacementData { NewToken = newToken, ExpiresAt = DateTimeOffset.Now.Add(gracePeriod) };
                 _tokens.TryRemove(oldToken, out _);
 
                 return Task.FromResult(true);
@@ -57,7 +57,7 @@ namespace Tabibi.Services
 
         public Task<bool> StoreTokenAsync(string token, string userId, TimeSpan lifetime)
         {
-            _tokens[token] = new TokenData { UserId = userId, ExpiresAt = DateTimeOffset.UtcNow.Add(lifetime) };
+            _tokens[token] = new TokenData { UserId = userId, ExpiresAt = DateTimeOffset.Now.Add(lifetime) };
             return Task.FromResult(true);
         }
 
@@ -68,7 +68,7 @@ namespace Tabibi.Services
 
         public Task CleanupExpiredTokensAsync()
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.Now;
             foreach (var kvp in _tokens)
             {
                 if (kvp.Value.ExpiresAt <= now)

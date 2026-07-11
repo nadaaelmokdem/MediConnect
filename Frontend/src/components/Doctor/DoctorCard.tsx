@@ -1,8 +1,10 @@
+import { CachedImage } from "../common/CachedImage";
 import React from "react";
 import { FaStar, FaMapMarkerAlt, FaBriefcase, FaVideo, FaCommentDots, FaPhone, FaClinicMedical, FaCalendarCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import type { DoctorListItem } from "../../types/public";
+import { getFileUrl } from "../../utils/fileUtils";
 
 interface DoctorCardProps {
   doctor: DoctorListItem;
@@ -49,14 +51,14 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat, onBookAppo
     >
       <div className="flex-shrink-0 flex justify-center items-center">
         {doctor.profilePictureUrl ? (
-          <img
-            src={doctor.profilePictureUrl}
+          <CachedImage
+            src={getFileUrl(doctor.profilePictureUrl)}
             alt={doctor.fullName}
             className="w-28 h-28 rounded-full object-cover shadow-md border-4 border-primary/20 group-hover:border-primary/50 transition-colors"
           />
         ) : (
           <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-primary text-3xl font-bold shadow-md border-4 border-white">
-            {doctor.fullName.charAt(0)}
+            {doctor.fullName.replace(/^Dr\.\s*/i, '').charAt(0).toUpperCase()}
           </div>
         )}
       </div>

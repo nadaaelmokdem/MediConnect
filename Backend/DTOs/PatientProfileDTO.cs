@@ -1,4 +1,4 @@
-﻿namespace Tabibi.DTOs
+namespace Tabibi.DTOs
 {
     public class PatientProfileDTO
     {
@@ -11,6 +11,7 @@
         public string? Height { get; set; }
         public string? Emergency { get; set; }
         public string? Address { get; set; }
+        public string? ImageUrl { get; set; }
 
     }
 }

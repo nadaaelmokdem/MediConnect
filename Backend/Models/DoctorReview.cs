@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,11 +20,11 @@ namespace Tabibi.Models
             [MaxLength(1000)]
             public string? Comment { get; set; }
 
-            public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+            public DateTime CreatedAt { get; set; } = DateTime.Now;
 
             // Navigation
             [ForeignKey(nameof(AppointmentId))]
             public Appointment Appointment { get; set; } = null!;
+
         }
     }
-

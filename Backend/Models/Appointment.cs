@@ -32,6 +32,8 @@ namespace Tabibi.Models
         [MaxLength(2000)]
         public string? Notes { get; set; }
 
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Online;
+
         public int? SessionId { get; set; }  // Link to ChatSession if applicable
 
         // Navigation
@@ -51,5 +53,6 @@ namespace Tabibi.Models
 
     public enum ConsultationType { Chat, Video, Call, Clinic }
     public enum AppointmentStatus { Confirmed = 1, Completed = 2, Cancelled = 3 }
+    public enum PaymentMethod { Online = 1, OnSite = 2 }
 
 }

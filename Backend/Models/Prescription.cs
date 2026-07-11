@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,7 +20,7 @@ namespace Tabibi.Models
             [MaxLength(2000)]
             public string? Notes { get; set; }
 
-            public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
+            public DateTime IssuedAt { get; set; } = DateTime.Now;
             public DateTime? ExpiresAt { get; set; }
 
             [MaxLength(500)]

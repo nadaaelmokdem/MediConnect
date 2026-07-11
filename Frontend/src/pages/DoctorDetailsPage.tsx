@@ -1,16 +1,32 @@
+import { CachedImage } from "../components/common/CachedImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaStar, FaMapMarkerAlt, FaBriefcase, FaVideo, FaCommentDots, FaPhone, FaClinicMedical, FaRegCalendarAlt, FaChevronLeft } from "react-icons/fa";
 import PublicService from "../services/publicService";
 import type { DoctorListItem } from "../types/public";
 import { useAuth } from "../context/AuthContext";
-import ChatService from "../services/chatService";
 import Swal from "sweetalert2";
 import { getAiQuota } from "../services/AIChat";
 import AppointmentService from "../services/appointmentService";
-import type { AvailableSlot } from "../types/appointment";
-import { ConsultationType } from "../types/appointment";
-import { formatTimeTo12Hour } from "../utils/dateUtils";
+import PatientService from "../services/patientService";
+import ChatService from "../services/chatService";
+import BookingScheduleModal from "../components/Doctor/BookingScheduleModal";
+import type { BookingFeedback, SelectedSlot, SlotWithMeta } from "../types/booking";
+
+import { toast } from "react-toastify";
+import { getFileUrl } from "../utils/fileUtils";
+
+const getConsultationTypeName = (type: number | string | undefined) => {
+  if (type === undefined) return '';
+  if (typeof type === 'string') return type === 'Clinic' ? 'Clinic visit' : type;
+  switch (type) {
+    case 0: return 'Chat';
+    case 1: return 'Video';
+    case 2: return 'Call';
+    case 3: return 'Clinic visit';
+    default: return 'Appointment';
+  }
+};
 
 export default function DoctorDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,9 +38,13 @@ export default function DoctorDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [freeGpMessages, setFreeGpMessages] = useState<number>(0);
   
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
+  // ── Booking Modal State ──────────────────────────────────────────────────────
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
+  const [feedback, setFeedback] = useState<BookingFeedback | null>(null);
+  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
+  const [daySlots, setDaySlots] = useState<SlotWithMeta[]>([]);
+  // ────────────────────────────────────────────────────────────────────────────
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsTotal, setReviewsTotal] = useState(0);
@@ -33,8 +53,7 @@ export default function DoctorDetailsPage() {
 
   useEffect(() => {
     if (id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(true);
+      setTimeout(() => setLoading(true), 0);
       PublicService.getDoctorById(id)
         .then(data => {
           setDoctor(data);
@@ -54,34 +73,227 @@ export default function DoctorDetailsPage() {
         setFreeGpMessages(quota.freeGpMessages || 0);
       }).catch(console.error);
     } else {
-      setFreeGpMessages(0);
+      setTimeout(() => setFreeGpMessages(0), 0);
     }
   }, [isAuthenticated, user?.id, user?.activeRole]);
 
-  useEffect(() => {
-    if (doctor && selectedDate) {
-      setSlotsLoading(true);
-      AppointmentService.getAvailableSlots(doctor.doctorId, selectedDate)
-        .then(slots => {
-          setAvailableSlots(slots);
-        })
-        .catch(console.error)
-        .finally(() => setSlotsLoading(false));
-    }
-  }, [doctor, selectedDate]);
+
 
   useEffect(() => {
     if (doctor) {
-      setReviewsLoading(true);
+      let active = true;
+      setTimeout(() => { if (active) setReviewsLoading(true); }, 0);
       PublicService.getDoctorReviews(doctor.doctorId, reviewsPage, 5)
         .then(res => {
-          setReviews(res.items);
-          setReviewsTotal(res.totalCount);
+          setReviews(res?.items || []);
+          setReviewsTotal(res?.totalCount || 0);
         })
         .catch(console.error)
-        .finally(() => setReviewsLoading(false));
+        .finally(() => { if (active) setReviewsLoading(false); });
+        
+      return () => { active = false; };
     }
   }, [doctor, reviewsPage]);
+
+  const handleRateDoctor = async () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { returnUrl: `/doctors/${doctor?.doctorId}` } });
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Loading...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      const allAppointments = await PatientService.getAppointments({ status: 'Completed' });
+      const completedWithDoctor = allAppointments.filter(
+        (a: any) => a.doctorId === doctor?.doctorId
+      );
+
+      if (completedWithDoctor.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Cannot Rate Doctor',
+          text: "You can't rate this doctor because you didn't book with him yet.",
+          customClass: {
+            popup: 'rounded-3xl',
+            confirmButton: 'bg-primary text-white px-6 py-2 rounded-xl'
+          }
+        });
+        return;
+      }
+
+
+
+      const appointmentOptionsHtml = completedWithDoctor.map((a: any) => {
+        const dateStr = new Date(a.scheduledAt).toLocaleDateString();
+        const ratedText = a.reviewRating ? `(Rated: ${a.reviewRating}★)` : '(Unrated)';
+        const typeName = getConsultationTypeName(a.consultationType);
+        return `<option value="${a.appointmentId}" data-rating="${a.reviewRating || 0}" data-comment="${a.reviewComment || ''}">
+          ${typeName} on ${dateStr} ${ratedText}
+        </option>`;
+      }).join('');
+
+      Swal.fire({
+        html: `
+          <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-yellow-50 mb-6 shadow-sm border border-yellow-200">
+              <svg class="h-10 w-10 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Rate Your Experience</h2>
+            <p class="text-sm text-gray-500 mb-6">How was your consultation with Dr. ${doctor?.fullName}?</p>
+            
+            <div class="text-left mb-6">
+              <label class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Select Appointment</label>
+              <select id="swal-appointment-select" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-700 text-sm shadow-inner transition-colors cursor-pointer">
+                ${appointmentOptionsHtml}
+              </select>
+            </div>
+
+            <div class="flex justify-center gap-3 mb-6" id="swal-rating">
+              ${[1, 2, 3, 4, 5].map(i => `
+                <button type="button" class="star-btn transition-transform hover:scale-125 focus:outline-none" data-value="${i}">
+                  <svg class="w-10 h-10 text-gray-200 drop-shadow-sm transition-colors duration-200" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                </button>
+              `).join('')}
+            </div>
+            <input type="hidden" id="swal-rating-value" value="0">
+            
+            <div id="swal-edit-alert" class="hidden bg-blue-50 text-blue-700 p-3 rounded-xl mb-6 text-sm text-left border border-blue-100 flex items-start gap-2 shadow-sm">
+              <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>You have already rated this appointment. Submitting again will update your existing rating.</span>
+            </div>
+
+            <div class="text-left">
+              <label class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Additional Comments (Optional)</label>
+              <textarea id="swal-comment" rows="4" class="w-full bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary p-4 outline-none resize-none transition-all text-gray-700 text-sm shadow-inner" placeholder="Tell us what you liked or how they can improve..."></textarea>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Submit Feedback',
+        cancelButtonText: 'Cancel',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'bg-white p-8 rounded-[32px] shadow-2xl max-w-md w-full border border-gray-100',
+          htmlContainer: 'w-full m-0',
+          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 mt-4 text-lg',
+          cancelButton: 'w-full mt-3 py-3.5 text-gray-500 font-semibold hover:text-gray-800 hover:bg-gray-100 rounded-2xl transition-colors',
+          actions: 'flex flex-col w-full m-0'
+        },
+        didOpen: () => {
+          const stars = document.querySelectorAll('.star-btn');
+          const ratingInput = document.getElementById('swal-rating-value') as HTMLInputElement;
+          const select = document.getElementById('swal-appointment-select') as HTMLSelectElement;
+          const commentInput = document.getElementById('swal-comment') as HTMLTextAreaElement;
+          const editAlert = document.getElementById('swal-edit-alert') as HTMLDivElement;
+          
+          const updateStars = (val: number) => {
+            stars.forEach((s, idx) => {
+              const svg = s.querySelector('svg');
+              if (idx < val) {
+                svg?.classList.remove('text-gray-200');
+                svg?.classList.add('text-yellow-400');
+              } else {
+                svg?.classList.add('text-gray-200');
+                svg?.classList.remove('text-yellow-400');
+              }
+            });
+          };
+
+          const updateFormFromSelection = () => {
+             const selectedOpt = select.options[select.selectedIndex];
+             const rating = parseInt(selectedOpt.dataset.rating || '0');
+             const comment = selectedOpt.dataset.comment || '';
+             
+             if (rating > 0) {
+               ratingInput.value = rating.toString();
+               updateStars(rating);
+               commentInput.value = comment;
+               editAlert.classList.remove('hidden');
+               Swal.getConfirmButton()!.textContent = 'Update Feedback';
+             } else {
+               ratingInput.value = '0';
+               updateStars(0);
+               commentInput.value = '';
+               editAlert.classList.add('hidden');
+               Swal.getConfirmButton()!.textContent = 'Submit Feedback';
+             }
+          };
+
+          select.addEventListener('change', updateFormFromSelection);
+          
+          updateFormFromSelection();
+
+          stars.forEach(star => {
+            star.addEventListener('click', (e) => {
+              const val = parseInt((e.currentTarget as HTMLButtonElement).dataset.value!);
+              ratingInput.value = val.toString();
+              updateStars(val);
+            });
+            
+            star.addEventListener('mouseenter', (e) => {
+               if (ratingInput.value === '0') {
+                 const val = parseInt((e.currentTarget as HTMLButtonElement).dataset.value!);
+                 updateStars(val);
+               }
+            });
+            
+            star.addEventListener('mouseleave', () => {
+               if (ratingInput.value === '0') {
+                 updateStars(0);
+               } else {
+                 updateStars(parseInt(ratingInput.value));
+               }
+            });
+          });
+        },
+        preConfirm: () => {
+          const rating = parseInt((document.getElementById('swal-rating-value') as HTMLInputElement).value);
+          const comment = (document.getElementById('swal-comment') as HTMLTextAreaElement).value;
+          const appointmentId = parseInt((document.getElementById('swal-appointment-select') as HTMLSelectElement).value);
+          
+          if (!rating || rating === 0) {
+            Swal.showValidationMessage('Please select a star rating to continue.');
+            return false;
+          }
+          return { appointmentId, rating, comment };
+        }
+      }).then((result) => {
+        if (result.isConfirmed && result.value) {
+          PatientService.submitReview(result.value.appointmentId, result.value.rating, result.value.comment)
+            .then(() => {
+              toast.success('Feedback submitted! Thank you.');
+              setReviewsPage(1); // Refresh reviews
+              PublicService.getDoctorById(doctor!.doctorId).then(setDoctor).catch(console.error);
+            })
+            .catch(err => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Cannot Submit Review',
+                text: err.message || 'Failed to submit review.',
+                customClass: {
+                  popup: 'rounded-3xl',
+                  confirmButton: 'bg-primary text-white px-6 py-2 rounded-xl'
+                }
+              });
+            });
+        }
+      });
+
+    } catch (err) {
+      console.error(err);
+      Swal.close();
+      toast.error('Error checking appointments.');
+    }
+  };
 
   const isSelf = user?.id === doctor?.userId;
 
@@ -215,100 +427,122 @@ export default function DoctorDetailsPage() {
     }
   };
 
-  const handleSlotClick = (slot: AvailableSlot) => {
-    if (!slot.isAvailable || !doctor) return;
+  // ── Booking Modal Handlers ───────────────────────────────────────────────────
+  const handleOpenBookingModal = () => {
     if (!isAuthenticated) {
-      navigate("/login", { state: { returnUrl: `/doctors/${doctor.doctorId}` } });
+      navigate("/login", { state: { returnUrl: `/doctors/${doctor?.doctorId}` } });
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
       alert("Doctors cannot book appointments.");
       return;
     }
+    setIsBookingModalOpen(true);
+    setSelectedSlot(null);
+    setFeedback(null);
+    setDaySlots([]);
+  };
 
-    const optionsHtml = [];
-    if (doctor.isClinicEnabled) optionsHtml.push(`<option value="${ConsultationType.Clinic}">Clinic Visit (${doctor.clinicPrice} EGP)</option>`);
-    if (doctor.isVideoEnabled) optionsHtml.push(`<option value="${ConsultationType.Video}">Video Call (${doctor.videoPrice} EGP)</option>`);
-    if (doctor.isCallEnabled) optionsHtml.push(`<option value="${ConsultationType.Call}">Voice Call (${doctor.callPrice} EGP)</option>`);
-    
-    if (optionsHtml.length === 0) {
-      Swal.fire('Error', 'This doctor has no bookable consultation types.', 'error');
+  const handleCloseBookingModal = () => {
+    setIsBookingModalOpen(false);
+    setSelectedSlot(null);
+    setFeedback(null);
+  };
+
+  const handleSlotsLoaded = (slots: SlotWithMeta[]) => {
+    setDaySlots(slots);
+    setSelectedSlot(null);
+    setFeedback(null);
+  };
+
+  const handleSelectSlot = (slot: SlotWithMeta, dateKey: string) => {
+    if (slot.status !== "available" || bookedSlots.has(slot.slotKey)) {
+      const alternatives = daySlots
+        .filter((s) => s.status === "available" && s.slotKey !== slot.slotKey)
+        .slice(0, 3);
+      setFeedback({
+        type: "error",
+        message: "This slot is no longer available.",
+        alternatives,
+      });
+      setSelectedSlot(null);
       return;
     }
 
-    const timeString = formatTimeTo12Hour(new Date(slot.start));
-
-    Swal.fire({
-      title: 'Book Appointment',
-      html: `
-        <div class="text-left mb-4">
-          <p class="font-semibold text-gray-700 mb-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
-            <span class="text-gray-500 text-sm block mb-1">Time</span>
-            <span class="text-primary text-lg">${timeString}</span>
-          </p>
-          <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Consultation Type</label>
-          <select id="swal-type" class="w-full border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary p-3 border mb-4 bg-gray-50 font-medium text-gray-700 outline-none transition-all">
-            ${optionsHtml.join('')}
-          </select>
-          <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Chief Complaint <span class="text-gray-400 font-normal">(Optional)</span></label>
-          <textarea id="swal-complaint" rows="3" class="w-full border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary p-3 border bg-gray-50 font-medium text-gray-700 outline-none transition-all resize-none" placeholder="Briefly describe your symptoms..."></textarea>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Confirm Booking',
-      buttonsStyling: false,
-      customClass: {
-        popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-100',
-        title: 'text-2xl font-bold mb-4 text-gray-800 text-left w-full',
-        htmlContainer: 'w-full m-0',
-        confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md mt-2 cursor-pointer',
-        cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer',
-      },
-      preConfirm: () => {
-        return {
-          type: parseInt((document.getElementById('swal-type') as HTMLSelectElement).value),
-          complaint: (document.getElementById('swal-complaint') as HTMLTextAreaElement).value
-        }
-      }
-    }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        AppointmentService.bookAppointment({
-          doctorId: doctor.doctorId,
-          scheduledAt: slot.start,
-          type: result.value.type as any,
-          chiefComplaint: result.value.complaint
-        }).then(() => {
-          Swal.fire({
-            icon: 'success',
-            title: 'Appointment Booked!',
-            text: 'Your appointment has been confirmed.',
-            buttonsStyling: false,
-            customClass: {
-              popup: 'bg-white p-6 rounded-3xl shadow-2xl max-w-sm border border-gray-100',
-              title: 'text-2xl font-bold mb-2 text-gray-800',
-              htmlContainer: 'text-gray-600 mb-6',
-              confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl cursor-pointer',
-            }
-          }).then(() => {
-            navigate('/user-dashboard');
-          });
-        }).catch(err => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Booking Failed',
-            text: err.response?.data?.message || err.message || 'Failed to book appointment',
-            buttonsStyling: false,
-            customClass: {
-              popup: 'bg-white p-6 rounded-3xl shadow-2xl max-w-sm border border-gray-100',
-              title: 'text-2xl font-bold mb-2 text-gray-800',
-              htmlContainer: 'text-gray-600 mb-6',
-              confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl cursor-pointer',
-            }
-          });
-        });
-      }
+    setFeedback(null);
+    setSelectedSlot({
+      doctorId: doctor!.doctorId,
+      date: dateKey,
+      start: slot.start,
+      end: slot.end,
+      timeLabel: slot.timeLabel,
+      slotKey: slot.slotKey,
     });
   };
+
+  const handleConfirmBooking = async (typeStr: "clinic" | "video" | "call" | "chat" = "clinic", paymentMethod: number = 1) => {
+    if (!selectedSlot) return;
+
+    try {
+      const typeMap: Record<string, number> = { chat: 0, video: 1, call: 2, clinic: 3 };
+      const apiType = typeMap[typeStr] ?? 3;
+      const apiPaymentMethod = typeStr === "clinic" ? paymentMethod : 1;
+
+      const res = await AppointmentService.bookAppointment({
+        doctorId: selectedSlot.doctorId,
+        scheduledAt: selectedSlot.start,
+        type: apiType as any,
+        paymentMethod: apiPaymentMethod,
+      });
+
+      if (res.paymentUrl) {
+        window.location.href = res.paymentUrl;
+        return;
+      }
+
+      setBookedSlots((prev) => {
+        const next = new Set(prev);
+        next.add(selectedSlot!.slotKey);
+        return next;
+      });
+      setDaySlots((prev) =>
+        prev.map((s) => (s.slotKey === selectedSlot!.slotKey ? { ...s, status: "booked" as const } : s))
+      );
+
+      handleCloseBookingModal();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Booking Confirmed!',
+        text: `Your appointment is successfully booked for ${selectedSlot.timeLabel}.`,
+        confirmButtonColor: 'var(--color-primary)',
+        customClass: {
+          popup: 'rounded-3xl shadow-2xl border border-gray-100',
+          confirmButton: 'rounded-xl px-6 py-2.5 font-bold shadow-md'
+        }
+      });
+    } catch (err: any) {
+      console.error("Booking failed", err);
+      const errorMsg = err.response?.data?.message || err.message || "Failed to book appointment. Please try again.";
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Booking Failed',
+        text: errorMsg,
+        confirmButtonColor: 'var(--color-primary)',
+        customClass: {
+          popup: 'rounded-3xl shadow-2xl border border-gray-100',
+          confirmButton: 'rounded-xl px-6 py-2.5 font-bold shadow-md'
+        }
+      });
+      
+      setFeedback({
+        type: "error",
+        message: errorMsg,
+      });
+    }
+  };
+  // ────────────────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -349,14 +583,14 @@ export default function DoctorDetailsPage() {
           
           <div className="shrink-0 relative">
             {doctor.profilePictureUrl ? (
-              <img
-                src={doctor.profilePictureUrl}
+              <CachedImage
+                src={getFileUrl(doctor.profilePictureUrl)}
                 alt={doctor.fullName}
                 className="w-40 h-40 rounded-2xl object-cover shadow-lg border-4 border-white"
               />
             ) : (
               <div className="w-40 h-40 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-primary text-5xl font-bold shadow-lg border-4 border-white">
-                {doctor.fullName.charAt(0)}
+                {doctor.fullName.replace(/^Dr\.\s*/i, '').charAt(0).toUpperCase()}
               </div>
             )}
             {isSelf && (
@@ -460,22 +694,38 @@ export default function DoctorDetailsPage() {
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Patient Reviews {reviewsTotal > 0 && `(${reviewsTotal})`}</h2>
+                {user?.activeRole?.toLowerCase() === "user" && (
+                  <button 
+                    onClick={handleRateDoctor}
+                    className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors cursor-pointer shadow-sm"
+                  >
+                    Rate this Doctor
+                  </button>
+                )}
               </div>
               <div className="space-y-6">
                 {reviewsLoading ? (
                   <div className="flex justify-center py-8 text-primary">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
                   </div>
-                ) : reviews.length === 0 ? (
+                ) : !reviews || reviews.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">No reviews available for this doctor yet.</p>
                 ) : (
                   <>
-                    {reviews.map(review => (
+                    {reviews?.map(review => (
                       <div key={review.reviewId} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <div className="font-bold text-gray-800">{review.patientName}</div>
-                            <div className="text-xs text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</div>
+                            <div className="font-bold text-gray-800">{review.patientName}
+                              {review.consultationType !== undefined && (
+                                <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[10px] uppercase font-bold tracking-wider">
+                                  {getConsultationTypeName(review.consultationType)}
+                                </span>
+                              )}
+                              </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </div>
                           </div>
                           <div className="flex text-yellow-400 text-sm">
                             {[...Array(5)].map((_, i) => (
@@ -489,7 +739,7 @@ export default function DoctorDetailsPage() {
                       </div>
                     ))}
                     
-                    {reviewsTotal > reviews.length && (
+                    {reviewsTotal > reviews?.length && (
                       <div className="flex justify-center pt-4 border-t border-gray-100 gap-4 items-center">
                          <button 
                            onClick={() => setReviewsPage(p => Math.max(1, p - 1))}
@@ -523,55 +773,13 @@ export default function DoctorDetailsPage() {
               <div className="bg-white rounded-3xl shadow-xl shadow-primary/5 border border-primary/10 p-6 sticky top-24">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Book an Appointment</h3>
                 
-                {/* Live Timeslots */}
-                <div className="mb-6 space-y-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                      <FaRegCalendarAlt className="text-primary/60" /> Select Date
-                    </label>
-                    <input 
-                      type="date" 
-                      min={new Date().toISOString().split('T')[0]}
-                      value={selectedDate}
-                      onChange={e => setSelectedDate(e.target.value)}
-                      className="w-full p-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-700 font-medium"
-                    />
-                  </div>
-                  
-                  <div className="pt-2">
-                    <div className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                       Available Slots
-                    </div>
-                    {slotsLoading ? (
-                      <div className="flex justify-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
-                      </div>
-                    ) : availableSlots.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                        {availableSlots.map((slot, sIdx) => {
-                          const timeString = formatTimeTo12Hour(new Date(slot.start));
-                          return (
-                            <button 
-                              key={sIdx} 
-                              disabled={!slot.isAvailable}
-                              onClick={() => handleSlotClick(slot)}
-                              className={`text-xs font-medium py-2.5 px-3 rounded-lg transition-all ${
-                                slot.isAvailable 
-                                  ? "bg-primary/5 hover:bg-primary hover:text-white border border-primary/20 hover:border-primary text-primary cursor-pointer shadow-sm"
-                                  : "bg-gray-50 border border-gray-100 text-gray-400 cursor-not-allowed opacity-60"
-                              }`}
-                            >
-                              {timeString}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-xl border border-gray-100">
-                        No slots available on this date.
-                      </p>
-                    )}
-                  </div>
+                <div className="mb-6">
+                  <button 
+                    onClick={handleOpenBookingModal}
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <FaRegCalendarAlt /> Book an Appointment
+                  </button>
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-gray-100">
@@ -604,6 +812,21 @@ export default function DoctorDetailsPage() {
             )}
           </div>
         </div>
+        
+        {/* Booking Schedule Modal */}
+        <BookingScheduleModal
+          doctor={doctor}
+          isOpen={isBookingModalOpen}
+          selectedSlot={selectedSlot}
+          feedback={feedback}
+          bookedSlots={bookedSlots}
+          daySlots={daySlots}
+          onClose={handleCloseBookingModal}
+          onSlotsLoaded={handleSlotsLoaded}
+          onSelectSlot={handleSelectSlot}
+          onConfirm={handleConfirmBooking}
+          onPickAlternative={handleSelectSlot}
+        />
 
       </div>
     </div>

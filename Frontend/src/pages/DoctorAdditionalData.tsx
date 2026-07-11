@@ -1,21 +1,18 @@
 import { MdLocationOn, MdAssignment, MdAdd, MdDelete } from "react-icons/md";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import DoctorService from '../services/doctorService';
 import { AxiosError } from "axios";
 import ErrorBanner from "../components/Auth/ErrorBanner";
+import { getFileUrl } from "../utils/fileUtils";
+import { CachedImage } from "../components/common/CachedImage";
 
 export default function DoctorAdditionalData() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [licenseProofType, setLicenseProofType] = useState<"file" | "link">("file");
-  const [idProofType, setIdProofType] = useState<"file" | "link">("file");
-  const [degreeProofType, setDegreeProofType] = useState<"file" | "link">("file");
-  const [profilePicType, setProfilePicType] = useState<"file" | "link">("file");
   const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
 
   // File states
@@ -88,21 +85,17 @@ export default function DoctorAdditionalData() {
         });
 
         if (profile.licenseProofUrl) {
-          setLicenseProofType("link");
           setLicenseProofUrl(profile.licenseProofUrl);
         }
         if (profile.idProofUrl) {
-          setIdProofType("link");
           setIdProofUrl(profile.idProofUrl);
         }
         if (profile.degreeProofUrl) {
-          setDegreeProofType("link");
           setDegreeProofUrl(profile.degreeProofUrl);
         }
         // @ts-expect-error Ignoring missing imageUrl on profile type
         const picUrl = profile.profilePictureUrl || profile.imageUrl;
         if (picUrl) {
-          setProfilePicType("link");
           setProfilePicUrl(picUrl);
         }
       } catch (err) {
@@ -111,7 +104,7 @@ export default function DoctorAdditionalData() {
     };
     fetchProfile();
   }, [location.state?.fromSignIn, user?.id]);
-  const hasAccess = useRef(location.state?.fromSignIn);
+  const [hasAccess] = useState(location.state?.fromSignIn);
 
   useEffect(() => {
     if (location.state?.fromSignIn) {
@@ -121,9 +114,48 @@ export default function DoctorAdditionalData() {
     }
   }, [location.pathname, location.state, navigate]);
 
-  if (!hasAccess.current) {
+  if (!hasAccess) {
     return <Navigate to="/doctor-profile" replace />;
   }
+
+
+  const handleProofChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setFile: (file: File | null) => void,
+    errorKey: string
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        setErrors((prev) => ({ ...prev, [errorKey]: "Only images and PDFs are allowed." }));
+        setFile(null);
+        e.target.value = "";
+        return;
+      }
+      setErrors((prev) => ({ ...prev, [errorKey]: "" }));
+      setFile(file);
+    } else {
+      setFile(null);
+    }
+  };
+
+  const renderProofPreview = (file: File | null, url: string) => {
+    if (file) {
+      if (file.type.startsWith("image/")) {
+        return <img src={URL.createObjectURL(file)} alt="Preview" className="h-16 w-16 object-cover rounded mt-2 border border-[#e5deff]" />;
+      }
+      if (file.type === "application/pdf") {
+        return <div className="mt-2 flex items-center gap-2 text-[#5140b3] font-medium"><MdAssignment className="text-xl" /> <span>{file.name}</span></div>;
+      }
+    }
+    if (url) {
+      if (url.toLowerCase().endsWith(".pdf") || url.includes(".pdf?")) {
+        return <div className="mt-2 text-[12px] flex items-center gap-2">Current proof: <a href={getFileUrl(url)} target="_blank" rel="noreferrer" className="text-[#5140b3] font-medium underline flex items-center gap-1"><MdAssignment/> View PDF</a></div>;
+      }
+      return <div className="mt-2 text-[12px] flex items-center gap-2">Current proof: <a href={getFileUrl(url)} target="_blank" rel="noreferrer" className="text-[#5140b3] font-medium underline"><CachedImage src={url} alt="Current Preview" className="h-16 w-16 object-cover rounded border border-[#e5deff]" /></a></div>;
+    }
+    return null;
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -159,55 +191,17 @@ export default function DoctorAdditionalData() {
     }
 
     // Proof Validation
-    if (licenseProofType === "file" && !licenseProofFile) {
+    // Proof Validation
+    if (!licenseProofFile && !licenseProofUrl) {
       newErrors.licenseProof = "Please upload a file proof of your license.";
-    } else if (licenseProofType === "link") {
-      if (!licenseProofUrl.trim()) {
-        newErrors.licenseProof = "Please provide a valid URL link.";
-      } else {
-        try {
-          const url = new URL(licenseProofUrl.trim());
-          if (url.protocol !== "http:" && url.protocol !== "https:") {
-            newErrors.licenseProof = "Please provide a valid HTTP/HTTPS URL.";
-          }
-        } catch {
-          newErrors.licenseProof = "Please provide a valid URL link.";
-        }
-      }
     }
     
-    if (idProofType === "file" && !idProofFile) {
+    if (!idProofFile && !idProofUrl) {
       newErrors.idProof = "Please upload your ID proof.";
-    } else if (idProofType === "link") {
-      if (!idProofUrl.trim()) {
-        newErrors.idProof = "Please provide a valid URL link for ID proof.";
-      } else {
-        try {
-          const url = new URL(idProofUrl.trim());
-          if (url.protocol !== "http:" && url.protocol !== "https:") {
-            newErrors.idProof = "Please provide a valid HTTP/HTTPS URL.";
-          }
-        } catch {
-          newErrors.idProof = "Please provide a valid URL link for ID proof.";
-        }
-      }
     }
 
-    if (degreeProofType === "file" && !degreeProofFile) {
+    if (!degreeProofFile && !degreeProofUrl) {
       newErrors.degreeProof = "Please upload your degree proof.";
-    } else if (degreeProofType === "link") {
-      if (!degreeProofUrl.trim()) {
-        newErrors.degreeProof = "Please provide a valid URL link for degree proof.";
-      } else {
-        try {
-          const url = new URL(degreeProofUrl.trim());
-          if (url.protocol !== "http:" && url.protocol !== "https:") {
-            newErrors.degreeProof = "Please provide a valid HTTP/HTTPS URL.";
-          }
-        } catch {
-          newErrors.degreeProof = "Please provide a valid URL link for degree proof.";
-        }
-      }
     }
 
     // Specialties Validation
@@ -295,16 +289,16 @@ export default function DoctorAdditionalData() {
       let finalDegreeProofUrl = degreeProofUrl;
       let finalProfilePicUrl = profilePicUrl;
 
-      if (licenseProofType === "file" && licenseProofFile) {
+      if (licenseProofFile) {
         finalLicenseProofUrl = await DoctorService.uploadProof(licenseProofFile, "licenseProofUrl");
       }
-      if (idProofType === "file" && idProofFile) {
+      if (idProofFile) {
         finalIdProofUrl = await DoctorService.uploadProof(idProofFile, "idProofUrl");
       }
-      if (degreeProofType === "file" && degreeProofFile) {
+      if (degreeProofFile) {
         finalDegreeProofUrl = await DoctorService.uploadProof(degreeProofFile, "degreeProofUrl");
       }
-      if (profilePicType === "file" && profilePicFile) {
+      if (profilePicFile) {
         finalProfilePicUrl = await DoctorService.uploadProof(profilePicFile, "profilePictureUrl");
       }
 
@@ -434,43 +428,21 @@ export default function DoctorAdditionalData() {
                             </label>
                             <span className="text-[11px] text-[#787584]">You can add it later</span>
                           </div>
-                          <div className="flex gap-1 bg-white border p-0.5 rounded-md text-[12px]">
-                            <button
-                              type="button"
-                              onClick={() => setProfilePicType("file")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${profilePicType === "file" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              File Upload
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setProfilePicType("link")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${profilePicType === "link" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              Web Link
-                            </button>
-                          </div>
                         </div>
-                        {profilePicType === "file" ? (
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) =>
-                              setProfilePicFile(e.target.files?.[0] || null)
-                            }
-                            className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
-                            disabled={isLoading}
-                          />
-                        ) : (
-                          <input
-                            type="url"
-                            value={profilePicUrl}
-                            onChange={(e) => setProfilePicUrl(e.target.value)}
-                            placeholder="https://example.com/avatar.jpg"
-                            className="w-full h-10 px-3 bg-white border border-[#e5deff] rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-[#5140b3] transition-all"
-                            disabled={isLoading}
-                          />
+                        {profilePicUrl && (
+                          <div className="mb-3 text-[12px]">
+                            Current picture: <a href={getFileUrl(profilePicUrl)} target="_blank" rel="noreferrer" className="text-[#5140b3] font-medium underline">View Picture</a>
+                          </div>
                         )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setProfilePicFile(e.target.files?.[0] || null)
+                          }
+                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          disabled={isLoading}
+                        />
                       </div>
 
                       {/* National ID */}
@@ -652,45 +624,17 @@ export default function DoctorAdditionalData() {
                             <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
                               License Document Verification Proof
                             </label>
-                            <span className="text-[11px] text-[#787584]">Required: Upload PDF or image, or provide valid URL</span>
-                          </div>
-                          <div className="flex gap-1 bg-white border p-0.5 rounded-md text-[12px]">
-                            <button
-                              type="button"
-                              onClick={() => setLicenseProofType("file")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${licenseProofType === "file" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              File Upload
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setLicenseProofType("link")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${licenseProofType === "link" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              Web Link
-                            </button>
+                            <span className="text-[11px] text-[#787584]">Required: Upload PDF or image</span>
                           </div>
                         </div>
-                        {licenseProofType === "file" ? (
-                          <input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) =>
-                              setLicenseProofFile(e.target.files?.[0] || null)
-                            }
-                            className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
-                            disabled={isLoading}
-                          />
-                        ) : (
-                          <input
-                            type="url"
-                            value={licenseProofUrl}
-                            onChange={(e) => setLicenseProofUrl(e.target.value)}
-                            placeholder="https://example.com/license-proof.pdf"
-                            className="w-full h-10 px-3 bg-white border border-[#e5deff] rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-[#5140b3] transition-all"
-                            disabled={isLoading}
-                          />
-                        )}
+                        {renderProofPreview(licenseProofFile, licenseProofUrl)}
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          onChange={(e) => handleProofChange(e, setLicenseProofFile, "licenseProof")}
+                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          disabled={isLoading}
+                        />
                         {errors.licenseProof && (
                           <p className="text-red-500 text-[12px] mt-1 font-medium">
                             {errors.licenseProof}
@@ -707,43 +651,15 @@ export default function DoctorAdditionalData() {
                             </label>
                             <span className="text-[11px] text-[#787584]">Required: Accepted formats: PDF or image</span>
                           </div>
-                          <div className="flex gap-1 bg-white border p-0.5 rounded-md text-[12px]">
-                            <button
-                              type="button"
-                              onClick={() => setIdProofType("file")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${idProofType === "file" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              File Upload
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setIdProofType("link")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${idProofType === "link" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              Web Link
-                            </button>
-                          </div>
                         </div>
-                        {idProofType === "file" ? (
-                          <input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) =>
-                              setIdProofFile(e.target.files?.[0] || null)
-                            }
-                            className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
-                            disabled={isLoading}
-                          />
-                        ) : (
-                          <input
-                            type="url"
-                            value={idProofUrl}
-                            onChange={(e) => setIdProofUrl(e.target.value)}
-                            placeholder="https://example.com/id-proof.pdf"
-                            className="w-full h-10 px-3 bg-white border border-[#e5deff] rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-[#5140b3] transition-all"
-                            disabled={isLoading}
-                          />
-                        )}
+                        {renderProofPreview(idProofFile, idProofUrl)}
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          onChange={(e) => handleProofChange(e, setIdProofFile, "idProof")}
+                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          disabled={isLoading}
+                        />
                         {errors.idProof && (
                           <p className="text-red-500 text-[12px] mt-1 font-medium">
                             {errors.idProof}
@@ -760,43 +676,15 @@ export default function DoctorAdditionalData() {
                             </label>
                             <span className="text-[11px] text-[#787584]">Required: Accepted formats: PDF or image</span>
                           </div>
-                          <div className="flex gap-1 bg-white border p-0.5 rounded-md text-[12px]">
-                            <button
-                              type="button"
-                              onClick={() => setDegreeProofType("file")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${degreeProofType === "file" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              File Upload
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setDegreeProofType("link")}
-                              className={`px-2 py-1 rounded transition-colors cursor-pointer ${degreeProofType === "link" ? "bg-[#5140b3] text-white font-medium" : "text-gray-500 hover:bg-gray-100"}`}
-                            >
-                              Web Link
-                            </button>
-                          </div>
                         </div>
-                        {degreeProofType === "file" ? (
-                          <input
-                            type="file"
-                            accept=".pdf,image/*"
-                            onChange={(e) =>
-                              setDegreeProofFile(e.target.files?.[0] || null)
-                            }
-                            className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
-                            disabled={isLoading}
-                          />
-                        ) : (
-                          <input
-                            type="url"
-                            value={degreeProofUrl}
-                            onChange={(e) => setDegreeProofUrl(e.target.value)}
-                            placeholder="https://example.com/degree-proof.pdf"
-                            className="w-full h-10 px-3 bg-white border border-[#e5deff] rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-[#5140b3] transition-all"
-                            disabled={isLoading}
-                          />
-                        )}
+                        {renderProofPreview(degreeProofFile, degreeProofUrl)}
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          onChange={(e) => handleProofChange(e, setDegreeProofFile, "degreeProof")}
+                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          disabled={isLoading}
+                        />
                         {errors.degreeProof && (
                           <p className="text-red-500 text-[12px] mt-1 font-medium">
                             {errors.degreeProof}

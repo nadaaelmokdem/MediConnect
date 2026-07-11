@@ -16,5 +16,8 @@ namespace Tabibi.DTOs
 
         [MaxLength(500)]
         public string? ChiefComplaint { get; set; }
+
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Online;
     }
 }
+

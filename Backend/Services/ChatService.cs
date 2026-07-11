@@ -120,8 +120,10 @@ namespace Tabibi.Services
                     DoctorSpecialties = s.Doctor != null 
                         ? s.Doctor.DoctorSpecialties.Select(ds => ds.Specialty.Name).ToList()
                         : new List<string>(),
+                    DoctorProfilePictureUrl = s.Doctor != null ? s.Doctor.ProfilePictureUrl : null,
                     PatientName = s.Patient.User.FullName,
                     PatientUserId = s.Patient.UserId,
+                    PatientProfilePictureUrl = (string?)null,
                     LastMessage = dbContext.ChatMessages
                         .Where(m => m.SessionId == s.SessionId && !m.Content.StartsWith("Clinical Assessment:"))
                         .OrderByDescending(m => m.SentAt)
@@ -138,7 +140,8 @@ namespace Tabibi.Services
                 OtherPartySpecialty = role == UserRoles.Patient ? (s.DoctorSpecialties.Any() ? string.Join(", ", s.DoctorSpecialties) : "AI") : "",
                 LastMessage = s.LastMessage?.Content ?? "",
                 LastMessageTime = s.LastMessage?.SentAt,
-                LastMessageRole = s.LastMessage?.Role
+                LastMessageRole = s.LastMessage?.Role,
+                OtherPartyProfilePictureUrl = role == UserRoles.Patient ? s.DoctorProfilePictureUrl : s.PatientProfilePictureUrl
             })
             .OrderByDescending(s => s.LastMessageTime ?? DateTime.MinValue)
             .ToList();
@@ -150,7 +153,7 @@ namespace Tabibi.Services
             if (session == null) throw new Exception("Session not found");
 
             // 24-hour expiry check
-            if (DateTime.UtcNow - session.StartedAt > TimeSpan.FromDays(1))
+            if (DateTime.Now - session.StartedAt > TimeSpan.FromDays(1))
             {
                 throw new Exception("Session has expired. Please follow up or start a new session.");
             }
@@ -166,10 +169,10 @@ namespace Tabibi.Services
                     var patient = await dbContext.PatientProfiles.Include(p => p.Quota).FirstOrDefaultAsync(p => p.PatientId == session.PatientId);
                     if (patient?.Quota != null)
                     {
-                        if (DateTime.UtcNow.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.UtcNow.Year != patient.Quota.LastFreeGpMessageReset.Year)
+                        if (DateTime.Now.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.Now.Year != patient.Quota.LastFreeGpMessageReset.Year)
                         {
                             patient.Quota.AvailableFreeGpMessages = 2;
-                            patient.Quota.LastFreeGpMessageReset = DateTime.UtcNow;
+                            patient.Quota.LastFreeGpMessageReset = DateTime.Now;
                         }
 
                         if (patient.Quota.AvailableFreeGpMessages <= 0)
@@ -190,7 +193,7 @@ namespace Tabibi.Services
                 SessionId = sessionId,
                 Role = role,
                 Content = content,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.Now
             };
 
             dbContext.ChatMessages.Add(message);
@@ -226,7 +229,7 @@ namespace Tabibi.Services
 
             // Check for existing active session first for both paid and unpaid
             var existingSession = await dbContext.ChatSessions
-                .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.DoctorId == doctorId && s.IsCompanyPaid == isCompanyPaid && s.Status == SessionStatus.Active && s.StartedAt >= DateTime.UtcNow.AddDays(-1));
+                .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.DoctorId == doctorId && s.IsCompanyPaid == isCompanyPaid && s.Status == SessionStatus.Active && s.StartedAt >= DateTime.Now.AddDays(-1));
             
             if (existingSession != null)
             {
@@ -249,10 +252,10 @@ namespace Tabibi.Services
                 }
                 
                 // reset logic for GP
-                if (DateTime.UtcNow.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.UtcNow.Year != patient.Quota.LastFreeGpMessageReset.Year)
+                if (DateTime.Now.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.Now.Year != patient.Quota.LastFreeGpMessageReset.Year)
                 {
                     patient.Quota.AvailableFreeGpMessages = 2;
-                    patient.Quota.LastFreeGpMessageReset = DateTime.UtcNow;
+                    patient.Quota.LastFreeGpMessageReset = DateTime.Now;
                 }
 
                 if (patient.Quota.AvailableFreeGpMessages <= 0)
@@ -269,7 +272,7 @@ namespace Tabibi.Services
                 DoctorId = doctorId,
                 ConsultationType = ConsultationType.Chat,
                 Status = SessionStatus.Active,
-                StartedAt = DateTime.UtcNow,
+                StartedAt = DateTime.Now,
                 IsCompanyPaid = isCompanyPaid,
                 IsFreeMessage = isCompanyPaid
             };
@@ -305,7 +308,7 @@ namespace Tabibi.Services
                 DoctorId = null,
                 ConsultationType = ConsultationType.Chat,
                 Status = SessionStatus.Active,
-                StartedAt = DateTime.UtcNow
+                StartedAt = DateTime.Now
             };
 
             dbContext.ChatSessions.Add(newSession);
@@ -330,7 +333,7 @@ namespace Tabibi.Services
             session.Price = doctorChatPrice * 0.4m;
             session.IsFollowUp = true;
             session.IsCompanyPaid = false; // It's no longer free company paid, it's paid now.
-            session.StartedAt = DateTime.UtcNow; // Reset clock
+            session.StartedAt = DateTime.Now; // Reset clock
 
             await dbContext.SaveChangesAsync();
             return session;

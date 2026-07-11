@@ -1,15 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import type { EditableDetailItemProps } from "../../types/profilePageProps";
 import { FiCheck, FiX } from "react-icons/fi";
+import { MdAssignment } from "react-icons/md";
+import { CachedImage } from "../common/CachedImage";
+import { getFileUrl } from "../../utils/fileUtils";
 import { AxiosError } from "axios";
 import { PhotoPreviewModal } from "./PhotoPreviewModal";
 import { TagsInput } from "./TagsInput";
 import { DetailReadView } from "./DetailReadView";
 
+
+const isPdfUrl = (url: string | undefined | null): boolean => {
+  if (!url) return false;
+  const trimmed = url.trim().toLowerCase();
+  return trimmed.endsWith(".pdf") || trimmed.includes(".pdf?");
+};
+
 const isImageUrl = (url: string | undefined | null): boolean => {
   if (!url) return false;
-  const trimmed = url.trim();
-  return /\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i.test(trimmed) || trimmed.startsWith("data:image/") || trimmed.includes("/uploads/proof-");
+  const trimmed = url.trim().toLowerCase();
+  if (trimmed.endsWith(".pdf") || trimmed.includes(".pdf?")) return false;
+  return /\.(jpg|jpeg|png|webp|heic|heif)($|\?)/.test(trimmed) || trimmed.startsWith("data:image/") || (trimmed.includes("/uploads/proof-") && !trimmed.endsWith(".pdf"));
 };
 
 export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
@@ -118,6 +129,12 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
     const file = e.target.files?.[0];
     if (!file || !fieldName) return;
 
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      setError("Only images and PDFs are allowed.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     try {
       setIsUploading(true);
       setError(null);
@@ -201,35 +218,51 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
               />
             ) : (
               <div className="flex w-full gap-2 relative flex-1 min-w-0">
-                <input
-                  ref={inputRef}
-                  type={type}
-                  value={localValue || ""}
-                  onChange={(e) => {
-                    setLocalValue(e.target.value);
-                    setError(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && validateInput(localValue)) {
-                      handleSaveToBackend(localValue);
-                    }
-                  }}
-                  className="flex-1 w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-lg font-semibold text-[#2A2455] focus:outline-none min-w-0"
-                  placeholder={`Enter ${label?.toLowerCase()}`}
-                />
+                {allowUpload ? (
+                  <div className="flex-1 w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-sm font-semibold text-[#2A2455] flex items-center min-w-0 opacity-80 cursor-not-allowed">
+                    <span className="truncate">
+                      {localValue ? "File uploaded" : "No file selected"}
+                    </span>
+                  </div>
+                ) : (
+                  <input
+                    ref={inputRef}
+                    type={type}
+                    value={localValue || ""}
+                    onChange={(e) => {
+                      setLocalValue(e.target.value);
+                      setError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && validateInput(localValue)) {
+                        handleSaveToBackend(localValue);
+                      }
+                    }}
+                    className="flex-1 w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-lg font-semibold text-[#2A2455] focus:outline-none min-w-0"
+                    placeholder={`Enter ${label?.toLowerCase()}`}
+                  />
+                )}
                 {allowUpload && fieldName && (
                   <div className="flex-shrink-0 flex items-center gap-2">
                     {isImageUrl(localValue) && (
-                      <img
-                        src={localValue}
+                      <CachedImage
+                        src={localValue!}
                         alt="Preview"
                         className="w-8 h-8 object-cover rounded border border-[#E6E1FF] cursor-pointer"
                         onClick={() => setIsModalOpen(true)}
                         title="Click to preview"
                       />
                     )}
+                    {isPdfUrl(localValue) && (
+                      <a href={getFileUrl(localValue!)} target="_blank" rel="noreferrer" title="View PDF">
+                        <div className="w-8 h-8 flex items-center justify-center bg-[#f0ebff] rounded border border-[#E6E1FF] text-[#5140b3] cursor-pointer hover:bg-[#e5deff]">
+                          <MdAssignment size={18} />
+                        </div>
+                      </a>
+                    )}
                     <input
                       type="file"
+                      accept=".pdf,image/*"
                       className="hidden"
                       ref={fileInputRef}
                       onChange={handleFileUpload}

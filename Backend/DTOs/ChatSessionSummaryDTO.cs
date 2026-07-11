@@ -12,5 +12,6 @@ namespace Tabibi.DTOs
         public string LastMessage { get; set; } = string.Empty;
         public DateTime? LastMessageTime { get; set; }
         public string? LastMessageRole { get; set; }
+        public string? OtherPartyProfilePictureUrl { get; set; }
     }
 }

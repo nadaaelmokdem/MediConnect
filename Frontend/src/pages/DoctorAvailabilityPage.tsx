@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { MdAdd, MdDelete, MdContentCopy, MdSave, MdCalendarMonth, MdSchedule, MdInfo } from "react-icons/md";
 import { LuCalendarDays, LuClock } from "react-icons/lu";
 import DoctorService from "../services/doctorService";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { format } from "date-fns";
 
 type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -191,8 +190,6 @@ export default function DoctorAvailabilityPage() {
 
   return (
     <div className="w-full bg-[#FBFAFF] p-4 md:p-8 min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} />
-
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

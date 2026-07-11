@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -42,7 +42,7 @@ namespace Tabibi.Services
         issuer: configuration["JwtSettings:ValidIssuer"],
         audience: configuration["JwtSettings:ValidAudience"],
         claims: claims,
-        expires: DateTime.UtcNow.AddMinutes(
+        expires: DateTime.Now.AddMinutes(
             int.Parse(configuration["JwtSettings:DurationInMinutes"] ?? "60")),
         signingCredentials: credentials
     );

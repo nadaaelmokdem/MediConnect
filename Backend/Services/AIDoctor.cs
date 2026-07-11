@@ -5,11 +5,16 @@ using Microsoft.Extensions.Configuration;
 
 namespace Tabibi.Services
 {
-    public class AIDoctor(IConfiguration config)
+    public class AIDoctor(IConfiguration config, IFileService fileService)
     {
+        private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+
         public async Task<string> Ask(string msg, string prevContext = "")
         {
-            var client = new Client(apiKey: config.GetValue<string>("AIKey")!);
+            var client = new Client(
+                apiKey: config.GetValue<string>("AIKey")!, 
+                httpOptions: new HttpOptions { Timeout = (int)TimeSpan.FromMinutes(5).TotalMilliseconds }
+            );
 
             string systemInstruction =
                     @"# ROLE
@@ -37,6 +42,12 @@ You are a calm, empathetic, and reassuring Medical Intake and Triage AI represen
 # LANGUAGE & FIELD RULES
 - If the patient speaks or writes in English -> The 'user_facing_reply' MUST be in natural English.
 - If the patient speaks or writes in Arabic -> The 'user_facing_reply' MUST be strictly in Modern Standard Arabic (MSA). Never use regional dialects or slang.
+
+# MULTIMEDIA (IMAGE/FILE) HANDLING
+- You CAN and MUST view any images or files provided by the user (e.g., photos of skin conditions, injuries, test results).
+- Do NOT say you cannot view or analyze files. You are fully capable of analyzing the attached visual data.
+- Describe what you see in the image and incorporate these visual observations into the 'clinical_assessment' for the human doctor.
+- In your 'user_facing_reply', acknowledge the image politely, comment gently on what you see, and ask relevant follow-up questions. Always remind the user that you cannot provide a definitive diagnosis from the image alone.
 
 # CRITICAL CLINICAL ASSESSMENT PIPELINE (READ CAREFULLY)
 - The human doctor will ONLY receive the 'clinical_assessment' string from this single, final JSON response. They will NOT see the prior message text.
@@ -103,11 +114,51 @@ Output:
                 ResponseSchema = Diagnosis
             };
 
+            var parts = new List<Part>();
+            
+            var match = System.Text.RegularExpressions.Regex.Match(msg, @"((?:https?:\/\/|\/api\/files\/)[^\n]+?\.(?:jpg|jpeg|png|webp|heic|heif|mp4|mov|avi|webm|wmv|mpeg|mpg|flv|3gpp|pdf))", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            
+            if (match.Success)
+            {
+                string url = match.Groups[1].Value.Trim();
+                try
+                {
+                    byte[] bytes;
+                    if (url.StartsWith("/api/files/"))
+                    {
+                        var objectKey = url.Substring("/api/files/".Length);
+                        bytes = await fileService.GetFileBytesAsync(objectKey);
+                    }
+                    else
+                    {
+                        bytes = await _httpClient.GetByteArrayAsync(url);
+                    }
+                    
+                    string ext = System.IO.Path.GetExtension(url).ToLower();
+                    string mimeType = "application/octet-stream";
+                    if (ext == ".jpg" || ext == ".jpeg") mimeType = "image/jpeg";
+                    else if (ext == ".png") mimeType = "image/png";
+                    else if (ext == ".pdf") mimeType = "application/pdf";
+
+                    string fileName = Guid.NewGuid().ToString() + ext;
+                    var uploadConfig = new UploadFileConfig { MimeType = mimeType, DisplayName = fileName };
+                    var uploadedFile = await client.Files.UploadAsync(bytes, fileName, uploadConfig);
+                    parts.Add(new Part { FileData = new FileData { FileUri = uploadedFile.Uri, MimeType = mimeType } });
+                    
+                    // Remove the URL from the message so the model doesn't get confused and refuse to "open links"
+                    msg = msg.Replace(url, "").Trim();
+                }
+                catch { }
+            }
+
             string promptPayload = $"History of session:\n{prevContext}\n\nLatest Message from user:\n{msg}";
+            parts.Add(new Part { Text = promptPayload });
+
+            var contentList = new List<Content> { new Content { Parts = parts } };
 
             var response = await client.Models.GenerateContentAsync(
                  model: "gemini-3.1-flash-lite",
-                 contents: promptPayload,
+                 contents: contentList,
                  config: generateContentConfig
             );
 

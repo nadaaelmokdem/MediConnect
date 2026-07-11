@@ -46,5 +46,6 @@ namespace Tabibi.DTOs
         public DateTime CreatedAt { get; set; }
         public List<string> Roles { get; set; } = new();
         public bool IsVerified { get; set; }
+        public string? ProfilePictureUrl { get; set; }
     }
 }

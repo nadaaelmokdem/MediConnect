@@ -61,6 +61,22 @@ export default class PatientService {
     return response.data;
   }
 
+  static async uploadProfilePicture(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await api.post("patient/upload-profile-picture", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+      return response.data.url;
+    } catch (error: unknown) {
+      console.error("Failed to upload profile picture:", error);
+      throw new Error("Failed to upload file.");
+    }
+  }
+
   static async getAppointments(filters: any = {}): Promise<any[]> {
     const response = await api.get("appointment/patient-appointments", { params: filters });
     return response.data;

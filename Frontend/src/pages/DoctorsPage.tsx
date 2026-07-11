@@ -10,6 +10,9 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatService from "../services/chatService";
 import { getAiQuota } from "../services/AIChat";
+import NetworkError from "../components/common/NetworkError";
+
+import { toast } from "react-toastify";
 
 const DoctorsPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -29,6 +32,7 @@ const DoctorsPage: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Search input state (allows typing before fetching)
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,6 +93,7 @@ const DoctorsPage: React.FC = () => {
     let active = true;
     const load = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const result = await PublicService.getDoctors(filter);
         if (active) {
@@ -96,8 +101,9 @@ const DoctorsPage: React.FC = () => {
           setTotalCount(result.totalCount);
           setTotalPages(result.totalPages);
         }
-      } catch (error) {
-        console.error(error);
+      } catch (err: any) {
+        console.error(err);
+        if (active) setError(err.message || "Network Error");
       } finally {
         if (active) setIsLoading(false);
       }
@@ -197,11 +203,16 @@ const DoctorsPage: React.FC = () => {
       const typeMap: Record<string, number> = { chat: 0, video: 1, call: 2, clinic: 3 };
       const apiType = typeMap[typeStr] ?? 3;
 
-      await AppointmentService.bookAppointment({
+      const res = await AppointmentService.bookAppointment({
         doctorId: selectedSlot.doctorId,
         scheduledAt: selectedSlot.start,
         type: apiType as any,
       });
+
+      if (res.paymentUrl) {
+        window.location.href = res.paymentUrl;
+        return;
+      }
 
       // Optimistically mark the slot as booked in local state
       setBookedSlots((prev) => {
@@ -219,6 +230,9 @@ const DoctorsPage: React.FC = () => {
       });
       setSelectedSlot(null);
       setDaySlots([]);
+      handleCloseBookingModal();
+      
+      toast.success('Appointment successfully booked!');
     } catch (err) {
       console.error("Booking failed", err);
       setFeedback({
@@ -366,7 +380,11 @@ const DoctorsPage: React.FC = () => {
         </div>
 
         {/* Results Section */}
-        {isLoading ? (
+        {error ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-[#E6E1FF] overflow-hidden min-h-[400px] flex items-center justify-center">
+            <NetworkError message="Failed to load doctors. Please check your connection and try again." />
+          </div>
+        ) : isLoading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
           </div>

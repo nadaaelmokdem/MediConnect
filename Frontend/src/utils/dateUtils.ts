@@ -83,4 +83,19 @@ export const formatTimeTo12Hour = (time: Date | string): string => {
   }
   return String(time);
 };
+export const formatChatSessionTime = (dateInput: Date | string | null | undefined): string => {
+  if (!dateInput) return "";
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (isNaN(date.getTime())) return "";
 
+  const today = new Date();
+  if (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  ) {
+    return formatTimeTo12Hour(date);
+  }
+
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+};

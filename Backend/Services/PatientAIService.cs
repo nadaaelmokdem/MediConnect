@@ -24,17 +24,17 @@ namespace Tabibi.Services
             }
 
             // Daily reset logic
-            if (DateTime.UtcNow - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
+            if (DateTime.Now - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
             {
                 patient.Quota.AvailableAiMessages = 15;
-                patient.Quota.LastAiMessageReset = DateTime.UtcNow;
+                patient.Quota.LastAiMessageReset = DateTime.Now;
             }
 
             // Monthly GP reset logic
-            if (DateTime.UtcNow.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.UtcNow.Year != patient.Quota.LastFreeGpMessageReset.Year)
+            if (DateTime.Now.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.Now.Year != patient.Quota.LastFreeGpMessageReset.Year)
             {
                 patient.Quota.AvailableFreeGpMessages = 2;
-                patient.Quota.LastFreeGpMessageReset = DateTime.UtcNow;
+                patient.Quota.LastFreeGpMessageReset = DateTime.Now;
             }
 
             await dbContext.SaveChangesAsync();
@@ -77,10 +77,10 @@ namespace Tabibi.Services
                 dbContext.PatientQuotas.Add(patient.Quota);
             }
 
-            if (DateTime.UtcNow - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
+            if (DateTime.Now - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
             {
                 patient.Quota.AvailableAiMessages = 15;
-                patient.Quota.LastAiMessageReset = DateTime.UtcNow;
+                patient.Quota.LastAiMessageReset = DateTime.Now;
             }
 
             if (patient.Quota.AvailableAiMessages > 0)

@@ -19,7 +19,7 @@ export default class AppointmentService {
   }
 
   static async bookAppointment(
-    request: BookAppointmentRequest,
+    request: BookAppointmentRequest & { paymentMethod?: number },
   ): Promise<AppointmentBooked> {
     const response = await api.post<AppointmentBooked>(
       "appointment/book",

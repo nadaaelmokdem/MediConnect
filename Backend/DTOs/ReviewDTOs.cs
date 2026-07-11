@@ -7,6 +7,7 @@ namespace Tabibi.DTOs
         public string? Comment { get; set; }
         public string PatientName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public Tabibi.Models.ConsultationType ConsultationType { get; set; }
     }
 
     public class CreateReviewDTO

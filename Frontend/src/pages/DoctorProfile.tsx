@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { CachedImage } from "../components/common/CachedImage";
+import React, { useEffect, useState, useRef } from "react";
 import {
   FiCamera,
   FiUser,
@@ -12,14 +13,18 @@ import { MdLocationOn, MdAssignment, MdVerified } from "react-icons/md";
 import type { DoctorProfileData } from "../types/profilePageProps";
 import { EditableDetailItem } from "../components/Profile/EditableDetail";
 import { ServicesAndPricingManager } from "../components/Profile/ServicesAndPricingManager";
-// Note: You might want to update this to DoctorService if you have separate services
 import DoctorService from "../services/doctorService";
+import { useAuth } from "../context/AuthContext";
+import { getFileUrl } from "../utils/fileUtils";
 
 const ProfilePage: React.FC = () => {
   const [editingField, setEditingField] = useState<
     keyof DoctorProfileData | null
   >(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const { updateUser } = useAuth();
   const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
 
   // Updated to reflect the doctor form fields
@@ -57,6 +62,7 @@ const ProfilePage: React.FC = () => {
           ...prev,
           fullName: DoctorProfileData.fullName,
           email: DoctorProfileData.email,
+          imageUrl: (DoctorProfileData as any).profilePictureUrl ?? "",
           nationalIdNumber: DoctorProfileData.nationalIdNumber ?? "",
           licenseNumber: DoctorProfileData.licenseNumber ?? "",
           licenseExpiryDate: DoctorProfileData.licenseExpiryDate ?? "",
@@ -137,7 +143,25 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleImageClick = () => {
-    alert("Image upload trigger goes here.");
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingImage(true);
+      try {
+        const newUrl = await DoctorService.uploadProof(file, "profilePictureUrl");
+        setProfile((prev) => ({ ...prev, imageUrl: newUrl }));
+        updateUser({ profilePictureUrl: newUrl });
+      } catch (error) {
+        console.error("Failed to upload image:", error);
+        alert("Failed to upload profile picture.");
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setIsUploadingImage(false);
+      }
+    }
   };
 
   if (isLoading) {
@@ -179,15 +203,22 @@ const ProfilePage: React.FC = () => {
             className="relative cursor-pointer flex-shrink-0"
             onClick={handleImageClick}
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-[#E6E1FF] bg-[#FBFAFF] flex items-center justify-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-[#E6E1FF] bg-[#FBFAFF] flex items-center justify-center relative">
+              {isUploadingImage && (
+                <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center z-10">
+                  <div className="w-6 h-6 border-2 border-[#6A5ACD] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
               {profile.imageUrl ? (
-                <img
-                  src={profile.imageUrl}
+                <CachedImage
+                  src={getFileUrl(profile.imageUrl)}
                   alt={profile.fullName}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <FiUser className="text-[#B8A7FF] text-4xl" />
+                <span className="text-[#6A5ACD] text-4xl font-bold uppercase">
+                  {profile.fullName ? profile.fullName.replace(/^Dr\.\s*/i, '').charAt(0) : "D"}
+                </span>
               )}
             </div>
             {/* Camera icon overlay */}
@@ -195,6 +226,13 @@ const ProfilePage: React.FC = () => {
               <FiCamera className="text-white text-sm" />
             </div>
           </div>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
 
           {/* Name & Handle */}
           <div className="flex-1 text-center sm:text-left flex flex-col justify-center w-full">
@@ -344,7 +382,7 @@ const ProfilePage: React.FC = () => {
               />
               <EditableDetailItem
                 icon={<FiHash />}
-                label="ID Proof Link"
+                label="ID Proof Document"
                 value={profile.idProofUrl}
                 isEditing={editingField === "idProofUrl"}
                 onEdit={() => setEditingField("idProofUrl")}
@@ -367,7 +405,7 @@ const ProfilePage: React.FC = () => {
               />
               <EditableDetailItem
                 icon={<MdAssignment />}
-                label="License Proof Link (Drive, Dropbox, etc)"
+                label="License Proof Document"
                 value={profile.licenseProofUrl}
                 isEditing={editingField === "licenseProofUrl"}
                 onEdit={() => setEditingField("licenseProofUrl")}
@@ -390,7 +428,7 @@ const ProfilePage: React.FC = () => {
               />
               <EditableDetailItem
                 icon={<FiBriefcase />}
-                label="Medical Degree Proof Link"
+                label="Medical Degree Proof Document"
                 value={profile.degreeProofUrl}
                 isEditing={editingField === "degreeProofUrl"}
                 onEdit={() => setEditingField("degreeProofUrl")}

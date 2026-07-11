@@ -17,7 +17,8 @@ namespace Tabibi.DTOs
         public int DurationMins { get; set; }
 
         public decimal Price { get; set; }
-
         public string? ChiefComplaint { get; set; }
+
+        public string? PaymentUrl { get; set; }
     }
 }

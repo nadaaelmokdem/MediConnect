@@ -1,3 +1,4 @@
+import { CachedImage } from "../components/common/CachedImage";
 import { useState, useEffect } from "react";
 import {
   MdChevronRight,
@@ -13,12 +14,14 @@ import ScheduleItemComponent, {
 } from "../components/DoctorDashboard/ScheduleItem";
 import CalendarModal from "../components/DoctorDashboard/CalendarModal";
 import { useNavigate } from "react-router-dom";
-import { getTodayStr, formatTimeTo12Hour } from "../utils/dateUtils";
+import { getTodayStr, formatTimeTo12Hour, formatChatSessionTime } from "../utils/dateUtils";
+import { formatMessagePreview } from "../utils/textUtils";
 import ChatService from "../services/chatService";
 import { onUserPresenceChanged, subscribeToPresence } from "../services/chatHubService";
 import { useAuth } from "../context/AuthContext";
 import DoctorService from "../services/doctorService";
 import type { DoctorDashboardData } from "../types/dashboard";
+import { getFileUrl } from "../utils/fileUtils";
 import Skeleton from "../components/common/Skeleton";
 
 function formatLastMessagePreview(
@@ -26,9 +29,10 @@ function formatLastMessagePreview(
   lastMessageRole: string | undefined | null,
   viewerRole: string,
 ): string {
-  if (!lastMessage.trim()) return "";
+  if (!lastMessage?.trim()) return "";
+  const preview = formatMessagePreview(lastMessage);
   const isOwn = lastMessageRole?.toLowerCase() === viewerRole.toLowerCase();
-  return isOwn ? `You: ${lastMessage}` : lastMessage;
+  return isOwn ? `You: ${preview}` : preview;
 }
 
 export default function Dashboard() {
@@ -82,6 +86,7 @@ export default function Dashboard() {
         );
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.activeRole, updateUser]);
 
   const handleCancelAppointment = async (id: number) => {
@@ -290,7 +295,7 @@ export default function Dashboard() {
               )}
             </div>
             <button
-              onClick={() => navigate("/messages")}
+              onClick={() => navigate("/chat")}
               className="cursor-pointer text-sm font-medium text-primary hover:underline"
             >
               View all
@@ -315,9 +320,19 @@ export default function Dashboard() {
                     className="flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container-low transition-colors border border-transparent hover:border-surface-variant/30 cursor-pointer"
                   >
                     <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-sm text-lg font-bold">
-                        {(session.otherPartyName || "U").charAt(0).toUpperCase() || "U"}
-                      </div>
+                      {session.otherPartyProfilePictureUrl ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm">
+                          <CachedImage
+                            src={getFileUrl(session.otherPartyProfilePictureUrl)}
+                            alt={session.otherPartyName || "User"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-sm text-lg font-bold">
+                          {(session.otherPartyName || "U").charAt(0).toUpperCase() || "U"}
+                        </div>
+                      )}
                       {onlineUsers[session.otherPartyUserId] && (
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                       )}
@@ -329,7 +344,7 @@ export default function Dashboard() {
                         </h4>
                         <span className="text-[12px] text-on-surface-variant font-medium ml-2 shrink-0">
                           {session.lastMessageTime
-                            ? formatTimeTo12Hour(new Date(session.lastMessageTime))
+                            ? formatChatSessionTime(session.lastMessageTime)
                             : ""}
                         </span>
                       </div>

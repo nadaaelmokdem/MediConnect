@@ -7,7 +7,7 @@ using Tabibi.Shared;
 
 namespace Tabibi.Services
 {
-    public class AdminService(AppDbContext dbContext, UserManager<AppUser> userManager)
+    public class AdminService(AppDbContext dbContext, UserManager<AppUser> userManager, IFileService fileService)
     {
         public async Task<AdminDashboardDTO> GetDashboard()
         {
@@ -251,6 +251,25 @@ namespace Tabibi.Services
 
             if (doctor.VerificationStatus == DoctorVerificationStatus.Approved || request.RevertToOldData)
             {
+                if (request.RevertToOldData)
+                {
+                    if (!string.IsNullOrEmpty(doctor.LicenseProofUrl) && doctor.LicenseProofUrl != doctor.OldLicenseProofUrl)
+                        await fileService.DeleteFileAsync(doctor.LicenseProofUrl);
+                    if (!string.IsNullOrEmpty(doctor.IdProofUrl) && doctor.IdProofUrl != doctor.OldIdProofUrl)
+                        await fileService.DeleteFileAsync(doctor.IdProofUrl);
+                    if (!string.IsNullOrEmpty(doctor.DegreeProofUrl) && doctor.DegreeProofUrl != doctor.OldDegreeProofUrl)
+                        await fileService.DeleteFileAsync(doctor.DegreeProofUrl);
+                }
+                else if (doctor.VerificationStatus == DoctorVerificationStatus.Approved)
+                {
+                    if (!string.IsNullOrEmpty(doctor.OldLicenseProofUrl) && doctor.OldLicenseProofUrl != doctor.LicenseProofUrl)
+                        await fileService.DeleteFileAsync(doctor.OldLicenseProofUrl);
+                    if (!string.IsNullOrEmpty(doctor.OldIdProofUrl) && doctor.OldIdProofUrl != doctor.IdProofUrl)
+                        await fileService.DeleteFileAsync(doctor.OldIdProofUrl);
+                    if (!string.IsNullOrEmpty(doctor.OldDegreeProofUrl) && doctor.OldDegreeProofUrl != doctor.DegreeProofUrl)
+                        await fileService.DeleteFileAsync(doctor.OldDegreeProofUrl);
+                }
+
                 // Clear old fields when approved or reverted (they are now the active fields)
                 doctor.OldLicenseNumber = null;
                 doctor.OldNationalIdNumber = null;
@@ -262,7 +281,7 @@ namespace Tabibi.Services
                 doctor.OldSpecialties.Clear();
             }
 
-            doctor.ReviewedAt = DateTime.UtcNow;
+            doctor.ReviewedAt = DateTime.Now;
 
             await dbContext.SaveChangesAsync();
             return ServiceResult.Success();

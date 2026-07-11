@@ -21,6 +21,7 @@ export interface AppointmentBooked {
   durationMins: number;
   price: number;
   chiefComplaint?: string;
+  paymentUrl?: string;
 }
 
 /** Matches backend ConsultationType enum: Chat=0, Video=1, Call=2, Clinic=3 */

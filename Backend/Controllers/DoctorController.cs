@@ -10,7 +10,7 @@ namespace Tabibi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = UserRoles.Doctor)]
-    public class DoctorController(DoctorService doctorService) : ControllerBase
+    public class DoctorController(DoctorService doctorService, IFileService fileService) : ControllerBase
     {
         [HttpPatch("profile-field")]
         public async Task<IActionResult> UpdateProfileField([FromBody] DoctorProfileFieldDTO fieldData)
@@ -116,22 +116,7 @@ namespace Tabibi.Controllers
                 return BadRequest("Invalid field name for file upload");
             }
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "proofs");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Return relative URL assuming static files are served from wwwroot
-            var fileUrl = $"/proofs/{uniqueFileName}";
+            var fileUrl = await fileService.UploadFileAsync(file, "proofs");
 
             // Update the profile field with this URL
             var res = await doctorService.UpdateProfileField(userId, fieldName, fileUrl);

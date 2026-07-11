@@ -10,7 +10,8 @@ public class AppointmentService(
     AppDbContext dbContext,
     SlotService slotService,
     PricingService pricingService,
-    AppointmentNotificationService notificationService)
+    AppointmentNotificationService notificationService,
+    Tabibi.Services.Payments.PaymentGatewayResolver paymentGatewayResolver)
 {
     public async Task<List<AvailableSlotDTO>> GetAvailableSlots(
         int doctorId,
@@ -84,7 +85,7 @@ public class AppointmentService(
         BookAppointmentDTO request)
     {
         var patient = await dbContext.PatientProfiles
-            .AsNoTracking()
+            .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.UserId == patientUserId);
 
         if (patient == null)
@@ -119,17 +120,39 @@ public class AppointmentService(
             var appointment = new Appointment
             {
                 PatientId = patient.PatientId,
+                Patient = patient,
                 DoctorId = request.DoctorId,
                 ScheduledAt = normalizedScheduledAt,
                 DurationMins = durationMins,
                 ConsultationType = request.Type,
                 Status = AppointmentStatus.Confirmed,
                 Price = price.Value,
-                ChiefComplaint = request.ChiefComplaint
+                ChiefComplaint = request.ChiefComplaint,
+                PaymentMethod = request.PaymentMethod
             };
 
             dbContext.Appointments.Add(appointment);
             await dbContext.SaveChangesAsync();
+
+            string? paymentUrl = null;
+            if (request.PaymentMethod == PaymentMethod.Online)
+            {
+                var payment = new Payment
+                {
+                    AppointmentId = appointment.AppointmentId,
+                    Amount = price.Value,
+                    Currency = "EGP",
+                    Status = PaymentStatus.Pending,
+                    Gateway = PaymentGateway.Kasheir
+                };
+                dbContext.Payments.Add(payment);
+                await dbContext.SaveChangesAsync();
+
+                var strategy = paymentGatewayResolver.Resolve(PaymentGateway.Kasheir);
+                paymentUrl = await strategy.GeneratePaymentLinkAsync(payment, appointment);
+                await dbContext.SaveChangesAsync();
+            }
+
             await transaction.CommitAsync();
 
             var bookedDto = new AppointmentBookedDTO
@@ -141,7 +164,8 @@ public class AppointmentService(
                 Status = appointment.Status,
                 DurationMins = appointment.DurationMins,
                 Price = appointment.Price,
-                ChiefComplaint = appointment.ChiefComplaint
+                ChiefComplaint = appointment.ChiefComplaint,
+                PaymentUrl = paymentUrl
             };
 
             var doctorUserId = await dbContext.DoctorProfiles
@@ -163,6 +187,11 @@ public class AppointmentService(
 
             return ServiceResult<AppointmentBookedDTO>.Success(bookedDto);
         }
+        catch (InvalidOperationException ex)
+        {
+            await transaction.RollbackAsync();
+            return ServiceResult<AppointmentBookedDTO>.Failure(ex.Message);
+        }
         catch (DbUpdateException)
         {
             await transaction.RollbackAsync();
@@ -173,7 +202,7 @@ public class AppointmentService(
 
     public async Task AutoCompleteTodayAppointmentsAsync(int? patientId = null, int? doctorId = null)
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var todayStart = now.Date;
         var todayEnd = todayStart.AddDays(1);
 
@@ -243,6 +272,7 @@ public class AppointmentService(
 
         var query = dbContext.Appointments
             .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .Include(a => a.Review)
             .Where(a => a.PatientId == patient.PatientId)
             .AsQueryable();
 
@@ -255,6 +285,7 @@ public class AppointmentService(
             .Select(a => new AppointmentListDTO
             {
                 AppointmentId = a.AppointmentId,
+                DoctorId = a.DoctorId,
                 DoctorName = a.Doctor.User.FullName,
                 PatientName = patient.User.FullName,
                 ScheduledAt = a.ScheduledAt,
@@ -265,7 +296,9 @@ public class AppointmentService(
                 ChiefComplaint = a.ChiefComplaint,
                 Notes = a.Notes,
                 DoctorProfilePictureUrl = a.Doctor.ProfilePictureUrl,
-                SessionId = a.SessionId
+                SessionId = a.SessionId,
+                ReviewRating = a.Review != null ? a.Review.Rating : null,
+                ReviewComment = a.Review != null ? a.Review.Comment : null
             }).ToListAsync();
     }
 

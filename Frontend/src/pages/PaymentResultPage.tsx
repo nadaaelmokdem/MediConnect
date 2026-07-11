@@ -1,0 +1,56 @@
+import { useSearchParams, Link } from "react-router-dom";
+import { FaCheckCircle, FaTimesCircle, FaCalendarAlt } from "react-icons/fa";
+
+export default function PaymentResultPage() {
+  const [searchParams] = useSearchParams();
+  
+  const orderId = searchParams.get("orderId");
+  const successStr = searchParams.get("success");
+  const isSuccess = successStr === "true" || successStr === "True";
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-gray-100 relative overflow-hidden">
+        
+        {/* Background blobs for premium feel */}
+        <div className={`absolute -top-16 -right-16 w-32 h-32 rounded-full blur-3xl opacity-20 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`}></div>
+        <div className={`absolute -bottom-16 -left-16 w-32 h-32 rounded-full blur-3xl opacity-20 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`}></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          {isSuccess ? (
+            <>
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6 shadow-sm border border-green-100">
+                <FaCheckCircle className="text-5xl text-green-500" />
+              </div>
+              <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Payment Successful!</h2>
+              <p className="text-gray-500 mb-6">Your appointment has been confirmed. Order ID: <span className="font-semibold text-gray-700">{orderId}</span></p>
+            </>
+          ) : (
+            <>
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 shadow-sm border border-red-100">
+                <FaTimesCircle className="text-5xl text-red-500" />
+              </div>
+              <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Payment Failed</h2>
+              <p className="text-gray-500 mb-6">There was an issue processing your payment. Please try booking again.</p>
+            </>
+          )}
+
+          <div className="flex flex-col w-full gap-3 mt-4">
+            <Link 
+              to="/appointments"
+              className="w-full flex justify-center items-center gap-2 px-6 py-3.5 border border-transparent text-base font-bold rounded-xl text-white bg-primary hover:bg-primary-dark shadow-md transition-all hover:-translate-y-0.5"
+            >
+              <FaCalendarAlt /> My Appointments
+            </Link>
+            <Link 
+              to="/doctors"
+              className="w-full flex justify-center items-center px-6 py-3.5 border-2 border-gray-200 text-base font-bold rounded-xl text-gray-600 bg-white hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            >
+              Back to Doctors
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
