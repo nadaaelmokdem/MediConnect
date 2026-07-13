@@ -70,6 +70,8 @@ public class AppointmentService(
         }
 
         return slots
+            .GroupBy(s => s.Start)
+            .Select(g => g.First())
             .OrderBy(s => s.Start)
             .ToList();
     }
@@ -106,15 +108,18 @@ public class AppointmentService(
 
         try
         {
-            var validation = await slotService.ValidateSlotAsync(
-                request.DoctorId,
-                normalizedScheduledAt,
-                durationMins);
-
-            if (!validation.IsValid)
+            if (request.Type != ConsultationType.Chat)
             {
-                await transaction.RollbackAsync();
-                return ServiceResult<AppointmentBookedDTO>.Failure(validation.ErrorMessage);
+                var validation = await slotService.ValidateSlotAsync(
+                    request.DoctorId,
+                    normalizedScheduledAt,
+                    durationMins);
+
+                if (!validation.IsValid)
+                {
+                    await transaction.RollbackAsync();
+                    return ServiceResult<AppointmentBookedDTO>.Failure(validation.ErrorMessage);
+                }
             }
 
             var appointment = new Appointment
@@ -125,13 +130,31 @@ public class AppointmentService(
                 ScheduledAt = normalizedScheduledAt,
                 DurationMins = durationMins,
                 ConsultationType = request.Type,
-                Status = AppointmentStatus.Confirmed,
+                Status = request.PaymentMethod == PaymentMethod.Online ? AppointmentStatus.Pending : AppointmentStatus.Confirmed,
                 Price = price.Value,
                 ChiefComplaint = request.ChiefComplaint,
                 PaymentMethod = request.PaymentMethod
             };
 
             dbContext.Appointments.Add(appointment);
+            
+            if (appointment.Status == AppointmentStatus.Confirmed && appointment.ConsultationType == ConsultationType.Chat)
+            {
+                var chatSession = new ChatSession
+                {
+                    PatientId = patient.PatientId,
+                    DoctorId = request.DoctorId,
+                    ConsultationType = ConsultationType.Chat,
+                    Status = SessionStatus.Active,
+                    StartedAt = normalizedScheduledAt,
+                    IsCompanyPaid = false,
+                    IsFreeMessage = false,
+                    Price = price.Value
+                };
+                dbContext.ChatSessions.Add(chatSession);
+                appointment.ChatSession = chatSession;
+            }
+
             await dbContext.SaveChangesAsync();
 
             string? paymentUrl = null;
@@ -143,12 +166,12 @@ public class AppointmentService(
                     Amount = price.Value,
                     Currency = "EGP",
                     Status = PaymentStatus.Pending,
-                    Gateway = PaymentGateway.Kasheir
+                    Gateway = PaymentGateway.Geidea
                 };
                 dbContext.Payments.Add(payment);
                 await dbContext.SaveChangesAsync();
 
-                var strategy = paymentGatewayResolver.Resolve(PaymentGateway.Kasheir);
+                var strategy = paymentGatewayResolver.Resolve(PaymentGateway.Geidea);
                 paymentUrl = await strategy.GeneratePaymentLinkAsync(payment, appointment);
                 await dbContext.SaveChangesAsync();
             }

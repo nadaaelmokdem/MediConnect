@@ -7,11 +7,10 @@ import type { DoctorListItem } from "../types/public";
 import { useAuth } from "../context/AuthContext";
 import Swal from "sweetalert2";
 import { getAiQuota } from "../services/AIChat";
-import AppointmentService from "../services/appointmentService";
 import PatientService from "../services/patientService";
 import ChatService from "../services/chatService";
 import BookingScheduleModal from "../components/Doctor/BookingScheduleModal";
-import type { BookingFeedback, SelectedSlot, SlotWithMeta } from "../types/booking";
+import AppointmentService from "../services/appointmentService";
 
 import { toast } from "react-toastify";
 import { getFileUrl } from "../utils/fileUtils";
@@ -40,10 +39,6 @@ export default function DoctorDetailsPage() {
   
   // ── Booking Modal State ──────────────────────────────────────────────────────
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
-  const [feedback, setFeedback] = useState<BookingFeedback | null>(null);
-  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
-  const [daySlots, setDaySlots] = useState<SlotWithMeta[]>([]);
   // ────────────────────────────────────────────────────────────────────────────
 
   const [reviews, setReviews] = useState<any[]>([]);
@@ -310,13 +305,31 @@ export default function DoctorDetailsPage() {
 
     try {
       const assessment = localStorage.getItem("clinical_assessment");
-      const sessionId = await ChatService.startSession(doctor.doctorId, isCompanyPaid, assessment);
-      navigate(`/chat/${sessionId}`);
+      
+      if (!isCompanyPaid) {
+        const res: any = await AppointmentService.bookAppointment({
+          doctorId: doctor.doctorId,
+          scheduledAt: new Date().toISOString(),
+          type: 0 as any, // 0 = Chat
+          paymentMethod: 1 // 1 = Online
+        });
+        
+        const redirectUrl = res?.paymentUrl || res?.PaymentUrl || res?.sessionUrl || res?.data?.paymentUrl || res?.data?.PaymentUrl;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+          return;
+        } else {
+          throw new Error("Payment link could not be generated.");
+        }
+      } else {
+        const sessionId = await ChatService.startSession(doctor.doctorId, isCompanyPaid, assessment);
+        navigate(`/chat/${sessionId}`);
+      }
     } catch (err: any) {
       Swal.fire({
         icon: 'error',
         title: 'Cannot start chat',
-        text: err.response?.data || "Failed to start chat session.",
+        text: err.response?.data?.message || err.message || err.response?.data || "Failed to start chat session.",
         buttonsStyling: false,
         customClass: {
           popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100',
@@ -438,109 +451,14 @@ export default function DoctorDetailsPage() {
       return;
     }
     setIsBookingModalOpen(true);
-    setSelectedSlot(null);
-    setFeedback(null);
-    setDaySlots([]);
   };
 
   const handleCloseBookingModal = () => {
     setIsBookingModalOpen(false);
-    setSelectedSlot(null);
-    setFeedback(null);
   };
 
-  const handleSlotsLoaded = (slots: SlotWithMeta[]) => {
-    setDaySlots(slots);
-    setSelectedSlot(null);
-    setFeedback(null);
-  };
-
-  const handleSelectSlot = (slot: SlotWithMeta, dateKey: string) => {
-    if (slot.status !== "available" || bookedSlots.has(slot.slotKey)) {
-      const alternatives = daySlots
-        .filter((s) => s.status === "available" && s.slotKey !== slot.slotKey)
-        .slice(0, 3);
-      setFeedback({
-        type: "error",
-        message: "This slot is no longer available.",
-        alternatives,
-      });
-      setSelectedSlot(null);
-      return;
-    }
-
-    setFeedback(null);
-    setSelectedSlot({
-      doctorId: doctor!.doctorId,
-      date: dateKey,
-      start: slot.start,
-      end: slot.end,
-      timeLabel: slot.timeLabel,
-      slotKey: slot.slotKey,
-    });
-  };
-
-  const handleConfirmBooking = async (typeStr: "clinic" | "video" | "call" | "chat" = "clinic", paymentMethod: number = 1) => {
-    if (!selectedSlot) return;
-
-    try {
-      const typeMap: Record<string, number> = { chat: 0, video: 1, call: 2, clinic: 3 };
-      const apiType = typeMap[typeStr] ?? 3;
-      const apiPaymentMethod = typeStr === "clinic" ? paymentMethod : 1;
-
-      const res = await AppointmentService.bookAppointment({
-        doctorId: selectedSlot.doctorId,
-        scheduledAt: selectedSlot.start,
-        type: apiType as any,
-        paymentMethod: apiPaymentMethod,
-      });
-
-      if (res.paymentUrl) {
-        window.location.href = res.paymentUrl;
-        return;
-      }
-
-      setBookedSlots((prev) => {
-        const next = new Set(prev);
-        next.add(selectedSlot!.slotKey);
-        return next;
-      });
-      setDaySlots((prev) =>
-        prev.map((s) => (s.slotKey === selectedSlot!.slotKey ? { ...s, status: "booked" as const } : s))
-      );
-
-      handleCloseBookingModal();
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Booking Confirmed!',
-        text: `Your appointment is successfully booked for ${selectedSlot.timeLabel}.`,
-        confirmButtonColor: 'var(--color-primary)',
-        customClass: {
-          popup: 'rounded-3xl shadow-2xl border border-gray-100',
-          confirmButton: 'rounded-xl px-6 py-2.5 font-bold shadow-md'
-        }
-      });
-    } catch (err: any) {
-      console.error("Booking failed", err);
-      const errorMsg = err.response?.data?.message || err.message || "Failed to book appointment. Please try again.";
-      
-      Swal.fire({
-        icon: 'error',
-        title: 'Booking Failed',
-        text: errorMsg,
-        confirmButtonColor: 'var(--color-primary)',
-        customClass: {
-          popup: 'rounded-3xl shadow-2xl border border-gray-100',
-          confirmButton: 'rounded-xl px-6 py-2.5 font-bold shadow-md'
-        }
-      });
-      
-      setFeedback({
-        type: "error",
-        message: errorMsg,
-      });
-    }
+  const handleBookingSuccess = () => {
+    toast.success('Appointment successfully booked!');
   };
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -817,15 +735,8 @@ export default function DoctorDetailsPage() {
         <BookingScheduleModal
           doctor={doctor}
           isOpen={isBookingModalOpen}
-          selectedSlot={selectedSlot}
-          feedback={feedback}
-          bookedSlots={bookedSlots}
-          daySlots={daySlots}
           onClose={handleCloseBookingModal}
-          onSlotsLoaded={handleSlotsLoaded}
-          onSelectSlot={handleSelectSlot}
-          onConfirm={handleConfirmBooking}
-          onPickAlternative={handleSelectSlot}
+          onBookingSuccess={handleBookingSuccess}
         />
 
       </div>

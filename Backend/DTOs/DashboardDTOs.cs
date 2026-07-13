@@ -16,6 +16,7 @@ namespace Tabibi.DTOs
         public string DoctorName { get; set; } = string.Empty;
         public string PatientName { get; set; } = string.Empty;
         public DateTime ScheduledAt { get; set; }
+        public string? DoctorProfilePictureUrl { get; set; }
         public string ConsultationType { get; set; } = string.Empty; 
         public string Status { get; set; } = string.Empty; 
     }

@@ -9,7 +9,7 @@ namespace Tabibi.Services.Payments
             // Strategy resolution based on enum
             return gateway switch
             {
-                PaymentGateway.Kasheir => serviceProvider.GetRequiredService<KasheirPaymentStrategy>(),
+                PaymentGateway.Geidea => serviceProvider.GetRequiredService<GeideaPaymentStrategy>(),
                 // PaymentGateway.Stripe => serviceProvider.GetRequiredService<StripePaymentStrategy>(),
                 _ => throw new NotImplementedException($"Payment gateway '{gateway}' is not implemented.")
             };

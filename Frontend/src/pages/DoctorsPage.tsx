@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaSearch, FaFilter, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import PublicService from "../services/publicService";
 import type { DoctorListItem, DoctorSearchFilter } from "../types/public";
-import type { BookingFeedback, SelectedSlot, SlotWithMeta } from "../types/booking";
 import DoctorCard from "../components/Doctor/DoctorCard";
 import BookingScheduleModal from "../components/Doctor/BookingScheduleModal";
-import AppointmentService from "../services/appointmentService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import ChatService from "../services/chatService";
@@ -43,10 +41,6 @@ const DoctorsPage: React.FC = () => {
   // ── Booking Modal State ──────────────────────────────────────────────────────
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
-  const [feedback, setFeedback] = useState<BookingFeedback | null>(null);
-  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
-  const [daySlots, setDaySlots] = useState<SlotWithMeta[]>([]);
   // ────────────────────────────────────────────────────────────────────────────
 
   const consultationTypes = [
@@ -153,93 +147,15 @@ const DoctorsPage: React.FC = () => {
     }
     setSelectedDoctorId(doctorId);
     setIsBookingModalOpen(true);
-    setSelectedSlot(null);
-    setFeedback(null);
-    setDaySlots([]);
   };
 
   const handleCloseBookingModal = () => {
     setIsBookingModalOpen(false);
     setSelectedDoctorId(null);
-    setSelectedSlot(null);
-    setFeedback(null);
   };
 
-  const handleSlotsLoaded = (slots: SlotWithMeta[]) => {
-    setDaySlots(slots);
-    setSelectedSlot(null);
-    setFeedback(null);
-  };
-
-  const handleSelectSlot = (slot: SlotWithMeta, dateKey: string) => {
-    if (slot.status !== "available" || bookedSlots.has(slot.slotKey)) {
-      const alternatives = daySlots
-        .filter((s) => s.status === "available" && s.slotKey !== slot.slotKey)
-        .slice(0, 3);
-      setFeedback({
-        type: "error",
-        message: "This slot is no longer available.",
-        alternatives,
-      });
-      setSelectedSlot(null);
-      return;
-    }
-
-    setFeedback(null);
-    setSelectedSlot({
-      doctorId: selectedDoctorId!,
-      date: dateKey,
-      start: slot.start,
-      end: slot.end,
-      timeLabel: slot.timeLabel,
-      slotKey: slot.slotKey,
-    });
-  };
-
-  const handleConfirmBooking = async (typeStr: "clinic" | "video" | "call" | "chat" = "clinic") => {
-    if (!selectedSlot) return;
-
-    try {
-      const typeMap: Record<string, number> = { chat: 0, video: 1, call: 2, clinic: 3 };
-      const apiType = typeMap[typeStr] ?? 3;
-
-      const res = await AppointmentService.bookAppointment({
-        doctorId: selectedSlot.doctorId,
-        scheduledAt: selectedSlot.start,
-        type: apiType as any,
-      });
-
-      if (res.paymentUrl) {
-        window.location.href = res.paymentUrl;
-        return;
-      }
-
-      // Optimistically mark the slot as booked in local state
-      setBookedSlots((prev) => {
-        const next = new Set(prev);
-        next.add(selectedSlot.slotKey);
-        return next;
-      });
-      setDaySlots((prev) =>
-        prev.map((s) => (s.slotKey === selectedSlot.slotKey ? { ...s, status: "booked" as const } : s))
-      );
-
-      setFeedback({
-        type: "success",
-        message: `Appointment successfully booked for ${selectedSlot.timeLabel}!`,
-      });
-      setSelectedSlot(null);
-      setDaySlots([]);
-      handleCloseBookingModal();
-      
-      toast.success('Appointment successfully booked!');
-    } catch (err) {
-      console.error("Booking failed", err);
-      setFeedback({
-        type: "error",
-        message: "Failed to book appointment. Please try again.",
-      });
-    }
+  const handleBookingSuccess = () => {
+    toast.success('Appointment successfully booked!');
   };
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -464,15 +380,8 @@ const DoctorsPage: React.FC = () => {
         <BookingScheduleModal
           doctor={selectedDoctorObj}
           isOpen={isBookingModalOpen}
-          selectedSlot={selectedSlot}
-          feedback={feedback}
-          bookedSlots={bookedSlots}
-          daySlots={daySlots}
           onClose={handleCloseBookingModal}
-          onSlotsLoaded={handleSlotsLoaded}
-          onSelectSlot={handleSelectSlot}
-          onConfirm={handleConfirmBooking}
-          onPickAlternative={handleSelectSlot}
+          onBookingSuccess={handleBookingSuccess}
         />
       )}
 

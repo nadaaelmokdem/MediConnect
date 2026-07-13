@@ -49,6 +49,7 @@ namespace Tabibi
             builder.Services.AddScoped<PublicService>();
             builder.Services.AddSingleton<ITokenStore, InMemoryTokenStore>();
             builder.Services.AddHostedService<TokenCleanupService>();
+            builder.Services.AddHostedService<PendingAppointmentCleanupService>();
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpContextAccessor();
@@ -62,7 +63,7 @@ namespace Tabibi
             builder.Services.AddScoped<AppointmentNotificationService>();
             builder.Services.AddScoped<ReviewService>();
             builder.Services.AddScoped<IFileService, S3FileService>();
-            builder.Services.AddHttpClient<Tabibi.Services.Payments.KasheirPaymentStrategy>();
+            builder.Services.AddHttpClient<Tabibi.Services.Payments.GeideaPaymentStrategy>();
             builder.Services.AddScoped<Tabibi.Services.Payments.PaymentGatewayResolver>();
             builder.Services.AddSingleton<PresenceTracker>();
 

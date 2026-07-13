@@ -33,5 +33,5 @@ namespace Tabibi.Models
     }
 
     public enum PaymentStatus { Pending, Paid, Refunded, Failed }
-    public enum PaymentGateway { Stripe, PayPal, Kasheir }
+    public enum PaymentGateway { Stripe, PayPal, Geidea }
 }

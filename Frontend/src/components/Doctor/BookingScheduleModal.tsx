@@ -26,6 +26,8 @@ import {
   buildMockSlotsForDay,
 } from "../../utils/slotUtils";
 import { getFileUrl } from "../../utils/fileUtils";
+import AppointmentService from "../../services/appointmentService";
+import Swal from "sweetalert2";
 
 type ConsultationType = "clinic" | "video" | "call" | "chat";
 
@@ -47,34 +49,28 @@ const CONSULT_TYPES: ConsultTypeConfig[] = [
 interface BookingScheduleModalProps {
   doctor: DoctorListItem;
   isOpen: boolean;
-  selectedSlot: SelectedSlot | null;
-  feedback: BookingFeedback | null;
-  bookedSlots: Set<string>;
-  daySlots: SlotWithMeta[];
   onClose: () => void;
-  onSlotsLoaded: (slots: SlotWithMeta[]) => void;
-  onSelectSlot: (slot: SlotWithMeta, dateKey: string) => void;
-  onConfirm: (type: ConsultationType, paymentMethod: number) => void;
-  onPickAlternative: (slot: SlotWithMeta, dateKey: string) => void;
+  onBookingSuccess?: (slot: SelectedSlot) => void;
 }
 
 const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
   doctor,
   isOpen,
-  selectedSlot,
-  feedback,
-  bookedSlots,
-  daySlots,
   onClose,
-  onSlotsLoaded,
-  onSelectSlot,
-  onConfirm,
-  onPickAlternative,
+  onBookingSuccess,
 }) => {
   const [weekStart, setWeekStart] = useState(() => getStartOfWeek(new Date()));
   const [selectedDateKey, setSelectedDateKey] = useState(() =>
     formatDateKey(new Date()),
   );
+  
+  // Internalized state
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
+  const [feedback, setFeedback] = useState<BookingFeedback | null>(null);
+  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
+  const [daySlots, setDaySlots] = useState<SlotWithMeta[]>([]);
+  const [isBooking, setIsBooking] = useState(false);
+
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [consultType, setConsultType] = useState<ConsultationType>("clinic");
   const [paymentMethod, setPaymentMethod] = useState<number>(1); // 1 = Online, 2 = OnSite
@@ -114,16 +110,105 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
   const fetchSlots = async () => {
     if (!selectedDateKey || !doctor.doctorId) return;
 
-    onSlotsLoaded([]);
+    setDaySlots([]);
     const day = weekDays.find((d) => d.dateKey === selectedDateKey);
     if (!day || day.isPast) return;
 
     setLoadingSlots(true);
     try {
       const slots = await loadSlotsForDay(doctor, day.date, bookedSlots);
-      onSlotsLoaded(slots);
+      setDaySlots(slots);
     } finally {
       setLoadingSlots(false);
+    }
+  };
+
+  const handleSelectSlot = (slot: SlotWithMeta, dateKey: string) => {
+    if (slot.status !== "available" || bookedSlots.has(slot.slotKey)) {
+      const alternatives = daySlots
+        .filter((s) => s.status === "available" && s.slotKey !== slot.slotKey)
+        .slice(0, 3);
+      setFeedback({
+        type: "error",
+        message: "This slot is no longer available.",
+        alternatives,
+      });
+      setSelectedSlot(null);
+      return;
+    }
+
+    setFeedback(null);
+    setSelectedSlot({
+      doctorId: doctor.doctorId,
+      date: dateKey,
+      start: slot.start,
+      end: slot.end,
+      timeLabel: slot.timeLabel,
+      slotKey: slot.slotKey,
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedSlot) return;
+    setIsBooking(true);
+
+    try {
+      const typeMap: Record<string, number> = { chat: 0, video: 1, call: 2, clinic: 3 };
+      const apiType = typeMap[consultType] ?? 3;
+      const apiPaymentMethod = consultType === "clinic" ? paymentMethod : 1;
+
+      const res: any = await AppointmentService.bookAppointment({
+        doctorId: selectedSlot.doctorId,
+        scheduledAt: selectedSlot.start,
+        type: apiType as any,
+        paymentMethod: apiPaymentMethod,
+      });
+
+      const redirectUrl = res?.paymentUrl || res?.PaymentUrl || res?.sessionUrl || res?.data?.paymentUrl || res?.data?.PaymentUrl;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+        return;
+      }
+
+      setBookedSlots((prev) => {
+        const next = new Set(prev);
+        next.add(selectedSlot.slotKey);
+        return next;
+      });
+      setDaySlots((prev) =>
+        prev.map((s) => (s.slotKey === selectedSlot.slotKey ? { ...s, status: "booked" as const } : s))
+      );
+
+      setFeedback({
+        type: "success",
+        message: `Appointment successfully booked for ${selectedSlot.timeLabel}!`,
+      });
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Booking Confirmed!',
+        text: `Your appointment is scheduled for ${selectedSlot.date} at ${selectedSlot.timeLabel}.`,
+        confirmButtonColor: '#2563EB',
+        confirmButtonText: 'Great!'
+      }).then(() => {
+        if (onBookingSuccess) onBookingSuccess(selectedSlot);
+        onClose();
+        setSelectedSlot(null);
+        setFeedback(null);
+      });
+      
+    } catch (err: any) {
+      console.error("Booking failed", err);
+      const errorMsg = err.response?.data?.message || err.message || "Failed to book appointment. Please try again.";
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Booking Failed',
+        text: errorMsg,
+        confirmButtonColor: '#2563EB',
+      });
+    } finally {
+      setIsBooking(false);
     }
   };
 
@@ -302,7 +387,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
               slots={daySlots}
               selectedSlotKey={selectedSlot?.slotKey ?? null}
               loading={loadingSlots}
-              onSelect={(slot) => onSelectSlot(slot, selectedDateKey)}
+              onSelect={(slot) => handleSelectSlot(slot, selectedDateKey)}
             />
           </div>
 
@@ -333,7 +418,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
                         <button
                           key={alt.slotKey}
                           type="button"
-                          onClick={() => onPickAlternative(alt, selectedDateKey)}
+                          onClick={() => handleSelectSlot(alt, selectedDateKey)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-current hover:bg-white/80 transition-colors cursor-pointer"
                         >
                           <FaClock size={12} />
@@ -404,17 +489,25 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-100 transition-colors cursor-pointer"
+                disabled={isBooking}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                disabled={!selectedSlot}
-                onClick={() => onConfirm(consultType, paymentMethod)}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-on-primary font-semibold shadow-lg hover:shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer hover:-translate-y-0.5"
+                disabled={!selectedSlot || isBooking}
+                onClick={handleConfirm}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-on-primary font-semibold shadow-lg hover:shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
-                Confirm Booking
+                {isBooking ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Processing...
+                  </>
+                ) : (
+                  "Confirm Booking"
+                )}
               </button>
             </div>
           </div>

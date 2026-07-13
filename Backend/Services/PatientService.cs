@@ -231,6 +231,7 @@ namespace Tabibi.Services
                     AppointmentId = a.AppointmentId,
                     DoctorName = a.Doctor.User.FullName,
                     ScheduledAt = a.ScheduledAt,
+                    DoctorProfilePictureUrl = a.Doctor.ProfilePictureUrl,
                     ConsultationType = a.ConsultationType.ToString(),
                     Status = a.Status.ToString()
                 })

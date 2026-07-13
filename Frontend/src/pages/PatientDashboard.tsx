@@ -447,9 +447,19 @@ export default function PatientDashboard() {
               data.upcomingAppointments.map((a, i) => (
                 <div key={a.appointmentId}>
                   <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container-low transition-colors border border-transparent hover:border-surface-variant/60 cursor-pointer">
-                    <div className="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-sm text-lg font-bold">
-                      {(a.doctorName || "D").replace(/^Dr\.\s*/, '').charAt(0) || 'D'}
-                    </div>
+                    {a.doctorProfilePictureUrl ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm">
+                          <CachedImage
+                            src={getFileUrl(a.doctorProfilePictureUrl)}
+                            alt={a.doctorName || "Doctor"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-sm text-lg font-bold">
+                          {(a.doctorName || "D").replace(/^Dr\.\s*/i, '').charAt(0).toUpperCase() || "D"}
+                        </div>
+                      )}
                     <div className="flex-1">
                       <h4 className="text-base text-on-surface font-semibold">
                         {(a.doctorName || "").startsWith("Dr.") ? a.doctorName : `Dr. ${a.doctorName || "Doctor"}`}

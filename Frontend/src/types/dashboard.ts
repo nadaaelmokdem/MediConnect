@@ -3,6 +3,7 @@ export interface UpcomingAppointment {
   doctorName: string;
   patientName?: string;
   scheduledAt: string;
+  doctorProfilePictureUrl?: string;
   consultationType: string;
   status: string;
 }

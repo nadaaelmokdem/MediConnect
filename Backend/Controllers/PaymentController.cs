@@ -20,32 +20,64 @@ namespace Tabibi.Controllers
                 return BadRequest("Invalid gateway");
             }
 
-            using var reader = new StreamReader(Request.Body);
+            Request.EnableBuffering();
+            Request.Body.Position = 0;
+            using var reader = new StreamReader(Request.Body, System.Text.Encoding.UTF8, leaveOpen: true);
             var payload = await reader.ReadToEndAsync();
-            var signature = Request.Headers["x-kashier-signature"].ToString();
 
             var strategy = paymentGatewayResolver.Resolve(gateway);
 
-            // 1. Validate Signature
-            var isValid = await strategy.ValidateWebhookSignatureAsync(payload, signature);
-            if (!isValid) return Unauthorized("Invalid signature");
-
-            // 2. Process Payload
             var result = await strategy.ProcessWebhookAsync(payload);
             if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
 
-            // 3. Update Database
             var payment = await dbContext.Payments
                 .Include(p => p.Appointment)
                 .FirstOrDefaultAsync(p => p.ExternalOrderId == result.ExternalOrderId);
 
             if (payment == null) return NotFound("Payment not found");
 
-            payment.Status = result.NewStatus;
-            
-            if (result.NewStatus == PaymentStatus.Paid)
+            // Security Check: Gracefully ignore webhooks that attempt to downgrade a Paid payment
+            if (payment.Status == PaymentStatus.Paid && result.NewStatus != PaymentStatus.Paid)
             {
-                payment.PaidAt = DateTime.Now;
+                return Ok();
+            }
+
+            if (result.NewStatus == PaymentStatus.Failed)
+            {
+                if (payment.Appointment != null)
+                {
+                    dbContext.Appointments.Remove(payment.Appointment);
+                }
+                dbContext.Payments.Remove(payment);
+            }
+            else
+            {
+                payment.Status = result.NewStatus;
+                if (result.NewStatus == PaymentStatus.Paid)
+                {
+                    payment.PaidAt = DateTime.Now;
+                    if (payment.Appointment != null)
+                    {
+                        payment.Appointment.Status = AppointmentStatus.Confirmed;
+                        
+                        if (payment.Appointment.ConsultationType == ConsultationType.Chat && payment.Appointment.SessionId == null)
+                        {
+                            var chatSession = new ChatSession
+                            {
+                                PatientId = payment.Appointment.PatientId,
+                                DoctorId = payment.Appointment.DoctorId,
+                                ConsultationType = ConsultationType.Chat,
+                                Status = SessionStatus.Active,
+                                StartedAt = payment.Appointment.ScheduledAt,
+                                IsCompanyPaid = false,
+                                IsFreeMessage = false,
+                                Price = payment.Amount
+                            };
+                            dbContext.ChatSessions.Add(chatSession);
+                            payment.Appointment.ChatSession = chatSession;
+                        }
+                    }
+                }
             }
 
             await dbContext.SaveChangesAsync();

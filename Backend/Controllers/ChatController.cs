@@ -23,6 +23,11 @@ namespace Tabibi.Controllers
 
             try
             {
+                if (!isCompanyPaid)
+                {
+                    return BadRequest("Paid chat sessions must be booked through the appointment system.");
+                }
+
                 var session = await chatService.StartOrGetSessionAsync(userId, doctorId, isCompanyPaid);
                 // Auto-send removed; handled by UI now
                 return Ok(new { sessionId = session.SessionId });
