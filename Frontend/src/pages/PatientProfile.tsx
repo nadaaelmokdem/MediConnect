@@ -73,27 +73,27 @@ const ProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-[#FBFAFF] pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-[#2A2455]">
-        <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-[#E6E1FF]">
+      <div className="bg-background pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-primary-dark">
+        <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-surface-variant">
           {/* Header Skeleton */}
-          <div className="p-4 sm:p-6 border-b border-[#E6E1FF] bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
+          <div className="p-4 sm:p-6 border-b border-surface-variant bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
             {/* Avatar Skeleton */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#E6E1FF] animate-pulse"></div>
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-surface-variant animate-pulse"></div>
             {/* Text Skeleton */}
             <div className="flex-1 w-full space-y-2">
-              <div className="h-8 bg-[#E6E1FF] rounded w-3/4 animate-pulse"></div>
-              <div className="h-4 bg-[#E6E1FF] rounded w-1/2 animate-pulse"></div>
-              <div className="h-4 bg-[#E6E1FF] rounded w-1/2 animate-pulse"></div>
+              <div className="h-8 bg-surface-variant rounded w-3/4 animate-pulse"></div>
+              <div className="h-4 bg-surface-variant rounded w-1/2 animate-pulse"></div>
+              <div className="h-4 bg-surface-variant rounded w-1/2 animate-pulse"></div>
             </div>
           </div>
           {/* Grid Skeleton */}
-          <div className="p-4 sm:p-8 bg-[#FBFAFF]/50 sm:rounded-b-2xl">
-            <div className="h-6 bg-[#E6E1FF] rounded w-1/4 mb-6 animate-pulse"></div>
+          <div className="p-4 sm:p-8 bg-background/50 sm:rounded-b-2xl">
+            <div className="h-6 bg-surface-variant rounded w-1/4 mb-6 animate-pulse"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 bg-[#E6E1FF] rounded-lg animate-pulse"
+                  className="h-24 bg-surface-variant rounded-lg animate-pulse"
                 ></div>
               ))}
             </div>
@@ -104,14 +104,14 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#FBFAFF] pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-[#2A2455]">
-      <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-[#E6E1FF]">
+    <div className="bg-background pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-primary-dark">
+      <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-surface-variant">
         {/* Header Section */}
-        <div className="p-4 sm:p-6 border-b border-[#E6E1FF] bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
+        <div className="p-4 sm:p-6 border-b border-surface-variant bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
           {/* Avatar Container */}
           <div className="relative flex-shrink-0">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-[#E6E1FF] bg-[#FBFAFF] flex items-center justify-center">
-                <span className="text-[#6A5ACD] text-4xl font-bold uppercase">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-surface-variant bg-background flex items-center justify-center">
+                <span className="text-primary text-4xl font-bold uppercase">
                   {profile.fullName ? profile.fullName.charAt(0) : "U"}
                 </span>
             </div>
@@ -122,7 +122,7 @@ const ProfilePage: React.FC = () => {
             <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
               <h1
                 className={
-                  "text-2xl sm:text-3xl font-bold text-[#2A2455] truncate max-w-full"
+                  "text-2xl sm:text-3xl font-bold text-primary-dark truncate max-w-full"
                 }
               >
                 {profile.fullName}
@@ -132,7 +132,7 @@ const ProfilePage: React.FC = () => {
               <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
                 <h1
                   className={
-                    "text-lg sm:text-xl font-medium text-[#2A2455] truncate max-w-full"
+                    "text-lg sm:text-xl font-medium text-primary-dark truncate max-w-full"
                   }
                 >
                   {profile.email}
@@ -143,7 +143,7 @@ const ProfilePage: React.FC = () => {
               <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
                 <h1
                   className={
-                    "text-lg sm:text-xl font-medium text-[#2A2455] truncate max-w-full"
+                    "text-lg sm:text-xl font-medium text-primary-dark truncate max-w-full"
                   }
                 >
                   {profile.phone}
@@ -154,8 +154,8 @@ const ProfilePage: React.FC = () => {
         </div>
 
         {/* Details Grid Section */}
-        <div className="p-4 sm:p-8 bg-[#FBFAFF]/50 sm:rounded-b-2xl">
-          <h2 className="text-xl font-bold mb-4 text-[#6A5ACD] px-2 sm:px-0">
+        <div className="p-4 sm:p-8 bg-background/50 sm:rounded-b-2xl">
+          <h2 className="text-xl font-bold mb-4 text-primary px-2 sm:px-0">
             Personal Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

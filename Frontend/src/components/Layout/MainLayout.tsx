@@ -29,7 +29,7 @@ export default function MainLayout() {
   }, [isAuthenticated, user?.id, user?.activeRole]);
 
   return (
-    <div className={`flex min-h-screen ${isAuthenticated ? 'bg-gray-50' : ''}`}>
+    <div className={`flex min-h-screen ${isAuthenticated ? 'bg-surface-container' : ''}`}>
       {isAuthenticated && (
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       )}

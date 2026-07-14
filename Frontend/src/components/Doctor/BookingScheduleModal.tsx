@@ -188,7 +188,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
         icon: 'success',
         title: 'Booking Confirmed!',
         text: `Your appointment is scheduled for ${selectedSlot.date} at ${selectedSlot.timeLabel}.`,
-        confirmButtonColor: '#2563EB',
+        confirmButtonColor: '#6A5ACD',
         confirmButtonText: 'Great!'
       }).then(() => {
         if (onBookingSuccess) onBookingSuccess(selectedSlot);
@@ -205,7 +205,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
         icon: 'error',
         title: 'Booking Failed',
         text: errorMsg,
-        confirmButtonColor: '#2563EB',
+        confirmButtonColor: '#6A5ACD',
       });
     } finally {
       setIsBooking(false);

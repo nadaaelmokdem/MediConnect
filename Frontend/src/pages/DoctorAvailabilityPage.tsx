@@ -168,7 +168,7 @@ export default function DoctorAvailabilityPage() {
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center gap-3 text-[#6A5ACD]">
+      <div className="p-8 flex items-center gap-3 text-primary">
         <LuClock className="animate-spin text-xl" />
         Loading your schedule...
       </div>
@@ -189,20 +189,20 @@ export default function DoctorAvailabilityPage() {
   ).sort();
 
   return (
-    <div className="w-full bg-[#FBFAFF] p-4 md:p-8 min-h-screen">
+    <div className="w-full bg-background p-4 md:p-8 min-h-screen">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#2A2455]">Availability Schedule</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-2xl font-bold text-primary-dark">Availability Schedule</h1>
+            <p className="text-sm text-text-muted mt-0.5">
               Control your working hours. Specific date rules always override weekly patterns.
             </p>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-[#6A5ACD] text-white rounded-xl font-semibold shadow-md hover:bg-[#5140b3] transition-all disabled:opacity-50 active:scale-95"
+            className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-md hover:bg-primary-dark transition-all disabled:opacity-50 active:scale-95"
           >
             <MdSave size={20} />
             {saving ? "Saving..." : "Save Schedule"}
@@ -210,7 +210,7 @@ export default function DoctorAvailabilityPage() {
         </div>
 
         {/* Info Banner */}
-        <div className="flex items-start gap-3 p-4 bg-[#F0EEFF] border border-[#D0C9FF] rounded-xl text-sm text-[#5140b3]">
+        <div className="flex items-start gap-3 p-4 bg-surface-container border border-primary-light rounded-xl text-sm text-primary-dark">
           <MdInfo size={18} className="shrink-0 mt-0.5" />
           <p>
             <strong>Tip:</strong> Use <em>Weekly Schedule</em> to set repeating hours (e.g. every Monday 9–5). Use{" "}
@@ -219,13 +219,13 @@ export default function DoctorAvailabilityPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white p-1 rounded-xl border border-[#E6E1FF] shadow-sm w-full sm:w-fit overflow-x-auto">
+        <div className="flex gap-1 bg-white p-1 rounded-xl border border-surface-variant shadow-sm w-full sm:w-fit overflow-x-auto">
           <button
             onClick={() => setActiveTab("weekly")}
             className={`cursor-pointer flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex-1 sm:flex-none justify-center sm:justify-start ${
               activeTab === "weekly"
-                ? "bg-[#6A5ACD] text-white shadow-md"
-                : "text-gray-500 hover:text-[#6A5ACD] hover:bg-[#F8F7FF]"
+                ? "bg-primary text-white shadow-md"
+                : "text-text-muted hover:text-primary hover:bg-surface-container"
             }`}
           >
             <LuCalendarDays size={16} />
@@ -235,14 +235,14 @@ export default function DoctorAvailabilityPage() {
             onClick={() => setActiveTab("specific")}
             className={`cursor-pointer flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex-1 sm:flex-none justify-center sm:justify-start ${
               activeTab === "specific"
-                ? "bg-[#6A5ACD] text-white shadow-md"
-                : "text-gray-500 hover:text-[#6A5ACD] hover:bg-[#F8F7FF]"
+                ? "bg-primary text-white shadow-md"
+                : "text-text-muted hover:text-primary hover:bg-surface-container"
             }`}
           >
             <MdCalendarMonth size={16} />
             Specific Dates
             {specificDates.length > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${activeTab === "specific" ? "bg-white/30" : "bg-[#6A5ACD] text-white"}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${activeTab === "specific" ? "bg-white/30" : "bg-primary text-white"}`}>
                 {specificDates.length}
               </span>
             )}
@@ -253,7 +253,7 @@ export default function DoctorAvailabilityPage() {
         {activeTab === "weekly" && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Days Sidebar – horizontal scroll on mobile, vertical on md+ */}
-            <div className="md:col-span-1 bg-white rounded-2xl shadow-sm border border-[#E6E1FF] overflow-hidden">
+            <div className="md:col-span-1 bg-white rounded-2xl shadow-sm border border-surface-variant overflow-hidden">
               <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible">
               {DAYS.map((day) => {
                 const count = availabilities.filter((a) => !a.specificDate && a.dayOfWeek === day.value).length;
@@ -262,15 +262,15 @@ export default function DoctorAvailabilityPage() {
                   <button
                     key={day.value}
                     onClick={() => setSelectedDay(day.value as DayOfWeek)}
-                    className={`cursor-pointer px-4 py-3 text-left border-b md:border-b border-r md:border-r-0 border-gray-50 last:border-0 transition-all flex-shrink-0 md:flex-shrink flex justify-between items-center gap-2 border-l-0 md:border-l-4 border-b-2 md:border-b-0 ${
+                    className={`cursor-pointer px-4 py-3 text-left border-b md:border-b border-r md:border-r-0 border-surface-container last:border-0 transition-all flex-shrink-0 md:flex-shrink flex justify-between items-center gap-2 border-l-0 md:border-l-4 border-b-2 md:border-b-0 ${
                       active
-                        ? "bg-[#F8F7FF] md:border-l-[#6A5ACD] border-b-[#6A5ACD] text-[#6A5ACD] font-bold"
-                        : "hover:bg-gray-50 text-gray-600 font-medium md:border-l-transparent"
+                        ? "bg-surface-container md:border-l-primary border-b-primary text-primary font-bold"
+                        : "hover:bg-surface-container text-on-surface-variant font-medium md:border-l-transparent"
                     }`}
                   >
                     <span className="text-sm">{day.short}</span>
                     {count > 0 && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${active ? "bg-[#6A5ACD] text-white" : "bg-[#E6E1FF] text-[#6A5ACD]"}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${active ? "bg-primary text-white" : "bg-surface-variant text-primary"}`}>
                         {count}
                       </span>
                     )}
@@ -281,23 +281,23 @@ export default function DoctorAvailabilityPage() {
             </div>
 
             {/* Slots Panel */}
-            <div className="md:col-span-3 bg-white rounded-2xl shadow-sm border border-[#E6E1FF] p-6 min-h-[400px]">
+            <div className="md:col-span-3 bg-white rounded-2xl shadow-sm border border-surface-variant p-6 min-h-[400px]">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-[#2A2455]">{DAYS.find((d) => d.value === selectedDay)?.label}</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Repeats every week on this day</p>
+                  <h2 className="text-lg font-bold text-primary-dark">{DAYS.find((d) => d.value === selectedDay)?.label}</h2>
+                  <p className="text-xs text-outline-variant mt-0.5">Repeats every week on this day</p>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={applyToAllDays}
-                    className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[#6A5ACD] bg-[#F8F7FF] rounded-xl hover:bg-[#E6E1FF] transition-colors border border-[#E6E1FF] whitespace-nowrap"
+                    className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary bg-surface-container rounded-xl hover:bg-surface-variant transition-colors border border-surface-variant whitespace-nowrap"
                     title="Copy this day's schedule to all other days"
                   >
                     <MdContentCopy size={15} /> Apply to all
                   </button>
                   <button
                     onClick={addWeeklySlot}
-                    className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[#6A5ACD] rounded-xl hover:bg-[#5140b3] transition-colors shadow-sm whitespace-nowrap"
+                    className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors shadow-sm whitespace-nowrap"
                   >
                     <MdAdd size={16} /> Add Slot
                   </button>
@@ -313,18 +313,18 @@ export default function DoctorAvailabilityPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Date Picker Sidebar */}
             <div className="md:col-span-1 flex flex-col gap-3">
-              <div className="bg-white rounded-2xl shadow-sm border border-[#E6E1FF] p-4 space-y-3">
-                <label className="block text-xs font-bold text-[#6A5ACD] uppercase tracking-wider">Pick a Date</label>
+              <div className="bg-white rounded-2xl shadow-sm border border-surface-variant p-4 space-y-3">
+                <label className="block text-xs font-bold text-primary uppercase tracking-wider">Pick a Date</label>
                 <input
                   type="date"
                   value={selectedSpecificDate}
                   min={format(new Date(), "yyyy-MM-dd")}
                   onChange={(e) => setSelectedSpecificDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#F8F7FF] border border-[#E6E1FF] rounded-xl text-sm text-[#2A2455] font-medium focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20"
+                  className="w-full px-3 py-2 bg-surface-container border border-surface-variant rounded-xl text-sm text-primary-dark font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
                 <button
                   onClick={addSpecificSlot}
-                  className="cursor-pointer w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#6A5ACD] rounded-xl hover:bg-[#5140b3] transition-colors shadow-sm"
+                  className="cursor-pointer w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-colors shadow-sm"
                 >
                   <MdAdd size={16} /> Add Slot for This Day
                 </button>
@@ -332,9 +332,9 @@ export default function DoctorAvailabilityPage() {
 
               {/* List of dates with overrides */}
               {specificDates.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-[#E6E1FF] overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-50">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Overrides Set</p>
+                <div className="bg-white rounded-2xl shadow-sm border border-surface-variant overflow-hidden">
+                  <div className="px-4 py-3 border-b border-surface-container">
+                    <p className="text-xs font-bold text-outline-variant uppercase tracking-wider">Overrides Set</p>
                   </div>
                   {specificDates.map((date) => {
                     const count = availabilities.filter((a) => a.specificDate === date).length;
@@ -343,17 +343,17 @@ export default function DoctorAvailabilityPage() {
                       <button
                         key={date}
                         onClick={() => setSelectedSpecificDate(date)}
-                        className={`cursor-pointer w-full px-4 py-3 text-left border-b border-gray-50 last:border-0 transition-all flex justify-between items-center border-l-4 ${
+                        className={`cursor-pointer w-full px-4 py-3 text-left border-b border-surface-container last:border-0 transition-all flex justify-between items-center border-l-4 ${
                           active
-                            ? "bg-[#F8F7FF] border-l-[#6A5ACD] text-[#6A5ACD] font-bold"
-                            : "hover:bg-gray-50 text-gray-600 font-medium border-l-transparent"
+                            ? "bg-surface-container border-l-primary text-primary font-bold"
+                            : "hover:bg-surface-container text-on-surface-variant font-medium border-l-transparent"
                         }`}
                       >
                         <div>
                           <div className="text-sm">{format(new Date(date + "T00:00:00"), "MMM d")}</div>
                           <div className="text-[11px] opacity-60">{format(new Date(date + "T00:00:00"), "EEEE, yyyy")}</div>
                         </div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${active ? "bg-[#6A5ACD] text-white" : "bg-[#E6E1FF] text-[#6A5ACD]"}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${active ? "bg-primary text-white" : "bg-surface-variant text-primary"}`}>
                           {count}
                         </span>
                       </button>
@@ -364,10 +364,10 @@ export default function DoctorAvailabilityPage() {
             </div>
 
             {/* Slots Panel */}
-            <div className="md:col-span-3 bg-white rounded-2xl shadow-sm border border-[#E6E1FF] p-6 min-h-[400px]">
+            <div className="md:col-span-3 bg-white rounded-2xl shadow-sm border border-surface-variant p-6 min-h-[400px]">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
                 <div className="min-w-0">
-                  <h2 className="text-base sm:text-lg font-bold text-[#2A2455] break-words">
+                  <h2 className="text-base sm:text-lg font-bold text-primary-dark break-words">
                     {format(new Date(selectedSpecificDate + "T00:00:00"), "EEEE, MMMM d, yyyy")}
                   </h2>
                   <p className="text-xs text-amber-600 font-medium mt-0.5 flex items-center gap-1">
@@ -398,7 +398,7 @@ function SlotList({
 }) {
   if (slots.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+      <div className="flex flex-col items-center justify-center py-16 text-outline-variant gap-2">
         <MdSchedule size={40} className="opacity-30" />
         <p className="font-medium">No slots configured</p>
         <p className="text-sm">Click "Add Slot" to create a time block.</p>
@@ -413,31 +413,31 @@ function SlotList({
           key={idx}
           className={`flex flex-col gap-3 p-4 rounded-xl border transition-all ${
             slot.isActive
-              ? "border-[#E6E1FF] bg-[#FAFAFF]"
-              : "border-gray-100 bg-gray-50 opacity-60"
+              ? "border-surface-variant bg-background"
+              : "border-surface-variant bg-surface-container opacity-60"
           }`}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 flex-1 w-full">
             <div className="flex flex-col">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Start Time</label>
+              <label className="text-[11px] font-bold text-outline-variant uppercase tracking-wider mb-1.5">Start Time</label>
               <input
                 type="time"
                 value={slot.startTime}
                 onChange={(e) => onUpdate(slot.originalIndex, "startTime", e.target.value)}
-                className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20 transition"
+                className="px-3 py-2 bg-white border border-surface-variant rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">End Time</label>
+              <label className="text-[11px] font-bold text-outline-variant uppercase tracking-wider mb-1.5">End Time</label>
               <input
                 type="time"
                 value={slot.endTime}
                 onChange={(e) => onUpdate(slot.originalIndex, "endTime", e.target.value)}
-                className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20 transition"
+                className="px-3 py-2 bg-white border border-surface-variant rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Slot Duration</label>
+              <label className="text-[11px] font-bold text-outline-variant uppercase tracking-wider mb-1.5">Slot Duration</label>
               <div className="flex items-center gap-1">
                 <input
                   type="number"
@@ -446,24 +446,24 @@ function SlotList({
                   step="5"
                   value={slot.slotDurationMins}
                   onChange={(e) => onUpdate(slot.originalIndex, "slotDurationMins", parseInt(e.target.value) || 30)}
-                  className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm w-full focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20 transition"
+                  className="px-3 py-2 bg-white border border-surface-variant rounded-lg text-sm w-full focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
                 />
-                <span className="text-xs text-gray-400 whitespace-nowrap">min</span>
+                <span className="text-xs text-outline-variant whitespace-nowrap">min</span>
               </div>
             </div>
             <div className="flex flex-col justify-end pb-0.5">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Status</label>
+              <label className="text-[11px] font-bold text-outline-variant uppercase tracking-wider mb-1.5">Status</label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <div
                   onClick={() => onUpdate(slot.originalIndex, "isActive", !slot.isActive)}
-                  className={`relative w-10 h-5.5 rounded-full transition-colors cursor-pointer ${slot.isActive ? "bg-[#6A5ACD]" : "bg-gray-300"}`}
+                  className={`relative w-10 h-5.5 rounded-full transition-colors cursor-pointer ${slot.isActive ? "bg-primary" : "bg-outline-variant"}`}
                   style={{ height: "22px", minWidth: "40px" }}
                 >
                   <span
                     className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${slot.isActive ? "translate-x-[18px]" : "translate-x-0"}`}
                   />
                 </div>
-                <span className={`text-sm font-medium ${slot.isActive ? "text-[#6A5ACD]" : "text-gray-400"}`}>
+                <span className={`text-sm font-medium ${slot.isActive ? "text-primary" : "text-outline-variant"}`}>
                   {slot.isActive ? "Active" : "Off"}
                 </span>
               </label>

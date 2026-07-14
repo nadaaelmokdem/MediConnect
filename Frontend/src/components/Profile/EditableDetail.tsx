@@ -167,13 +167,13 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
   }, [isEditing, value, options, type]);
 
   return (
-    <div className="bg-white p-2.5 rounded-lg border border-[#E6E1FF] flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
-      <div className="p-2 bg-[#FBFAFF] border border-[#E6E1FF] text-[#6A5ACD] rounded-md flex-shrink-0 text-md">
+    <div className="bg-white p-2.5 rounded-lg border border-surface-variant flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
+      <div className="p-2 bg-background border border-surface-variant text-primary rounded-md flex-shrink-0 text-md">
         {icon}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-[#B8A7FF] font-bold tracking-wider uppercase mb-0">
+        <p className="text-[11px] text-primary-light font-bold tracking-wider uppercase mb-0">
           {label}
         </p>
 
@@ -187,7 +187,7 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
                   setLocalValue(e.target.value);
                   setError(null);
                 }}
-                className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-lg font-semibold text-[#2A2455] focus:outline-none"
+                className="w-full bg-background border border-primary rounded px-2 py-1 text-lg font-semibold text-primary-dark focus:outline-none"
               >
                 <option value="">Select {label}</option>
                 {options.map((opt) => (
@@ -213,13 +213,13 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
                   setLocalValue(e.target.value);
                   setError(null);
                 }}
-                className="flex-1 w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-md font-medium text-[#2A2455] focus:outline-none min-h-[120px] resize-y"
+                className="flex-1 w-full bg-background border border-primary rounded px-2 py-1 text-md font-medium text-primary-dark focus:outline-none min-h-[120px] resize-y"
                 placeholder={`Enter ${label?.toLowerCase()}`}
               />
             ) : (
               <div className="flex w-full gap-2 relative flex-1 min-w-0">
                 {allowUpload ? (
-                  <div className="flex-1 w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-sm font-semibold text-[#2A2455] flex items-center min-w-0 opacity-80 cursor-not-allowed">
+                  <div className="flex-1 w-full bg-background border border-primary rounded px-2 py-1 text-sm font-semibold text-primary-dark flex items-center min-w-0 opacity-80 cursor-not-allowed">
                     <span className="truncate">
                       {localValue ? "File uploaded" : "No file selected"}
                     </span>
@@ -238,7 +238,7 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
                         handleSaveToBackend(localValue);
                       }
                     }}
-                    className="flex-1 w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-lg font-semibold text-[#2A2455] focus:outline-none min-w-0"
+                    className="flex-1 w-full bg-background border border-primary rounded px-2 py-1 text-lg font-semibold text-primary-dark focus:outline-none min-w-0"
                     placeholder={`Enter ${label?.toLowerCase()}`}
                   />
                 )}
@@ -248,14 +248,14 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
                       <CachedImage
                         src={localValue!}
                         alt="Preview"
-                        className="w-8 h-8 object-cover rounded border border-[#E6E1FF] cursor-pointer"
+                        className="w-8 h-8 object-cover rounded border border-surface-variant cursor-pointer"
                         onClick={() => setIsModalOpen(true)}
                         title="Click to preview"
                       />
                     )}
                     {isPdfUrl(localValue) && (
                       <a href={getFileUrl(localValue!)} target="_blank" rel="noreferrer" title="View PDF">
-                        <div className="w-8 h-8 flex items-center justify-center bg-[#f0ebff] rounded border border-[#E6E1FF] text-[#5140b3] cursor-pointer hover:bg-[#e5deff]">
+                        <div className="w-8 h-8 flex items-center justify-center bg-surface-container rounded border border-surface-variant text-primary-dark cursor-pointer hover:bg-surface-variant">
                           <MdAssignment size={18} />
                         </div>
                       </a>
@@ -271,7 +271,7 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isUploading || isSaving}
-                      className="h-full px-3 py-1 bg-[#E6E1FF] text-[#6A5ACD] text-sm font-bold rounded border border-[#6A5ACD] hover:bg-[#B8A7FF] hover:text-white transition-colors cursor-pointer"
+                      className="h-full px-3 py-1 bg-surface-variant text-primary text-sm font-bold rounded border border-primary hover:bg-primary-light hover:text-white transition-colors cursor-pointer"
                       title="Upload File"
                     >
                       {isUploading ? "..." : "Upload"}
@@ -286,14 +286,14 @@ export const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
                   handleSaveToBackend(localValue);
                 }}
                 disabled={isSaving}
-                className="p-1.5 bg-[#6A5ACD] text-white rounded hover:bg-[#2A2455] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="p-1.5 bg-primary text-white rounded hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <FiCheck size={16} />
               </button>
               <button
                 onClick={onCancel}
                 disabled={isSaving}
-                className="p-1.5 bg-[#E6E1FF] text-[#2A2455] rounded hover:bg-[#B8A7FF] disabled:opacity-50 cursor-pointer"
+                className="p-1.5 bg-surface-variant text-primary-dark rounded hover:bg-primary-light disabled:opacity-50 cursor-pointer"
               >
                 <FiX size={16} />
               </button>

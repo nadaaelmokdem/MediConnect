@@ -28,13 +28,13 @@ const SlotGrid: React.FC<SlotGridProps> = ({
 
   if (slots.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 gap-3 text-gray-400">
-        <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-          <FaCalendarTimes className="text-2xl text-gray-300" />
+      <div className="flex flex-col items-center justify-center py-10 gap-3 text-outline-variant">
+        <div className="w-14 h-14 rounded-full bg-surface-variant flex items-center justify-center">
+          <FaCalendarTimes className="text-2xl text-outline-variant" />
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-gray-500">No available hours</p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-sm font-semibold text-text-muted">No available hours</p>
+          <p className="text-xs text-outline-variant mt-0.5">
             This doctor isn't available on this day
           </p>
         </div>
@@ -52,7 +52,7 @@ const SlotGrid: React.FC<SlotGridProps> = ({
             <div
               key={slot.slotKey}
               title="Unavailable"
-              className="relative py-2.5 px-2 rounded-xl text-xs font-medium text-center bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed select-none"
+              className="relative py-2.5 px-2 rounded-xl text-xs font-medium text-center bg-surface-container text-outline-variant border border-surface-variant cursor-not-allowed select-none"
             >
               {slot.timeLabel}
             </div>

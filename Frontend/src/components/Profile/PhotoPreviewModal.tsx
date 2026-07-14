@@ -27,17 +27,17 @@ export const PhotoPreviewModal: React.FC<PhotoPreviewModalProps> = ({
         className="bg-white rounded-2xl overflow-hidden max-w-3xl w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-4 border-b border-gray-100">
-          <h3 className="font-bold text-[#2A2455]">{label} Preview</h3>
+        <div className="flex justify-between items-center p-4 border-b border-surface-variant">
+          <h3 className="font-bold text-primary-dark">{label} Preview</h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-100 text-gray-500 transition-colors cursor-pointer"
+            className="p-1 rounded-full hover:bg-surface-variant text-text-muted transition-colors cursor-pointer"
           >
             <FiX size={24} />
           </button>
         </div>
-        <div className="p-4 flex justify-center bg-gray-50 max-h-[70vh] overflow-auto">
+        <div className="p-4 flex justify-center bg-surface-container max-h-[70vh] overflow-auto">
           <CachedImage
             src={getFileUrl(imageUrl)}
             alt={label}

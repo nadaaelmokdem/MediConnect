@@ -37,7 +37,7 @@ export const DetailReadView: React.FC<DetailReadViewProps> = ({
                 .map((tag, idx) => (
                   <span
                     key={idx}
-                    className="bg-[#E6E1FF] text-[#5140b3] px-2 py-0.5 rounded text-sm font-semibold"
+                    className="bg-surface-variant text-primary-dark px-2 py-0.5 rounded text-sm font-semibold"
                   >
                     {tag.trim()}
                   </span>
@@ -48,7 +48,7 @@ export const DetailReadView: React.FC<DetailReadViewProps> = ({
               <img
                 src={value}
                 alt={label}
-                className="w-12 h-12 object-cover rounded-md border border-[#E6E1FF] cursor-pointer hover:scale-105 hover:shadow-md transition-all"
+                className="w-12 h-12 object-cover rounded-md border border-surface-variant cursor-pointer hover:scale-105 hover:shadow-md transition-all"
                 onClick={onViewPhoto}
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
@@ -57,7 +57,7 @@ export const DetailReadView: React.FC<DetailReadViewProps> = ({
               <button
                 type="button"
                 onClick={onViewPhoto}
-                className="text-sm font-semibold text-[#6A5ACD] hover:underline text-left truncate max-w-[160px] sm:max-w-xs cursor-pointer"
+                className="text-sm font-semibold text-primary hover:underline text-left truncate max-w-[160px] sm:max-w-xs cursor-pointer"
               >
                 View Photo
               </button>
@@ -68,26 +68,26 @@ export const DetailReadView: React.FC<DetailReadViewProps> = ({
                 href={value}
                 target="_blank"
                 rel="noreferrer"
-                className="text-sm font-semibold text-[#6A5ACD] hover:underline text-left truncate max-w-[160px] sm:max-w-xs cursor-pointer bg-[#F3F0FF] px-3 py-1.5 rounded-md"
+                className="text-sm font-semibold text-primary hover:underline text-left truncate max-w-[160px] sm:max-w-xs cursor-pointer bg-surface-container px-3 py-1.5 rounded-md"
               >
                 View Document
               </a>
             </div>
           ) : type === "textarea" ? (
-            <p className="text-md font-medium text-[#2A2455] leading-relaxed whitespace-pre-wrap break-words">
+            <p className="text-md font-medium text-primary-dark leading-relaxed whitespace-pre-wrap break-words">
               {value}
             </p>
           ) : type === "date" ? (
-            <p className="text-lg font-bold text-[#2A2455] truncate leading-tight">
+            <p className="text-lg font-bold text-primary-dark truncate leading-tight">
               {value.split("T")[0]}
             </p>
           ) : (
-            <p className="text-lg font-bold text-[#2A2455] truncate leading-tight">
+            <p className="text-lg font-bold text-primary-dark truncate leading-tight">
               {value}
             </p>
           )
         ) : (
-          <p className="text-lg font-medium text-[#B8A7FF] italic">
+          <p className="text-lg font-medium text-primary-light italic">
             No Data
           </p>
         )}
@@ -97,7 +97,7 @@ export const DetailReadView: React.FC<DetailReadViewProps> = ({
         <button
           type="button"
           onClick={onEdit}
-          className="text-[#B8A7FF] hover:text-[#6A5ACD] cursor-pointer p-1.5 rounded-md hover:bg-[#F3F0FF] transition-all flex-shrink-0"
+          className="text-primary-light hover:text-primary cursor-pointer p-1.5 rounded-md hover:bg-surface-container transition-all flex-shrink-0"
           title={`Edit ${label}`}
         >
           <FiEdit2 size={16} />

@@ -44,21 +44,21 @@ const WeekDayPicker: React.FC<WeekDayPickerProps> = ({
         <button
           type="button"
           onClick={onPrevWeek}
-          className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-primary/10 text-gray-500 hover:text-primary transition-colors cursor-pointer"
+          className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-primary/10 text-text-muted hover:text-primary transition-colors cursor-pointer"
           aria-label="Previous week"
         >
           <FaChevronLeft size={12} />
         </button>
 
         <div className="text-center">
-          <p className="text-sm font-bold text-gray-800">{dateRange}</p>
-          <p className="text-xs text-gray-400">{year}</p>
+          <p className="text-sm font-bold text-primary-dark">{dateRange}</p>
+          <p className="text-xs text-outline-variant">{year}</p>
         </div>
 
         <button
           type="button"
           onClick={onNextWeek}
-          className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-primary/10 text-gray-500 hover:text-primary transition-colors cursor-pointer"
+          className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-primary/10 text-text-muted hover:text-primary transition-colors cursor-pointer"
           aria-label="Next week"
         >
           <FaChevronRight size={12} />
@@ -86,8 +86,8 @@ const WeekDayPicker: React.FC<WeekDayPickerProps> = ({
                   isSelected
                     ? "bg-primary text-white border-primary shadow-lg scale-105"
                     : disabled
-                    ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
-                    : "bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary hover:shadow-sm cursor-pointer"
+                    ? "bg-surface-container text-outline-variant border-surface-variant cursor-not-allowed"
+                    : "bg-white text-on-surface border-surface-variant hover:border-primary hover:text-primary hover:shadow-sm cursor-pointer"
                 }
               `}
             >
@@ -114,7 +114,7 @@ const WeekDayPicker: React.FC<WeekDayPickerProps> = ({
                       ? "bg-white/60"
                       : hasSlots
                       ? "bg-green-400"
-                      : "bg-gray-200"
+                      : "bg-surface-variant"
                   }`}
                 />
               )}

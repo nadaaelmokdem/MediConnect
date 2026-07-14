@@ -10,8 +10,8 @@ export default function NetworkError({ message = "Oops! Looks like you're offlin
       <div className="bg-red-50 p-4 rounded-full mb-4">
         <MdWifiOff className="text-red-400 text-4xl" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">Connection Lost</h3>
-      <p className="text-sm text-gray-500 max-w-xs">{message}</p>
+      <h3 className="text-lg font-semibold text-primary-dark mb-2">Connection Lost</h3>
+      <p className="text-sm text-text-muted max-w-xs">{message}</p>
     </div>
   );
 }

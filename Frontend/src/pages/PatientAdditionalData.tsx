@@ -147,7 +147,7 @@ export default function ContinueData() {
   };
 
   return (
-    <div className="bg-[#fcf8ff] text-[#1a1345] text-[15px] lg:text-[16px] leading-[24px] font-normal antialiased h-screen max-h-screen overflow-hidden flex flex-col selection:bg-[#6a5acd] selection:text-[#f0ebff]">
+    <div className="bg-surface-bright text-on-surface text-[15px] lg:text-[16px] leading-[24px] font-normal antialiased h-screen max-h-screen overflow-hidden flex flex-col selection:bg-primary selection:text-surface-container">
       <main className="flex-grow flex w-full h-full relative overflow-hidden">
         {/* Full-Screen Background Image Layer */}
         <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
@@ -184,10 +184,10 @@ export default function ContinueData() {
             <div className="w-full max-w-2xl flex flex-col gap-4 lg:gap-5 bg-white/95 backdrop-blur-md p-6 lg:p-10 rounded-3xl shadow-2xl border border-white/20 max-h-[96vh] overflow-y-auto">
               {/* Header Module with Personalized Hello Greeting */}
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-1.5">
-                <h1 className="text-[24px] lg:text-[28px] leading-[30px] lg:leading-[36px] font-bold text-[#1a1345]">
+                <h1 className="text-[24px] lg:text-[28px] leading-[30px] lg:leading-[36px] font-bold text-on-surface">
                   Hello, {user?.fullName}!
                 </h1>
-                <p className="text-[14px] leading-[20px] text-[#474553]">
+                <p className="text-[14px] leading-[20px] text-on-surface-variant">
                   Please provide a few more details to help us personalize your
                   medical journey. These fields are optional but recommended.
                 </p>
@@ -199,12 +199,12 @@ export default function ContinueData() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Address Module */}
                   <div className="md:col-span-2">
-                    <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1.5">
+                    <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1.5">
                       Home Address
                     </label>
                     <div className="relative">
                       <MdLocationOn
-                        className={`absolute left-4 top-1/2 -translate-y-1/2 text-xl ${errors.address ? "text-red-400" : "text-[#c9c4d5]"}`}
+                        className={`absolute left-4 top-1/2 -translate-y-1/2 text-xl ${errors.address ? "text-red-400" : "text-outline-variant"}`}
                       />
                       <input
                         name="address"
@@ -213,7 +213,7 @@ export default function ContinueData() {
                         className={`w-full h-11 pl-11 pr-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                           errors.address
                             ? "border-red-400 focus:border-red-500"
-                            : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3] focus:border-[#b8a7ff]"
+                            : "border-surface-variant focus:ring-1 focus:ring-primary-dark focus:border-primary-light"
                         } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                         placeholder="123 Wellness Ave, Health City"
                         type="text"
@@ -229,7 +229,7 @@ export default function ContinueData() {
 
                   {/* Age Input */}
                   <div>
-                    <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1.5">
+                    <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1.5">
                       Age
                     </label>
                     <input
@@ -239,7 +239,7 @@ export default function ContinueData() {
                       className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                         errors.age
                           ? "border-red-400 focus:border-red-500"
-                          : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3]"
+                          : "border-surface-variant focus:ring-1 focus:ring-primary-dark"
                       } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                       placeholder="e.g. 28"
                       type="text"
@@ -254,7 +254,7 @@ export default function ContinueData() {
 
                   {/* Gender Selector */}
                   <div>
-                    <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1.5">
+                    <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1.5">
                       Gender
                     </label>
                     <select
@@ -264,7 +264,7 @@ export default function ContinueData() {
                       className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all appearance-none ${
                         errors.gender
                           ? "border-red-400 focus:border-red-500"
-                          : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3] focus:border-[#b8a7ff]"
+                          : "border-surface-variant focus:ring-1 focus:ring-primary-dark focus:border-primary-light"
                       } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                       disabled={isLoading}
                     >
@@ -281,7 +281,7 @@ export default function ContinueData() {
 
                   {/* Weight Element */}
                   <div>
-                    <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1.5">
+                    <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1.5">
                       Weight
                     </label>
                     <div className="relative flex items-center">
@@ -292,13 +292,13 @@ export default function ContinueData() {
                         className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                           errors.weight
                             ? "border-red-400 focus:border-red-500"
-                            : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3] focus:border-[#b8a7ff]"
+                            : "border-surface-variant focus:ring-1 focus:ring-primary-dark focus:border-primary-light"
                         } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                         placeholder="70"
                         type="text"
                         disabled={isLoading}
                       />
-                      <span className="absolute right-4 text-[#a19db3] text-[12px] font-bold">
+                      <span className="absolute right-4 text-outline-variant text-[12px] font-bold">
                         kg
                       </span>
                     </div>
@@ -311,7 +311,7 @@ export default function ContinueData() {
 
                   {/* Height Element */}
                   <div>
-                    <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1.5">
+                    <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1.5">
                       Height
                     </label>
                     <div className="relative flex items-center">
@@ -322,13 +322,13 @@ export default function ContinueData() {
                         className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                           errors.height
                             ? "border-red-400 focus:border-red-500"
-                            : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3] focus:border-[#b8a7ff]"
+                            : "border-surface-variant focus:ring-1 focus:ring-primary-dark focus:border-primary-light"
                         } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                         placeholder="175"
                         type="text"
                         disabled={isLoading}
                       />
-                      <span className="absolute right-4 text-[#a19db3] text-[12px] font-bold">
+                      <span className="absolute right-4 text-outline-variant text-[12px] font-bold">
                         cm
                       </span>
                     </div>
@@ -341,15 +341,15 @@ export default function ContinueData() {
 
                   {/* Compact Emergency Contact Sub-Card */}
                   <div
-                    className={`md:col-span-2 p-4 bg-[#f6f1ff]/60 rounded-xl border transition-colors ${
+                    className={`md:col-span-2 p-4 bg-surface-container/60 rounded-xl border transition-colors ${
                       errors.emergencyName || errors.emergencyPhone
                         ? "border-red-200 bg-red-50/20"
-                        : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3]"
+                        : "border-surface-variant focus:ring-1 focus:ring-primary-dark"
                     }`}
                   >
-                    <h3 className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-3 flex items-center gap-2">
+                    <h3 className="text-[13px] lg:text-[14px] font-semibold text-on-surface mb-3 flex items-center gap-2">
                       <MdContacts
-                        className={`text-xl ${errors.emergencyName || errors.emergencyPhone ? "text-red-500" : "text-[#5140b3]"}`}
+                        className={`text-xl ${errors.emergencyName || errors.emergencyPhone ? "text-red-500" : "text-primary-dark"}`}
                       />
                       Emergency Contact Info
                     </h3>
@@ -362,7 +362,7 @@ export default function ContinueData() {
                           className={`w-full h-10 px-3.5 bg-white border rounded-lg text-[13px] lg:text-[14px] outline-none transition-all ${
                             errors.emergencyPhone
                               ? "border-red-300 focus:border-red-500"
-                              : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3] focus:border-[#b8a7ff]"
+                              : "border-surface-variant focus:ring-1 focus:ring-primary-dark focus:border-primary-light"
                           }`}
                           placeholder="+201012345678"
                           type="tel"
@@ -374,7 +374,7 @@ export default function ContinueData() {
                             {errors.emergencyPhone}
                           </p>
                         ) : (
-                          <p className="text-gray-400 text-[11px] mt-1 font-normal leading-relaxed text-center">
+                          <p className="text-outline-variant text-[11px] mt-1 font-normal leading-relaxed text-center">
                             This number is used in case of emergencies. Please
                             provide a trusted contact, such as a relative or
                             guardian, Do not put your number or a secondary
@@ -389,7 +389,7 @@ export default function ContinueData() {
                 {/* Main Viewport Operations Layer */}
                 <div className="flex flex-col sm:flex-row gap-3.5 pt-2">
                   <button
-                    className={`flex-1 h-11.5 flex items-center justify-center bg-[#6a5acd] text-[#f0ebff] hover:bg-[#5140b3] hover:text-white rounded-full text-[14px] font-semibold transition-all shadow-md active:scale-[0.98] ${
+                    className={`flex-1 h-11.5 flex items-center justify-center bg-primary text-surface-container hover:bg-primary-dark hover:text-white rounded-full text-[14px] font-semibold transition-all shadow-md active:scale-[0.98] ${
                       isLoading
                         ? "opacity-70 cursor-not-allowed"
                         : "cursor-pointer"
@@ -401,7 +401,7 @@ export default function ContinueData() {
                   </button>
                   <button
                     onClick={() => navigate("/")}
-                    className="cursor-pointer flex-1 h-11.5 flex items-center justify-center bg-[#ffffff]/90 border border-[#e5deff] focus:ring-1 focus:ring-[#5140b3] text-[#5140b3] hover:bg-[#f0ebff] rounded-full text-[14px] font-semibold transition-all active:scale-[0.98]"
+                    className="cursor-pointer flex-1 h-11.5 flex items-center justify-center bg-white/90 border border-surface-variant focus:ring-1 focus:ring-primary-dark text-primary-dark hover:bg-surface-container rounded-full text-[14px] font-semibold transition-all active:scale-[0.98]"
                     type="button"
                     disabled={isLoading}
                   >

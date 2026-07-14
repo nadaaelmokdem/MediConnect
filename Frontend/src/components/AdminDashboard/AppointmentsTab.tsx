@@ -22,11 +22,11 @@ export default function AppointmentsTab() {
   if (error) return <NetworkError message={error} />;
 
   return (
-    <div className="bg-white border border-[#E6E1FF] rounded-2xl overflow-hidden">
+    <div className="bg-white border border-surface-variant rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#F8F7FF] text-left text-[#2A2455]/70">
+            <tr className="bg-surface-container text-left text-primary-dark/70">
               <th className="px-4 py-3 font-semibold">Patient</th>
               <th className="px-4 py-3 font-semibold">Doctor</th>
               <th className="px-4 py-3 font-semibold">Scheduled</th>
@@ -36,18 +36,18 @@ export default function AppointmentsTab() {
               <th className="px-4 py-3 font-semibold">Payment</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F4F1FF]">
+          <tbody className="divide-y divide-surface-container">
             {appointments.map((a) => (
               <tr key={a.appointmentId}>
-                <td className="px-4 py-3 font-medium text-[#2A2455]">{a.patientName}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">{a.doctorName}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">
+                <td className="px-4 py-3 font-medium text-primary-dark">{a.patientName}</td>
+                <td className="px-4 py-3 text-primary-dark/70">{a.doctorName}</td>
+                <td className="px-4 py-3 text-primary-dark/70">
                   {new Date(a.scheduledAt).toLocaleString()}
                 </td>
-                <td className="px-4 py-3 text-[#2A2455]/70">{a.consultationType}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">{a.status}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">{formatMoney(a.price)}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">
+                <td className="px-4 py-3 text-primary-dark/70">{a.consultationType}</td>
+                <td className="px-4 py-3 text-primary-dark/70">{a.status}</td>
+                <td className="px-4 py-3 text-primary-dark/70">{formatMoney(a.price)}</td>
+                <td className="px-4 py-3 text-primary-dark/70">
                   {a.paymentStatus ?? "No payment"}
                   {a.amountPaid != null && ` (${formatMoney(a.amountPaid)})`}
                 </td>
@@ -55,7 +55,7 @@ export default function AppointmentsTab() {
             ))}
             {appointments.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-outline-variant">
                   No appointments yet.
                 </td>
               </tr>

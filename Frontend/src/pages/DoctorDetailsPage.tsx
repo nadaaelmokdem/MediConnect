@@ -140,12 +140,12 @@ export default function DoctorDetailsPage() {
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
             </div>
-            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Rate Your Experience</h2>
-            <p class="text-sm text-gray-500 mb-6">How was your consultation with Dr. ${doctor?.fullName}?</p>
+            <h2 class="text-3xl font-extrabold text-primary-dark mb-2">Rate Your Experience</h2>
+            <p class="text-sm text-text-muted mb-6">How was your consultation with Dr. ${doctor?.fullName}?</p>
             
             <div class="text-left mb-6">
-              <label class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Select Appointment</label>
-              <select id="swal-appointment-select" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-700 text-sm shadow-inner transition-colors cursor-pointer">
+              <label class="block text-sm font-semibold text-on-surface mb-2 ml-1">Select Appointment</label>
+              <select id="swal-appointment-select" class="w-full bg-surface-container border border-surface-variant rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-on-surface text-sm shadow-inner transition-colors cursor-pointer">
                 ${appointmentOptionsHtml}
               </select>
             </div>
@@ -153,7 +153,7 @@ export default function DoctorDetailsPage() {
             <div class="flex justify-center gap-3 mb-6" id="swal-rating">
               ${[1, 2, 3, 4, 5].map(i => `
                 <button type="button" class="star-btn transition-transform hover:scale-125 focus:outline-none" data-value="${i}">
-                  <svg class="w-10 h-10 text-gray-200 drop-shadow-sm transition-colors duration-200" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-10 h-10 text-surface-variant drop-shadow-sm transition-colors duration-200" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                   </svg>
                 </button>
@@ -161,14 +161,14 @@ export default function DoctorDetailsPage() {
             </div>
             <input type="hidden" id="swal-rating-value" value="0">
             
-            <div id="swal-edit-alert" class="hidden bg-blue-50 text-blue-700 p-3 rounded-xl mb-6 text-sm text-left border border-blue-100 flex items-start gap-2 shadow-sm">
+            <div id="swal-edit-alert" class="hidden bg-primary/10 text-primary-dark p-3 rounded-xl mb-6 text-sm text-left border border-primary/15 flex items-start gap-2 shadow-sm">
               <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               <span>You have already rated this appointment. Submitting again will update your existing rating.</span>
             </div>
 
             <div class="text-left">
-              <label class="block text-sm font-semibold text-gray-700 mb-2 ml-1">Additional Comments (Optional)</label>
-              <textarea id="swal-comment" rows="4" class="w-full bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary p-4 outline-none resize-none transition-all text-gray-700 text-sm shadow-inner" placeholder="Tell us what you liked or how they can improve..."></textarea>
+              <label class="block text-sm font-semibold text-on-surface mb-2 ml-1">Additional Comments (Optional)</label>
+              <textarea id="swal-comment" rows="4" class="w-full bg-surface-container border border-surface-variant rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary p-4 outline-none resize-none transition-all text-on-surface text-sm shadow-inner" placeholder="Tell us what you liked or how they can improve..."></textarea>
             </div>
           </div>
         `,
@@ -177,10 +177,10 @@ export default function DoctorDetailsPage() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-8 rounded-[32px] shadow-2xl max-w-md w-full border border-gray-100',
+          popup: 'bg-white p-8 rounded-[32px] shadow-2xl max-w-md w-full border border-surface-variant',
           htmlContainer: 'w-full m-0',
           confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 mt-4 text-lg',
-          cancelButton: 'w-full mt-3 py-3.5 text-gray-500 font-semibold hover:text-gray-800 hover:bg-gray-100 rounded-2xl transition-colors',
+          cancelButton: 'w-full mt-3 py-3.5 text-text-muted font-semibold hover:text-primary-dark hover:bg-surface-variant rounded-2xl transition-colors',
           actions: 'flex flex-col w-full m-0'
         },
         didOpen: () => {
@@ -194,10 +194,10 @@ export default function DoctorDetailsPage() {
             stars.forEach((s, idx) => {
               const svg = s.querySelector('svg');
               if (idx < val) {
-                svg?.classList.remove('text-gray-200');
+                svg?.classList.remove('text-surface-variant');
                 svg?.classList.add('text-yellow-400');
               } else {
-                svg?.classList.add('text-gray-200');
+                svg?.classList.add('text-surface-variant');
                 svg?.classList.remove('text-yellow-400');
               }
             });
@@ -332,9 +332,9 @@ export default function DoctorDetailsPage() {
         text: err.response?.data?.message || err.message || err.response?.data || "Failed to start chat session.",
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
+          popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
           confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
         }
       });
@@ -351,10 +351,10 @@ export default function DoctorDetailsPage() {
         text: "This doctor does not offer chat consultations.",
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
-          confirmButton: 'w-full bg-[#6a5acd] hover:bg-[#5b4eb8] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
+          popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
+          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
         }
       });
       return;
@@ -368,8 +368,8 @@ export default function DoctorDetailsPage() {
       Swal.fire({
         title: 'Start Consultation',
         html: `
-          <p class="mb-6 text-gray-600 text-left">
-            You selected Dr. <span class="font-semibold text-gray-800">${doctor.fullName}</span>. 
+          <p class="mb-6 text-on-surface-variant text-left">
+            You selected Dr. <span class="font-semibold text-primary-dark">${doctor.fullName}</span>. 
             How would you like to proceed?
           </p>
           <div class="flex flex-col gap-4">
@@ -394,10 +394,10 @@ export default function DoctorDetailsPage() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-3 text-gray-800 text-left w-full',
+          popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-3 text-primary-dark text-left w-full',
           htmlContainer: 'w-full m-0',
-          cancelButton: 'w-full mt-6 py-3 text-gray-500 font-semibold hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors',
+          cancelButton: 'w-full mt-6 py-3 text-text-muted font-semibold hover:text-primary-dark hover:bg-surface-variant rounded-xl transition-colors',
           actions: 'flex flex-col w-full m-0'
         },
         didOpen: () => {
@@ -415,8 +415,8 @@ export default function DoctorDetailsPage() {
             <div class="w-20 h-20 bg-[var(--color-primary-light)]/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             </div>
-            <p class="text-gray-600 text-lg">
-              Start a chat with Dr. <span class="font-semibold text-gray-800">${doctor.fullName}</span> for <span class="font-bold text-primary bg-[var(--color-primary-light)]/20 px-3 py-1 rounded-full">${doctor.chatPrice} EGP</span>?
+            <p class="text-on-surface-variant text-lg">
+              Start a chat with Dr. <span class="font-semibold text-primary-dark">${doctor.fullName}</span> for <span class="font-bold text-primary bg-[var(--color-primary-light)]/20 px-3 py-1 rounded-full">${doctor.chatPrice} EGP</span>?
             </p>
           </div>
         `,
@@ -425,11 +425,11 @@ export default function DoctorDetailsPage() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-4 text-gray-800',
+          popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-4 text-primary-dark',
           htmlContainer: 'w-full m-0',
           confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5',
-          cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors',
+          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-primary-dark hover:bg-surface-variant rounded-xl transition-colors',
           actions: 'flex flex-col w-full m-0'
         }
       }).then((result) => {

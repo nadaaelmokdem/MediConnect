@@ -109,45 +109,45 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
     const specialtiesList = formData.specialties.map(s => typeof s === 'string' ? s : s.name);
 
     return (
-      <div className="bg-white p-4 rounded-lg border border-[#E6E1FF] shadow-sm">
+      <div className="bg-white p-4 rounded-lg border border-surface-variant shadow-sm">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[#6A5ACD] font-bold">Specialties & Pricing</h3>
+          <h3 className="text-primary font-bold">Specialties & Pricing</h3>
           {!disabled && (
             <button
               onClick={() => setIsEditing(true)}
-              className="text-sm bg-[#E6E1FF] text-[#2A2455] px-3 py-1 rounded hover:bg-[#B8A7FF] transition-colors cursor-pointer"
+              className="text-sm bg-surface-variant text-primary-dark px-3 py-1 rounded hover:bg-primary-light transition-colors cursor-pointer"
             >
               {formData.specialties.length === 0 ? "Add Specialties" : "Edit Details"}
             </button>
           )}
         </div>
         {formData.specialties.length === 0 ? (
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-3 my-2">
-            <p className="text-sm text-blue-700">
+          <div className="bg-primary/10 border-l-4 border-primary p-3 my-2">
+            <p className="text-sm text-primary-dark">
               <strong>Tip:</strong> Please add your specialties and prices.
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="border-l-4 border-[#6A5ACD] pl-3">
-              <p className="font-bold text-[#2A2455] mb-2">{specialtiesList.join(', ')}</p>
+            <div className="border-l-4 border-primary pl-3">
+              <p className="font-bold text-primary-dark mb-2">{specialtiesList.join(', ')}</p>
               <div className="flex flex-wrap gap-2 mt-2">
-                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isClinicEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isClinicEnabled ? 'bg-primary/10 border-primary/15 text-primary-dark' : 'bg-surface-container border-surface-variant text-outline-variant'}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Clinic</span>
 
                   <span className="text-sm font-semibold">{formData.isClinicEnabled ? `${formData.clinicPrice} EGP` : 'Disabled'}</span>
                 </div>
-                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isChatEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isChatEnabled ? 'bg-primary/10 border-primary/15 text-primary-dark' : 'bg-surface-container border-surface-variant text-outline-variant'}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Chat</span>
 
                   <span className="text-sm font-semibold">{formData.isChatEnabled ? `${formData.chatPrice} EGP` : 'Disabled'}</span>
                 </div>
-                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isVideoEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isVideoEnabled ? 'bg-primary/10 border-primary/15 text-primary-dark' : 'bg-surface-container border-surface-variant text-outline-variant'}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Video</span>
 
                   <span className="text-sm font-semibold">{formData.isVideoEnabled ? `${formData.videoPrice} EGP` : 'Disabled'}</span>
                 </div>
-                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isCallEnabled ? 'bg-indigo-50 border-indigo-100 text-indigo-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                <div className={`flex flex-col items-start px-3 py-1.5 rounded-md border ${formData.isCallEnabled ? 'bg-primary/10 border-primary/15 text-primary-dark' : 'bg-surface-container border-surface-variant text-outline-variant'}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">Call</span>
 
                   <span className="text-sm font-semibold">{formData.isCallEnabled ? `${formData.callPrice} EGP` : 'Disabled'}</span>
@@ -161,9 +161,9 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
   }
 
   return (
-    <div className="bg-[#FBFAFF] p-4 rounded-lg border-2 border-[#B8A7FF] shadow-sm">
+    <div className="bg-background p-4 rounded-lg border-2 border-primary-light shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-[#6A5ACD] font-bold">
+        <h3 className="text-primary font-bold">
           {profile.specialties.length === 0 ? "Add Specialties & Pricing" : "Edit Specialties & Pricing"}
         </h3>
         <div className="flex gap-2">
@@ -173,7 +173,7 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
               setError(null);
               setFormData(profile);
             }}
-            className="p-1.5 bg-[#E6E1FF] text-[#2A2455] rounded hover:bg-[#B8A7FF] cursor-pointer"
+            className="p-1.5 bg-surface-variant text-primary-dark rounded hover:bg-primary-light cursor-pointer"
             title="Cancel"
           >
             <FiX size={18} />
@@ -181,7 +181,7 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="p-1.5 bg-[#6A5ACD] text-white rounded hover:bg-[#2A2455] disabled:opacity-50 cursor-pointer"
+            className="p-1.5 bg-primary text-white rounded hover:bg-primary-dark disabled:opacity-50 cursor-pointer"
             title="Save"
           >
             <FiSave size={18} />
@@ -192,13 +192,13 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
       {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
       <div className="mb-4">
-        <label className="block text-xs font-bold text-[#B8A7FF] mb-2">Specialties (Max 3)</label>
+        <label className="block text-xs font-bold text-primary-light mb-2">Specialties (Max 3)</label>
         {formData.specialties.map((spec, i) => (
           <div key={i} className="flex gap-2 mb-2 items-center">
             <select
               value={typeof spec === 'string' ? spec : spec.name}
               onChange={(e) => handleSpecialtyChange(i, e.target.value)}
-              className="flex-1 bg-white border border-[#6A5ACD] rounded px-2 py-2 text-sm font-semibold text-[#2A2455] focus:outline-none cursor-pointer"
+              className="flex-1 bg-white border border-primary rounded px-2 py-2 text-sm font-semibold text-primary-dark focus:outline-none cursor-pointer"
             >
               {availableSpecialties.map((a) => (
                 <option key={a} value={a}>{a}</option>
@@ -216,7 +216,7 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
         {formData.specialties.length < 3 && (
           <button
             onClick={handleAddSpecialty}
-            className="mt-2 flex items-center gap-1 text-sm text-[#6A5ACD] font-bold hover:text-[#2A2455] cursor-pointer"
+            className="mt-2 flex items-center gap-1 text-sm text-primary font-bold hover:text-primary-dark cursor-pointer"
           >
             <FiPlus /> Add Specialty
           </button>
@@ -230,12 +230,12 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+        <div className="bg-white p-3 rounded border border-surface-variant">
           <div className="flex items-center gap-1.5 mb-2">
             <label className="flex items-center gap-1.5 cursor-pointer">
 
-              <input type="checkbox" checked={formData.isClinicEnabled ?? true} onChange={(e) => handlePriceChange("isClinicEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
-              <span className="block text-xs font-bold text-[#B8A7FF]">Clinic</span>
+              <input type="checkbox" checked={formData.isClinicEnabled ?? true} onChange={(e) => handlePriceChange("isClinicEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-primary accent-primary" />
+              <span className="block text-xs font-bold text-primary-light">Clinic</span>
             </label>
           </div>
 
@@ -247,17 +247,17 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
               value={formData.clinicPrice || 0}
               onChange={(e) => handlePriceChange("clinicPrice", e.target.value)}
               placeholder="EGP"
-              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+              className="w-full bg-background border border-primary rounded px-2 py-2 text-sm text-primary-dark"
             />
           )}
         </div>
         
-        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+        <div className="bg-white p-3 rounded border border-surface-variant">
           <div className="flex items-center gap-1.5 mb-2">
             <label className="flex items-center gap-1.5 cursor-pointer">
 
-              <input type="checkbox" checked={formData.isChatEnabled ?? true} onChange={(e) => handlePriceChange("isChatEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
-              <span className="block text-xs font-bold text-[#B8A7FF]">Chat</span>
+              <input type="checkbox" checked={formData.isChatEnabled ?? true} onChange={(e) => handlePriceChange("isChatEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-primary accent-primary" />
+              <span className="block text-xs font-bold text-primary-light">Chat</span>
             </label>
           </div>
 
@@ -269,17 +269,17 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
               value={formData.chatPrice || 0}
               onChange={(e) => handlePriceChange("chatPrice", e.target.value)}
               placeholder="EGP"
-              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+              className="w-full bg-background border border-primary rounded px-2 py-2 text-sm text-primary-dark"
             />
           )}
         </div>
 
-        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+        <div className="bg-white p-3 rounded border border-surface-variant">
           <div className="flex items-center gap-1.5 mb-2">
             <label className="flex items-center gap-1.5 cursor-pointer">
 
-              <input type="checkbox" checked={formData.isVideoEnabled ?? true} onChange={(e) => handlePriceChange("isVideoEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
-              <span className="block text-xs font-bold text-[#B8A7FF]">Video</span>
+              <input type="checkbox" checked={formData.isVideoEnabled ?? true} onChange={(e) => handlePriceChange("isVideoEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-primary accent-primary" />
+              <span className="block text-xs font-bold text-primary-light">Video</span>
             </label>
           </div>
 
@@ -291,17 +291,17 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
               value={formData.videoPrice || 0}
               onChange={(e) => handlePriceChange("videoPrice", e.target.value)}
               placeholder="EGP"
-              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+              className="w-full bg-background border border-primary rounded px-2 py-2 text-sm text-primary-dark"
             />
           )}
         </div>
 
-        <div className="bg-white p-3 rounded border border-[#E6E1FF]">
+        <div className="bg-white p-3 rounded border border-surface-variant">
           <div className="flex items-center gap-1.5 mb-2">
             <label className="flex items-center gap-1.5 cursor-pointer">
 
-              <input type="checkbox" checked={formData.isCallEnabled ?? true} onChange={(e) => handlePriceChange("isCallEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-[#6A5ACD] accent-[#6A5ACD]" />
-              <span className="block text-xs font-bold text-[#B8A7FF]">Call</span>
+              <input type="checkbox" checked={formData.isCallEnabled ?? true} onChange={(e) => handlePriceChange("isCallEnabled", e.target.checked)} className="w-4 h-4 cursor-pointer text-primary accent-primary" />
+              <span className="block text-xs font-bold text-primary-light">Call</span>
             </label>
           </div>
 
@@ -313,7 +313,7 @@ export const ServicesAndPricingManager: React.FC<Props> = ({
               value={formData.callPrice || 0}
               onChange={(e) => handlePriceChange("callPrice", e.target.value)}
               placeholder="EGP"
-              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-2 text-sm text-[#2A2455]"
+              className="w-full bg-background border border-primary rounded px-2 py-2 text-sm text-primary-dark"
             />
           )}
         </div>

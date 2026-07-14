@@ -41,14 +41,14 @@ export default function AppointmentDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-[#E6E1FF] overflow-hidden"
+        className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-surface-variant overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E6E1FF] bg-[#F8F7FF]">
-          <h2 className="text-lg font-bold text-[#2A2455]">Appointment Details</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant bg-surface-container">
+          <h2 className="text-lg font-bold text-primary-dark">Appointment Details</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-[#E6E1FF] text-gray-500 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-surface-variant text-text-muted transition-colors cursor-pointer"
             aria-label="Close"
           >
             <MdClose size={20} />
@@ -62,7 +62,7 @@ export default function AppointmentDetailModal({
             value={
               <>
                 {format(new Date(appointment.scheduledAt), "MMM d, yyyy")}
-                <span className="block text-sm text-gray-500 mt-0.5 flex items-center gap-1">
+                <span className="block text-sm text-text-muted mt-0.5 flex items-center gap-1">
                   <MdAccessTime size={13} />
                   {format(new Date(appointment.scheduledAt), "h:mm a")} · {appointment.durationMins} mins
                 </span>
@@ -98,7 +98,7 @@ export default function AppointmentDetailModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-[#E6E1FF] bg-gray-50/50 flex flex-col sm:flex-row gap-2 sm:justify-end">
+        <div className="px-6 py-4 border-t border-surface-variant bg-surface-container/50 flex flex-col sm:flex-row gap-2 sm:justify-end">
           {showCancel && (
             <button
               onClick={() => onCancel!(appointment.appointmentId)}
@@ -111,14 +111,14 @@ export default function AppointmentDetailModal({
           {showChat && (
             <Link
               to={`/chat/${appointment.sessionId}`}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#6A5ACD] text-white font-semibold text-sm hover:bg-[#5140b3] transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark transition-colors"
             >
               <MdChat size={14} /> Open Chat
             </Link>
           )}
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl border border-surface-variant text-on-surface-variant font-semibold text-sm hover:bg-surface-variant transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -131,8 +131,8 @@ export default function AppointmentDetailModal({
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1">{label}</p>
-      <div className="text-sm font-medium text-[#2A2455]">{value}</div>
+      <p className="text-[11px] font-bold uppercase tracking-wider text-outline-variant mb-1">{label}</p>
+      <div className="text-sm font-medium text-primary-dark">{value}</div>
     </div>
   );
 }

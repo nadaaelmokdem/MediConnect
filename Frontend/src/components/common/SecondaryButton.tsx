@@ -8,7 +8,7 @@ export default function SecondaryButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full h-11 lg:h-11.5 flex items-center justify-center gap-3 bg-[#ffffff]/90 backdrop-blur-sm border border-[#e5deff] hover:bg-[#f0ebff] hover:border-[#c9c4d5] rounded-full text-[13px] font-semibold text-[#1a1345] transition-all ${
+      className={`w-full h-11 lg:h-11.5 flex items-center justify-center gap-3 bg-white/90 backdrop-blur-sm border border-surface-variant hover:bg-surface-container hover:border-outline-variant rounded-full text-[13px] font-semibold text-on-surface transition-all ${
         disabled ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
       }`}
       type="button"

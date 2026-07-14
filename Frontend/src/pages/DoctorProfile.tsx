@@ -166,24 +166,24 @@ const ProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-[#FBFAFF] pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-[#2A2455]">
-        <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-[#E6E1FF]">
+      <div className="bg-background pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-primary-dark">
+        <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-surface-variant">
           {/* Header Skeleton */}
-          <div className="p-4 sm:p-6 border-b border-[#E6E1FF] bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#E6E1FF] animate-pulse"></div>
+          <div className="p-4 sm:p-6 border-b border-surface-variant bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-surface-variant animate-pulse"></div>
             <div className="flex-1 w-full space-y-2">
-              <div className="h-8 bg-[#E6E1FF] rounded w-3/4 animate-pulse"></div>
-              <div className="h-4 bg-[#E6E1FF] rounded w-1/2 animate-pulse"></div>
+              <div className="h-8 bg-surface-variant rounded w-3/4 animate-pulse"></div>
+              <div className="h-4 bg-surface-variant rounded w-1/2 animate-pulse"></div>
             </div>
           </div>
           {/* Grid Skeleton */}
-          <div className="p-4 sm:p-8 bg-[#FBFAFF]/50 sm:rounded-b-2xl">
-            <div className="h-6 bg-[#E6E1FF] rounded w-1/4 mb-6 animate-pulse"></div>
+          <div className="p-4 sm:p-8 bg-background/50 sm:rounded-b-2xl">
+            <div className="h-6 bg-surface-variant rounded w-1/4 mb-6 animate-pulse"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 bg-[#E6E1FF] rounded-lg animate-pulse"
+                  className="h-24 bg-surface-variant rounded-lg animate-pulse"
                 ></div>
               ))}
             </div>
@@ -194,19 +194,19 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#FBFAFF] pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-[#2A2455]">
-      <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-[#E6E1FF]">
+    <div className="bg-background pt-10 px-4 sm:px-6 lg:px-15 flex justify-center items-start font-sans text-primary-dark">
+      <div className="w-full h-fit flex flex-col bg-white sm:rounded-2xl shadow-xl sm:border border-surface-variant">
         {/* Header Section */}
-        <div className="p-4 sm:p-6 border-b border-[#E6E1FF] bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
+        <div className="p-4 sm:p-6 border-b border-surface-variant bg-white flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 sm:rounded-t-2xl">
           {/* Avatar Container */}
           <div
             className="relative cursor-pointer flex-shrink-0"
             onClick={handleImageClick}
           >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-[#E6E1FF] bg-[#FBFAFF] flex items-center justify-center relative">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-surface-variant bg-background flex items-center justify-center relative">
               {isUploadingImage && (
                 <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center z-10">
-                  <div className="w-6 h-6 border-2 border-[#6A5ACD] border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
               {profile.imageUrl ? (
@@ -216,13 +216,13 @@ const ProfilePage: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-[#6A5ACD] text-4xl font-bold uppercase">
+                <span className="text-primary text-4xl font-bold uppercase">
                   {profile.fullName ? profile.fullName.replace(/^Dr\.\s*/i, '').charAt(0) : "D"}
                 </span>
               )}
             </div>
             {/* Camera icon overlay */}
-            <div className="absolute bottom-0 right-0 bg-[#6A5ACD] p-1.5 rounded-full border-2 border-white shadow-sm hover:bg-[#2A2455] transition-colors">
+            <div className="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full border-2 border-white shadow-sm hover:bg-primary-dark transition-colors">
               <FiCamera className="text-white text-sm" />
             </div>
           </div>
@@ -237,16 +237,16 @@ const ProfilePage: React.FC = () => {
           {/* Name & Handle */}
           <div className="flex-1 text-center sm:text-left flex flex-col justify-center w-full">
             <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#2A2455] whitespace-normal break-words max-w-full">
+              <h1 className="text-2xl sm:text-3xl font-bold text-primary-dark whitespace-normal break-words max-w-full">
                 {profile.fullName.startsWith("Dr.") ? profile.fullName : `Dr. ${profile.fullName}`}
                 {profile.isVerified && (
-                  <MdVerified className="inline-block text-blue-500 text-2xl ml-2 align-middle flex-shrink-0" title="Verified Doctor" />
+                  <MdVerified className="inline-block text-primary text-2xl ml-2 align-middle flex-shrink-0" title="Verified Doctor" />
                 )}
               </h1>
             </div>
             <div className="mt-0.5">
               <div className="flex items-center gap-3 justify-center sm:justify-start w-full">
-                <h1 className="text-lg sm:text-xl font-medium text-[#2A2455] truncate max-w-full">
+                <h1 className="text-lg sm:text-xl font-medium text-primary-dark truncate max-w-full">
                   {profile.email}
                 </h1>
               </div>
@@ -255,11 +255,11 @@ const ProfilePage: React.FC = () => {
         </div>
 
         {/* Details Section */}
-        <div className="p-4 sm:p-8 bg-[#FBFAFF]/50 sm:rounded-b-2xl space-y-8">
+        <div className="p-4 sm:p-8 bg-background/50 sm:rounded-b-2xl space-y-8">
           
           {/* Section 1: Bio, Experience, Specialties & Pricing */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E6E1FF] shadow-sm space-y-6">
-            <h2 className="text-xl font-bold text-[#6A5ACD] flex items-center gap-2">
+          <div className="bg-white p-6 rounded-2xl border border-surface-variant shadow-sm space-y-6">
+            <h2 className="text-xl font-bold text-primary flex items-center gap-2">
               <FiUser className="text-lg" /> Professional Overview
             </h2>
             
@@ -293,7 +293,7 @@ const ProfilePage: React.FC = () => {
               />
             </div>
             
-            <div className="border-t border-[#F4F1FF] pt-6">
+            <div className="border-t border-surface-container pt-6">
               <ServicesAndPricingManager
                 profile={profile}
                 availableSpecialties={availableSpecialties}
@@ -303,8 +303,8 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* Section 2: Clinic & Contact Information */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E6E1FF] shadow-sm">
-            <h2 className="text-xl font-bold mb-4 text-[#6A5ACD] flex items-center gap-2">
+          <div className="bg-white p-6 rounded-2xl border border-surface-variant shadow-sm">
+            <h2 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
               <MdLocationOn className="text-lg" /> Clinic & Contact Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -334,11 +334,11 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* Section 3: Paperwork & Verification Documents (At the Bottom) */}
-          <div className="bg-[#FBFAFF] p-6 rounded-2xl border-2 border-dashed border-[#B8A7FF] shadow-sm">
-            <h2 className="text-xl font-bold mb-1 text-[#6A5ACD] flex items-center gap-2">
+          <div className="bg-background p-6 rounded-2xl border-2 border-dashed border-primary-light shadow-sm">
+            <h2 className="text-xl font-bold mb-1 text-primary flex items-center gap-2">
               <MdAssignment className="text-lg" /> Verification Documents & Paperwork
             </h2>
-            <p className="text-sm text-[#2A2455]/70 mb-5">
+            <p className="text-sm text-primary-dark/70 mb-5">
               Upload and verify your official credentials. Modifying any of these fields while approved will set your status to pending, but you can continue providing services at your pricing until reviewed.
             </p>
             {!profile.isVerified && (

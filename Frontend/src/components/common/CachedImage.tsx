@@ -54,7 +54,7 @@ export const CachedImage: React.FC<CachedImageProps> = ({ src, fallbackSrc, ...p
   const displaySrc = cachedSrc || (src ? (src.startsWith('http') || src.startsWith('data:') ? src : getFileUrl(src)) : fallbackSrc);
 
   if (!displaySrc) {
-    return <div className={"bg-gray-200 " + (props.className || '')} {...(props as any)} />;
+    return <div className={"bg-surface-variant " + (props.className || '')} {...(props as any)} />;
   }
 
   return <img src={displaySrc} loading="lazy" {...props} />;

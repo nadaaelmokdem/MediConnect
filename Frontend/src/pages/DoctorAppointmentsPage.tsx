@@ -71,13 +71,13 @@ export default function DoctorAppointmentsPage() {
   };
 
   return (
-    <div className="w-full bg-[#FBFAFF] p-4 md:p-8 min-h-screen">
+    <div className="w-full bg-background p-4 md:p-8 min-h-screen">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-bold text-[#2A2455]">Appointments</h1>
-            <p className="text-sm text-gray-500 mt-0.5">View and manage all your patient bookings.</p>
+            <h1 className="text-2xl font-bold text-primary-dark">Appointments</h1>
+            <p className="text-sm text-text-muted mt-0.5">View and manage all your patient bookings.</p>
           </div>
           {hasActiveFilters && (
             <button onClick={clearFilters} className="cursor-pointer flex items-center gap-1.5 text-sm font-medium text-red-500 hover:text-red-700 transition-colors">
@@ -87,8 +87,8 @@ export default function DoctorAppointmentsPage() {
         </div>
 
         {/* Filters Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E6E1FF] p-5 space-y-5">
-          <div className="flex items-center gap-2 text-[#6A5ACD] font-semibold text-sm">
+        <div className="bg-white rounded-2xl shadow-sm border border-surface-variant p-5 space-y-5">
+          <div className="flex items-center gap-2 text-primary font-semibold text-sm">
             <MdFilterList size={18} />
             <span>Filter Appointments</span>
           </div>
@@ -97,25 +97,25 @@ export default function DoctorAppointmentsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Search */}
             <div className="sm:col-span-2 flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-outline-variant flex items-center gap-1">
                 <MdSearch size={13} /> Search Patient
               </label>
               <div className="relative">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant" size={16} />
                 <input
                   type="text"
                   name="search"
                   placeholder="Type a patient name..."
                   value={filters.search}
                   onChange={handleFilterChange}
-                  className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm bg-[#FBFAFF] focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20 transition"
+                  className="w-full pl-9 pr-3 py-2 border border-surface-variant rounded-xl text-sm bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
                 />
               </div>
             </div>
 
             {/* From Date */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-outline-variant flex items-center gap-1">
                 <LuCalendarDays size={13} /> From Date
               </label>
               <input
@@ -123,13 +123,13 @@ export default function DoctorAppointmentsPage() {
                 name="fromDate"
                 value={filters.fromDate}
                 onChange={handleFilterChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-[#FBFAFF] focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20 transition"
+                className="w-full px-3 py-2 border border-surface-variant rounded-xl text-sm bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
 
             {/* To Date */}
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-outline-variant flex items-center gap-1">
                 <LuCalendarDays size={13} /> To Date
               </label>
               <input
@@ -137,7 +137,7 @@ export default function DoctorAppointmentsPage() {
                 name="toDate"
                 value={filters.toDate}
                 onChange={handleFilterChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-[#FBFAFF] focus:outline-none focus:border-[#6A5ACD] focus:ring-2 focus:ring-[#6A5ACD]/20 transition"
+                className="w-full px-3 py-2 border border-surface-variant rounded-xl text-sm bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function DoctorAppointmentsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
             {/* Status pills */}
             <div className="flex flex-col gap-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Status</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-outline-variant">Status</label>
               <div className="flex flex-wrap gap-2">
                 {STATUS_OPTIONS.map((opt) => {
                   const active = filters.status === opt.value;
@@ -156,8 +156,8 @@ export default function DoctorAppointmentsPage() {
                       onClick={() => setFilters(f => ({ ...f, status: opt.value }))}
                       className={`cursor-pointer flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
                         active
-                          ? "bg-[#6A5ACD] text-white border-[#6A5ACD] shadow-sm"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#6A5ACD] hover:text-[#6A5ACD]"
+                          ? "bg-primary text-white border-primary shadow-sm"
+                          : "bg-white text-on-surface-variant border-surface-variant hover:border-primary hover:text-primary"
                       }`}
                     >
                       <MdCircle size={8} className={active ? "text-white" : opt.color} />
@@ -170,7 +170,7 @@ export default function DoctorAppointmentsPage() {
 
             {/* Type pills */}
             <div className="flex flex-col gap-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Consultation Type</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-outline-variant">Consultation Type</label>
               <div className="flex flex-wrap gap-2">
                 {CONSULTATION_TYPE_OPTIONS.map((opt) => {
                   const active = filters.type === opt.value;
@@ -180,8 +180,8 @@ export default function DoctorAppointmentsPage() {
                       onClick={() => setFilters(f => ({ ...f, type: opt.value }))}
                       className={`cursor-pointer flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
                         active
-                          ? "bg-[#6A5ACD] text-white border-[#6A5ACD] shadow-sm"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#6A5ACD] hover:text-[#6A5ACD]"
+                          ? "bg-primary text-white border-primary shadow-sm"
+                          : "bg-white text-on-surface-variant border-surface-variant hover:border-primary hover:text-primary"
                       }`}
                     >
                       {opt.icon}
@@ -195,8 +195,8 @@ export default function DoctorAppointmentsPage() {
 
           {/* Active filter pills */}
           {hasActiveFilters && (
-            <div className="flex flex-wrap gap-2 pt-1 border-t border-gray-50">
-              <span className="text-xs text-gray-400 font-medium mt-1">Active:</span>
+            <div className="flex flex-wrap gap-2 pt-1 border-t border-surface-container">
+              <span className="text-xs text-outline-variant font-medium mt-1">Active:</span>
               {filters.search && <Pill label={`Patient: "${filters.search}"`} onRemove={() => setFilters(f => ({ ...f, search: "" }))} />}
               {filters.status && <Pill label={`Status: ${filters.status}`} onRemove={() => setFilters(f => ({ ...f, status: "" }))} />}
               {filters.type !== "" && <Pill label={`Type: ${getConsultationTypeLabel(filters.type)}`} onRemove={() => setFilters(f => ({ ...f, type: "" }))} />}
@@ -207,14 +207,14 @@ export default function DoctorAppointmentsPage() {
         </div>
 
         {/* Results */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E6E1FF] overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-surface-variant overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-gray-400">
+            <div className="p-12 text-center text-outline-variant">
               <LuCalendarDays className="mx-auto text-3xl mb-3 opacity-30" />
               Loading appointments...
             </div>
           ) : appointments.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 space-y-2">
+            <div className="p-12 text-center text-outline-variant space-y-2">
               <LuCalendarDays className="mx-auto text-4xl opacity-20 mb-3" />
               <p className="font-medium">No appointments found</p>
               <p className="text-sm">{hasActiveFilters ? "Try adjusting or clearing your filters." : "You have no appointments yet."}</p>
@@ -222,11 +222,11 @@ export default function DoctorAppointmentsPage() {
           ) : (
             <div className="overflow-x-auto">
               <div className="min-w-[640px]">
-                <div className="px-6 py-3 bg-[#F8F7FF] border-b border-[#E6E1FF]">
-                  <span className="text-xs font-bold text-[#6A5ACD] uppercase tracking-wider">{appointments.length} result{appointments.length !== 1 ? "s" : ""}</span>
+                <div className="px-6 py-3 bg-surface-container border-b border-surface-variant">
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider">{appointments.length} result{appointments.length !== 1 ? "s" : ""}</span>
                 </div>
-                <table className="w-full text-left text-sm text-gray-600">
-                  <thead className="bg-[#F8F7FF] text-[#2A2455] uppercase text-[11px] tracking-wider">
+                <table className="w-full text-left text-sm text-on-surface-variant">
+                  <thead className="bg-surface-container text-primary-dark uppercase text-[11px] tracking-wider">
                     <tr>
                       <th className="px-6 py-4 font-bold">Patient</th>
                       <th className="px-6 py-4 font-bold">Date & Time</th>
@@ -235,30 +235,30 @@ export default function DoctorAppointmentsPage() {
                       <th className="px-6 py-4 font-bold">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-surface-variant">
                     {appointments.map((app) => (
-                      <tr key={app.appointmentId} className="hover:bg-[#F8F7FF] transition-colors group cursor-default">
+                      <tr key={app.appointmentId} className="hover:bg-surface-container transition-colors group cursor-default">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             {app.patientProfilePictureUrl ? (
-                              <img src={app.patientProfilePictureUrl} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-[#E6E1FF]" />
+                              <img src={app.patientProfilePictureUrl} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-surface-variant" />
                             ) : (
-                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#6A5ACD] to-[#9B8DE8] flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                 {(app.patientName || "P")[0].toUpperCase()}
                               </div>
                             )}
-                            <span className="font-semibold text-gray-800">{app.patientName || "Patient"}</span>
+                            <span className="font-semibold text-primary-dark">{app.patientName || "Patient"}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-semibold text-gray-800">{format(new Date(app.scheduledAt), "MMM d, yyyy")}</div>
-                          <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                          <div className="font-semibold text-primary-dark">{format(new Date(app.scheduledAt), "MMM d, yyyy")}</div>
+                          <div className="text-xs text-outline-variant mt-0.5 flex items-center gap-1">
                             <MdAccessTime size={11} />
                             {format(new Date(app.scheduledAt), "h:mm a")} · {app.durationMins} mins
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full bg-indigo-50 text-indigo-600 font-bold border border-indigo-100 uppercase tracking-wide w-fit">
+                          <span className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full bg-primary/10 text-primary font-bold border border-primary/15 uppercase tracking-wide w-fit">
                             {getConsultationTypeIcon(app.consultationType)}
                             {getConsultationTypeLabel(app.consultationType)}
                           </span>
@@ -273,7 +273,7 @@ export default function DoctorAppointmentsPage() {
                           {isChatConsultation(app.consultationType) && app.sessionId ? (
                             <Link
                               to={`/chat/${app.sessionId}`}
-                              className="flex items-center gap-1.5 text-white bg-[#6A5ACD] hover:bg-[#5140b3] px-4 py-1.5 rounded-lg font-semibold text-sm transition-all shadow-sm group-hover:shadow-md w-fit"
+                              className="flex items-center gap-1.5 text-white bg-primary hover:bg-primary-dark px-4 py-1.5 rounded-lg font-semibold text-sm transition-all shadow-sm group-hover:shadow-md w-fit"
                               title="Open the active chat session with this patient"
                             >
                               <MdChat size={14} /> Open Chat
@@ -281,7 +281,7 @@ export default function DoctorAppointmentsPage() {
                           ) : (
                             <button
                               onClick={() => setSelectedAppointment(app)}
-                              className="cursor-pointer text-[#6A5ACD] bg-[#F8F7FF] hover:bg-[#E6E1FF] px-4 py-1.5 rounded-lg font-semibold text-sm transition-all border border-[#E6E1FF]"
+                              className="cursor-pointer text-primary bg-surface-container hover:bg-surface-variant px-4 py-1.5 rounded-lg font-semibold text-sm transition-all border border-surface-variant"
                               title="View full appointment details"
                             >
                               View Details
@@ -312,7 +312,7 @@ export default function DoctorAppointmentsPage() {
 
 function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="flex items-center gap-1 px-2.5 py-1 bg-[#F0EEFF] text-[#6A5ACD] text-xs font-semibold rounded-full border border-[#D0C9FF]">
+    <span className="flex items-center gap-1 px-2.5 py-1 bg-surface-container text-primary text-xs font-semibold rounded-full border border-primary-light">
       {label}
       <button onClick={onRemove} className="cursor-pointer hover:text-red-500 transition-colors ml-0.5">
         <MdClear size={12} />

@@ -37,11 +37,11 @@ export default function UsersTab() {
       cancelButtonText: 'Cancel',
       buttonsStyling: false,
       customClass: {
-        popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-        title: 'text-xl font-bold mb-2 text-gray-800',
-        htmlContainer: 'text-gray-600 mb-6 m-0',
-        confirmButton: `w-full ${action === "deactivate" ? "bg-red-500 hover:bg-red-600" : "bg-[#6A5ACD] hover:bg-[#5b4dc0]"} text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer`,
-        cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer',
+        popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+        title: 'text-xl font-bold mb-2 text-primary-dark',
+        htmlContainer: 'text-on-surface-variant mb-6 m-0',
+        confirmButton: `w-full ${action === "deactivate" ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary-dark"} text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer`,
+        cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
         actions: 'flex flex-col w-full m-0'
       }
     });
@@ -58,9 +58,9 @@ export default function UsersTab() {
         text: err instanceof Error ? err.message : "Action failed",
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
           confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
         }
       });
@@ -73,11 +73,11 @@ export default function UsersTab() {
   if (error) return <NetworkError message={error} />;
 
   return (
-    <div className="bg-white border border-[#E6E1FF] rounded-2xl overflow-hidden">
+    <div className="bg-white border border-surface-variant rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#F8F7FF] text-left text-[#2A2455]/70">
+            <tr className="bg-surface-container text-left text-primary-dark/70">
               <th className="px-4 py-3 font-semibold">Name</th>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Role</th>
@@ -87,16 +87,16 @@ export default function UsersTab() {
               <th className="px-4 py-3 font-semibold"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F4F1FF]">
+          <tbody className="divide-y divide-surface-container">
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="px-4 py-3 font-medium text-[#2A2455]">{u.fullName}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">{u.email}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">{u.role}</td>
-                <td className="px-4 py-3 text-[#2A2455]/70">
+                <td className="px-4 py-3 font-medium text-primary-dark">{u.fullName}</td>
+                <td className="px-4 py-3 text-primary-dark/70">{u.email}</td>
+                <td className="px-4 py-3 text-primary-dark/70">{u.role}</td>
+                <td className="px-4 py-3 text-primary-dark/70">
                   {new Date(u.createdAt).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-[#2A2455]/70">
+                <td className="px-4 py-3 text-primary-dark/70">
                   {u.totalSpent != null ? formatMoney(u.totalSpent) : "-"}
                 </td>
                 <td className="px-4 py-3">
@@ -117,7 +117,7 @@ export default function UsersTab() {
                     className={`rounded-lg px-3 py-1 text-xs font-semibold disabled:opacity-50 ${
                       u.isActive
                         ? "bg-red-50 text-red-500 hover:bg-red-100"
-                        : "bg-[#6A5ACD] text-white hover:bg-[#5b4dc0]"
+                        : "bg-primary text-white hover:bg-primary-dark"
                     }`}
                   >
                     {u.isActive ? "Deactivate" : "Reactivate"}
@@ -127,7 +127,7 @@ export default function UsersTab() {
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-outline-variant">
                   No users yet.
                 </td>
               </tr>

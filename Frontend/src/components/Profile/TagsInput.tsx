@@ -32,13 +32,13 @@ export const TagsInput: React.FC<TagsInputProps> = ({
         {currentTags.map((tag, idx) => (
           <span
             key={idx}
-            className="flex items-center gap-1 bg-[#F3F0FF] text-[#6A5ACD] px-2 py-1 rounded-md text-sm font-medium"
+            className="flex items-center gap-1 bg-surface-container text-primary px-2 py-1 rounded-md text-sm font-medium"
           >
             {tag}
             <button
               type="button"
               onClick={() => handleRemoveTag(tag)}
-              className="text-[#6A5ACD] hover:text-red-500 cursor-pointer"
+              className="text-primary hover:text-red-500 cursor-pointer"
             >
               <FiX size={14} />
             </button>
@@ -48,7 +48,7 @@ export const TagsInput: React.FC<TagsInputProps> = ({
       <div className="flex gap-2">
         {tagOptions ? (
           <select
-            className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-sm font-medium text-[#2A2455] focus:outline-none cursor-pointer"
+            className="w-full bg-background border border-primary rounded px-2 py-1 text-sm font-medium text-primary-dark focus:outline-none cursor-pointer"
             onChange={(e) => {
               if (e.target.value) {
                 handleAddTag(e.target.value);
@@ -77,7 +77,7 @@ export const TagsInput: React.FC<TagsInputProps> = ({
                   e.currentTarget.value = "";
                 }
               }}
-              className="w-full bg-[#FBFAFF] border border-[#6A5ACD] rounded px-2 py-1 text-sm font-medium text-[#2A2455] focus:outline-none"
+              className="w-full bg-background border border-primary rounded px-2 py-1 text-sm font-medium text-primary-dark focus:outline-none"
               placeholder="Type and press Enter to add"
             />
             <button
@@ -89,7 +89,7 @@ export const TagsInput: React.FC<TagsInputProps> = ({
                   input.value = "";
                 }
               }}
-              className="p-1.5 bg-[#6A5ACD] text-white rounded hover:bg-[#2A2455] text-sm whitespace-nowrap cursor-pointer"
+              className="p-1.5 bg-primary text-white rounded hover:bg-primary-dark text-sm whitespace-nowrap cursor-pointer"
             >
               Add
             </button>

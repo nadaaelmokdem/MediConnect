@@ -83,9 +83,9 @@ export default function DoctorVerificationTab() {
         text: err instanceof Error ? err.message : "Failed to load details",
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
           confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
         }
       });
@@ -108,12 +108,12 @@ export default function DoctorVerificationTab() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-4 text-gray-800 text-left w-full',
-          inputLabel: 'text-sm font-bold text-gray-700 mb-1.5 ml-1 text-left w-full block',
-          input: 'w-full border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-[#6A5ACD]/20 focus:border-[#6A5ACD] p-3 border bg-gray-50 font-medium text-gray-700 outline-none transition-all resize-none min-h-[100px]',
-          confirmButton: `w-full bg-[#6A5ACD] hover:bg-[#5b4dc0] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-sm mt-2 cursor-pointer`,
-          cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
+          inputLabel: 'text-sm font-bold text-on-surface mb-1.5 ml-1 text-left w-full block',
+          input: 'w-full border-surface-variant rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary p-3 border bg-surface-container font-medium text-on-surface outline-none transition-all resize-none min-h-[100px]',
+          confirmButton: `w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-sm mt-2 cursor-pointer`,
+          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
           actions: 'flex flex-col w-full m-0'
         },
         inputValidator: (v) => (!v ? "A comment is required" : undefined),
@@ -129,10 +129,10 @@ export default function DoctorVerificationTab() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-          title: 'text-xl font-bold mb-2 text-gray-800',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+          title: 'text-xl font-bold mb-2 text-primary-dark',
           confirmButton: 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-          cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer',
+          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
           actions: 'flex flex-col w-full m-0'
         }
       });
@@ -161,9 +161,9 @@ export default function DoctorVerificationTab() {
         text: err instanceof Error ? err.message : "Action failed",
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
           confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
         }
       });
@@ -186,12 +186,12 @@ export default function DoctorVerificationTab() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-4 text-gray-800 text-left w-full',
-          inputLabel: 'text-sm font-bold text-gray-700 mb-1.5 ml-1 text-left w-full block',
-          input: 'w-full border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 p-3 border bg-gray-50 font-medium text-gray-700 outline-none transition-all resize-none min-h-[100px]',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
+          inputLabel: 'text-sm font-bold text-on-surface mb-1.5 ml-1 text-left w-full block',
+          input: 'w-full border-surface-variant rounded-xl shadow-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 p-3 border bg-surface-container font-medium text-on-surface outline-none transition-all resize-none min-h-[100px]',
           confirmButton: `w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-sm mt-2 cursor-pointer`,
-          cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer',
+          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
           actions: 'flex flex-col w-full m-0'
         },
         inputValidator: (v) => (!v ? "A reason is required" : undefined),
@@ -208,11 +208,11 @@ export default function DoctorVerificationTab() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-          title: 'text-xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
-          confirmButton: 'w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-          cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+          title: 'text-xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
+          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
+          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
           actions: 'flex flex-col w-full m-0'
         }
       });
@@ -247,9 +247,9 @@ export default function DoctorVerificationTab() {
         text: err instanceof Error ? err.message : "Action failed",
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-gray-100',
-          title: 'text-2xl font-bold mb-2 text-gray-800',
-          htmlContainer: 'text-gray-600 mb-6 m-0',
+          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
+          title: 'text-2xl font-bold mb-2 text-primary-dark',
+          htmlContainer: 'text-on-surface-variant mb-6 m-0',
           confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
         }
       });
@@ -268,11 +268,11 @@ export default function DoctorVerificationTab() {
   });
 
   return (
-    <div className="bg-white border border-[#E6E1FF] rounded-2xl p-5">
+    <div className="bg-white border border-surface-variant rounded-2xl p-5">
       {sortedDoctors.length === 0 ? (
-        <p className="text-sm text-gray-400">No doctors registered yet.</p>
+        <p className="text-sm text-outline-variant">No doctors registered yet.</p>
       ) : (
-        <ul className="divide-y divide-[#F4F1FF]">
+        <ul className="divide-y divide-surface-container">
           {sortedDoctors.map((d) => {
             const isExpanded = expandedId === d.doctorId;
             const detail = details[d.doctorId];
@@ -283,7 +283,7 @@ export default function DoctorVerificationTab() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-[#2A2455]">{d.fullName}</p>
+                      <p className="font-semibold text-primary-dark">{d.fullName}</p>
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLES[d.verificationStatus] ?? ""}`}
                       >
@@ -295,17 +295,17 @@ export default function DoctorVerificationTab() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-[#2A2455]/60 mt-1">
+                    <p className="text-sm text-primary-dark/60 mt-1">
                       License {d.licenseNumber || "—"} · {d.clinicLocation || "—"} · {d.yearsOfExperience} yrs exp
                     </p>
                     {d.adminComment && (
-                      <p className="text-xs text-[#2A2455]/50 mt-1 italic">&ldquo;{d.adminComment}&rdquo;</p>
+                      <p className="text-xs text-primary-dark/50 mt-1 italic">&ldquo;{d.adminComment}&rdquo;</p>
                     )}
                   </div>
                   <div className="flex gap-2 shrink-0 items-center">
                     <button
                       onClick={() => toggleExpand(d.doctorId)}
-                      className="rounded-lg border border-[#E6E1FF] px-3 py-1 text-sm text-[#2A2455] hover:bg-[#F8F7FF] flex items-center gap-1"
+                      className="rounded-lg border border-surface-variant px-3 py-1 text-sm text-primary-dark hover:bg-surface-container flex items-center gap-1"
                     >
                       Review
                       {isExpanded ? <MdExpandLess size={18} /> : <MdExpandMore size={18} />}
@@ -314,29 +314,29 @@ export default function DoctorVerificationTab() {
                 </div>
 
                 {isExpanded && (
-                  <div className="mt-4 rounded-xl border border-[#E6E1FF] bg-[#F8F7FF]/60 p-4 space-y-4">
+                  <div className="mt-4 rounded-xl border border-surface-variant bg-surface-container/60 p-4 space-y-4">
                     {loadingDetailId === d.doctorId ? (
                       <Skeleton className="h-32 w-full" />
                     ) : (
                       <>
                         {doctorChanges.length > 0 && (
                           <div>
-                            <h4 className="text-sm font-semibold text-[#2A2455] mb-2">Recent sensitive changes</h4>
+                            <h4 className="text-sm font-semibold text-primary-dark mb-2">Recent sensitive changes</h4>
                             <ul className="space-y-2">
                               {doctorChanges.map((c) => (
                                 <li
                                   key={c.changeLogId}
-                                  className="text-sm bg-white rounded-lg border border-[#E6E1FF] px-3 py-2"
+                                  className="text-sm bg-white rounded-lg border border-surface-variant px-3 py-2"
                                 >
                                   <div className="flex justify-between gap-2">
-                                    <span className="font-medium text-[#2A2455]">
+                                    <span className="font-medium text-primary-dark">
                                       {FIELD_LABELS[c.fieldName] ?? c.fieldName}
                                     </span>
-                                    <span className="text-xs text-[#2A2455]/50 shrink-0">
+                                    <span className="text-xs text-primary-dark/50 shrink-0">
                                       {new Date(c.changedAt).toLocaleString()}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-[#2A2455]/70 mt-1">
+                                  <p className="text-xs text-primary-dark/70 mt-1">
                                     <span className="line-through opacity-60">{formatFieldValue(c.fieldName, c.oldValue)}</span>
                                     {" → "}
                                     <span className="font-medium">{formatFieldValue(c.fieldName, c.newValue)}</span>
@@ -350,27 +350,27 @@ export default function DoctorVerificationTab() {
                         {detail && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                             <div>
-                              <span className="text-[#2A2455]/50">National ID</span>
-                              <p className="font-medium text-[#2A2455]">{detail.nationalIdNumber || "—"}</p>
+                              <span className="text-primary-dark/50">National ID</span>
+                              <p className="font-medium text-primary-dark">{detail.nationalIdNumber || "—"}</p>
                             </div>
                             <div>
-                              <span className="text-[#2A2455]/50">License expiry</span>
-                              <p className="font-medium text-[#2A2455]">
+                              <span className="text-primary-dark/50">License expiry</span>
+                              <p className="font-medium text-primary-dark">
                                 {detail.licenseExpiryDate
                                   ? new Date(detail.licenseExpiryDate).toLocaleDateString()
                                   : "—"}
                               </p>
                             </div>
                             <div className="md:col-span-2">
-                              <span className="text-[#2A2455]/50">Specialties</span>
-                              <p className="font-medium text-[#2A2455]">
+                              <span className="text-primary-dark/50">Specialties</span>
+                              <p className="font-medium text-primary-dark">
                                 {detail.specialties.map((s) => s.name).join(", ") || "—"}
                               </p>
                             </div>
                             {detail.bio && (
                               <div className="md:col-span-2">
-                                <span className="text-[#2A2455]/50">Bio</span>
-                                <p className="font-medium text-[#2A2455]">{detail.bio}</p>
+                                <span className="text-primary-dark/50">Bio</span>
+                                <p className="font-medium text-primary-dark">{detail.bio}</p>
                               </div>
                             )}
                             <div className="md:col-span-2 flex flex-wrap gap-2">
@@ -404,11 +404,11 @@ export default function DoctorVerificationTab() {
                           </div>
                         )}
 
-                        <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E6E1FF]">
+                        <div className="flex flex-wrap gap-2 pt-2 border-t border-surface-variant">
                           <button
                             disabled={actioningId === d.doctorId}
                             onClick={() => handleDecision(d, "Approved")}
-                            className="rounded-lg bg-[#6A5ACD] px-3 py-1.5 text-sm text-white hover:bg-[#5b4dc0] disabled:opacity-50"
+                            className="rounded-lg bg-primary px-3 py-1.5 text-sm text-white hover:bg-primary-dark disabled:opacity-50"
                           >
                             Approve
                           </button>
@@ -422,7 +422,7 @@ export default function DoctorVerificationTab() {
                           <button
                             disabled={actioningId === d.doctorId}
                             onClick={() => handleDecision(d, "Rejected")}
-                            className="rounded-lg bg-[#F4F1FF] px-3 py-1.5 text-sm text-[#2A2455] hover:bg-[#E6E1FF] disabled:opacity-50"
+                            className="rounded-lg bg-surface-container px-3 py-1.5 text-sm text-primary-dark hover:bg-surface-variant disabled:opacity-50"
                           >
                             Reject
                           </button>
@@ -431,7 +431,7 @@ export default function DoctorVerificationTab() {
                             <button
                               disabled={actioningId === d.doctorId}
                               onClick={() => handleAdvancedAction(d, "revert")}
-                              className="rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100 disabled:opacity-50 ml-auto border border-blue-200"
+                              className="rounded-lg bg-primary/10 px-3 py-1.5 text-sm text-primary hover:bg-primary/15 disabled:opacity-50 ml-auto border border-primary/20"
                             >
                               Revert to Old Data
                             </button>
@@ -463,7 +463,7 @@ function ProofLink({ label, url }: { label: string; url: string }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-[#E6E1FF] text-sm font-medium text-[#6A5ACD] hover:bg-[#F4F1FF]"
+      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-surface-variant text-sm font-medium text-primary hover:bg-surface-container"
     >
       {label}
       <MdOpenInNew size={14} />

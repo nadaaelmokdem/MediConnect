@@ -157,39 +157,39 @@ export default function DoctorChatPage() {
   }, [numericSessionId, sessions]);
 
   return (
-    <main className="flex-1 flex overflow-hidden max-w-[1440px] mx-auto w-full h-[calc(100dvh-64px)] lg:h-dvh bg-[#fcf8ff]">
+    <main className="flex-1 flex overflow-hidden max-w-[1440px] mx-auto w-full h-[calc(100dvh-64px)] lg:h-dvh bg-surface-bright">
       
       {/* Left Sidebar */}
       <aside className={`
-        flex flex-col bg-white border-r border-[#e5deff] transition-all duration-300 ease-in-out shrink-0
+        flex flex-col bg-white border-r border-surface-variant transition-all duration-300 ease-in-out shrink-0
         ${isSidebarOpen 
           ? `w-full md:w-[350px] lg:w-[400px] translate-x-0 ${numericSessionId ? 'hidden md:flex' : 'flex'}`
           : `w-0 overflow-hidden border-none -translate-x-full md:translate-x-0 hidden md:flex`
         }
       `}>
-        <div className="p-4 border-b border-[#e5deff] w-full md:w-[350px] lg:w-[400px]">
+        <div className="p-4 border-b border-surface-variant w-full md:w-[350px] lg:w-[400px]">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-[#1a1345] flex items-center gap-2">
-              <FaUserMd className="text-[#6a5acd]" /> {isDoctor ? "My Patients" : "Chats"}
+            <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
+              <FaUserMd className="text-primary" /> {isDoctor ? "My Patients" : "Chats"}
             </h2>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="cursor-pointer p-2 -mr-2 text-[#474553] hover:bg-[#eae5ff] hover:text-[#5140b3] rounded-lg transition-colors hidden md:block"
+              className="cursor-pointer p-2 -mr-2 text-on-surface-variant hover:bg-surface-container-high hover:text-primary-dark rounded-lg transition-colors hidden md:block"
             >
               <TbLayoutSidebarLeftCollapse className="text-[20px]" />
             </button>
           </div>
           
-          <div className="flex bg-[#f8f7ff] rounded-lg p-1 gap-1 border border-[#e5deff] mb-3">
+          <div className="flex bg-surface-container rounded-lg p-1 gap-1 border border-surface-variant mb-3">
             <button 
               onClick={() => setActiveTab("contacts")}
-              className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === "contacts" ? 'bg-white text-[#6a5acd] shadow-sm border border-[#e5deff]' : 'text-[#787584] hover:text-[#1a1345]'}`}
+              className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === "contacts" ? 'bg-white text-primary shadow-sm border border-surface-variant' : 'text-outline hover:text-on-surface'}`}
             >
               <FaUsers /> {isDoctor ? "By Patient" : "By Doctor"}
             </button>
             <button 
               onClick={() => setActiveTab("recent")}
-              className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === "recent" ? 'bg-white text-[#6a5acd] shadow-sm border border-[#e5deff]' : 'text-[#787584] hover:text-[#1a1345]'}`}
+              className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === "recent" ? 'bg-white text-primary shadow-sm border border-surface-variant' : 'text-outline hover:text-on-surface'}`}
             >
               <FaRegClock /> Recent
             </button>
@@ -198,14 +198,14 @@ export default function DoctorChatPage() {
           {!isDoctor && (
             <div className="flex items-center justify-end px-1 pb-1">
               <label className="flex items-center cursor-pointer relative">
-                <span className="mr-2 text-sm font-medium text-[#474553]">Include AI</span>
+                <span className="mr-2 text-sm font-medium text-on-surface-variant">Include AI</span>
                 <input 
                   type="checkbox" 
                   checked={includeAI}
                   onChange={(e) => setIncludeAI(e.target.checked)}
                   className="sr-only"
                 />
-                <div className={`w-9 h-5 rounded-full transition-colors ${includeAI ? 'bg-[#6a5acd]' : 'bg-gray-300'}`}>
+                <div className={`w-9 h-5 rounded-full transition-colors ${includeAI ? 'bg-primary' : 'bg-outline-variant'}`}>
                   <div className={`w-3.5 h-3.5 bg-white rounded-full mt-[3px] ml-1 shadow-sm transform transition-transform ${includeAI ? 'translate-x-3.5' : 'translate-x-0'}`}></div>
                 </div>
               </label>
@@ -216,23 +216,23 @@ export default function DoctorChatPage() {
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {activeTab === "recent" && (
             recentSessions.length === 0 ? (
-              <p className="text-center text-[#787584] text-sm mt-6">No recent messages.</p>
+              <p className="text-center text-outline text-sm mt-6">No recent messages.</p>
             ) : (
               recentSessions.map(session => (
                 <div 
                   key={session.sessionId}
                   onClick={() => navigate(`/chat/${session.sessionId}`)}
-                  className={`p-4 rounded-xl cursor-pointer transition-all border ${numericSessionId === session.sessionId ? 'bg-[#f0ebff] border-[#b8a7ff]' : 'bg-white border-[#f0ebff] hover:border-[#b8a7ff] hover:shadow-sm'}`}
+                  className={`p-4 rounded-xl cursor-pointer transition-all border ${numericSessionId === session.sessionId ? 'bg-surface-container border-primary-light' : 'bg-white border-surface-container hover:border-primary-light hover:shadow-sm'}`}
                 >
                   <div className="flex justify-between items-start mb-1.5 gap-2">
-                    <span className="font-bold text-[#1a1345] text-sm break-words whitespace-normal">
+                    <span className="font-bold text-on-surface text-sm break-words whitespace-normal">
                       {!isDoctor && session.otherPartyUserId !== "AI" && !session.otherPartyName.startsWith("Dr.") ? `Dr. ${session.otherPartyName}` : session.otherPartyName}
                     </span>
-                    <span className="text-xs font-medium text-[#787584] shrink-0">
+                    <span className="text-xs font-medium text-outline shrink-0">
                       {session.lastMessageTime ? formatChatSessionTime(session.lastMessageTime) : ''}
                     </span>
                   </div>
-                  <p className="text-sm text-[#474553] line-clamp-2">{formatMessagePreview(session.lastMessage) || "No messages"}</p>
+                  <p className="text-sm text-on-surface-variant line-clamp-2">{formatMessagePreview(session.lastMessage) || "No messages"}</p>
                 </div>
               ))
             )
@@ -240,39 +240,39 @@ export default function DoctorChatPage() {
 
           {activeTab === "contacts" && (
             groupedContacts.length === 0 ? (
-              <p className="text-center text-[#787584] text-sm mt-6">No chats found.</p>
+              <p className="text-center text-outline text-sm mt-6">No chats found.</p>
             ) : (
               groupedContacts.map(contact => (
-                <div key={contact.id} className={`bg-white rounded-xl transition-all border ${expandedContactId === contact.id ? 'border-[#b8a7ff] shadow-sm mb-3' : 'border-[#f0ebff] mb-2 hover:border-[#b8a7ff]'}`}>
+                <div key={contact.id} className={`bg-white rounded-xl transition-all border ${expandedContactId === contact.id ? 'border-primary-light shadow-sm mb-3' : 'border-surface-container mb-2 hover:border-primary-light'}`}>
                   <button 
                     onClick={() => setExpandedContactId(expandedContactId === contact.id ? null : contact.id)}
                     className="w-full p-4 flex justify-between items-center bg-transparent transition-colors rounded-xl"
                   >
                     <div className="flex flex-col text-left">
-                      <span className="font-bold text-[#1a1345] text-[15px] break-words whitespace-normal">{contact.name}</span>
+                      <span className="font-bold text-on-surface text-[15px] break-words whitespace-normal">{contact.name}</span>
                       {contact.specialty && (
-                        <span className="text-[12px] font-medium text-[#787584] mt-0.5">{contact.specialty}</span>
+                        <span className="text-[12px] font-medium text-outline mt-0.5">{contact.specialty}</span>
                       )}
-                      <span className="text-[13px] font-medium text-[#6a5acd] mt-1">{contact.sessions.length} Session{contact.sessions.length !== 1 ? 's' : ''}</span>
+                      <span className="text-[13px] font-medium text-primary mt-1">{contact.sessions.length} Session{contact.sessions.length !== 1 ? 's' : ''}</span>
                     </div>
-                    <FaChevronRight className={`text-[#474553] text-sm transition-transform ${expandedContactId === contact.id ? 'rotate-90' : ''}`} />
+                    <FaChevronRight className={`text-on-surface-variant text-sm transition-transform ${expandedContactId === contact.id ? 'rotate-90' : ''}`} />
                   </button>
                   
                   {expandedContactId === contact.id && (
-                    <div className="bg-[#f8f7ff] p-3 border-t border-[#e5deff] space-y-2 rounded-b-xl">
+                    <div className="bg-surface-container p-3 border-t border-surface-variant space-y-2 rounded-b-xl">
                       {contact.sessions.map((session, idx) => (
                         <div 
                           key={session.sessionId}
                           onClick={() => navigate(`/chat/${session.sessionId}`)}
-                          className={`p-3 rounded-lg cursor-pointer transition-colors border ${numericSessionId === session.sessionId ? 'bg-white border-[#6a5acd] shadow-sm' : 'bg-white border-[#e5deff] hover:border-[#b8a7ff]'}`}
+                          className={`p-3 rounded-lg cursor-pointer transition-colors border ${numericSessionId === session.sessionId ? 'bg-white border-primary shadow-sm' : 'bg-white border-surface-variant hover:border-primary-light'}`}
                         >
                           <div className="flex justify-between items-center mb-1">
-                            <span className={`text-sm font-bold ${numericSessionId === session.sessionId ? 'text-[#6a5acd]' : 'text-[#1a1345]'}`}>Session {contact.sessions.length - idx}</span>
-                            <span className="text-[11px] font-semibold text-[#787584] bg-[#eae5ff] px-2 py-0.5 rounded-full">
+                            <span className={`text-sm font-bold ${numericSessionId === session.sessionId ? 'text-primary' : 'text-on-surface'}`}>Session {contact.sessions.length - idx}</span>
+                            <span className="text-[11px] font-semibold text-outline bg-surface-container-high px-2 py-0.5 rounded-full">
                               {session.lastMessageTime ? formatChatSessionTime(session.lastMessageTime) : 'New'}
                             </span>
                           </div>
-                          <p className="text-xs text-[#474553] line-clamp-1 font-medium">{formatMessagePreview(session.lastMessage) || "No messages"}</p>
+                          <p className="text-xs text-on-surface-variant line-clamp-1 font-medium">{formatMessagePreview(session.lastMessage) || "No messages"}</p>
                         </div>
                       ))}
                     </div>
@@ -285,7 +285,7 @@ export default function DoctorChatPage() {
       </aside>
 
       {/* Right Chat Pane */}
-      <section className={`flex-1 flex flex-col bg-[#fcf8ff] relative min-w-0 ${!numericSessionId ? 'hidden md:flex' : 'flex'}`}>
+      <section className={`flex-1 flex flex-col bg-surface-bright relative min-w-0 ${!numericSessionId ? 'hidden md:flex' : 'flex'}`}>
         {numericSessionId ? (
           <ActiveChatPane 
             numericSessionId={numericSessionId} 
@@ -300,17 +300,17 @@ export default function DoctorChatPage() {
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative">
              {!isSidebarOpen && (
                <button
-                 className="absolute top-4 left-4 cursor-pointer p-2 text-[#474553] hover:text-[#5140b3] hover:bg-[#eae5ff] rounded-lg transition-colors hidden md:block"
+                 className="absolute top-4 left-4 cursor-pointer p-2 text-on-surface-variant hover:text-primary-dark hover:bg-surface-container-high rounded-lg transition-colors hidden md:block"
                  onClick={() => setIsSidebarOpen(true)}
                >
                  <TbLayoutSidebarRightCollapse className="text-[24px]" />
                </button>
              )}
-             <div className="w-24 h-24 bg-[#f0ebff] rounded-full flex items-center justify-center mb-6 shadow-inner border border-[#e5deff]">
-               <FaUserMd className="text-4xl text-[#6a5acd]" />
+             <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-6 shadow-inner border border-surface-variant">
+               <FaUserMd className="text-4xl text-primary" />
              </div>
-             <h3 className="text-2xl font-extrabold text-[#1a1345] mb-2 tracking-tight">{isDoctor ? "Doctor Messages" : "Chats"}</h3>
-             <p className="text-[#474553] max-w-md font-medium text-sm leading-relaxed">Select a {isDoctor ? "patient" : "doctor or AI chat"} or a recent consultation session from the sidebar to view the conversation and reply.</p>
+             <h3 className="text-2xl font-extrabold text-on-surface mb-2 tracking-tight">{isDoctor ? "Doctor Messages" : "Chats"}</h3>
+             <p className="text-on-surface-variant max-w-md font-medium text-sm leading-relaxed">Select a {isDoctor ? "patient" : "doctor or AI chat"} or a recent consultation session from the sidebar to view the conversation and reply.</p>
           </div>
         )}
       </section>
@@ -399,17 +399,17 @@ function ActiveChatPane({
     if (!assessment) return;
     Swal.fire({
       title: "AI Clinic Assessment",
-      html: `<div class="text-left bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm whitespace-pre-wrap max-h-60 overflow-y-auto text-gray-700 font-medium">${assessment}</div>`,
+      html: `<div class="text-left bg-surface-container p-4 rounded-xl border border-surface-variant text-sm whitespace-pre-wrap max-h-60 overflow-y-auto text-on-surface font-medium">${assessment}</div>`,
       showCancelButton: true,
       confirmButtonText: "Send to Doctor",
       cancelButtonText: "Cancel",
       buttonsStyling: false,
       customClass: {
-        popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-md w-full border border-gray-100',
-        title: 'text-2xl font-bold mb-4 text-gray-800 text-left w-full',
+        popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-md w-full border border-surface-variant',
+        title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
         htmlContainer: 'w-full m-0',
-        confirmButton: 'w-full mt-6 bg-[#6a5acd] hover:bg-[#5b4eb8] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
-        cancelButton: 'w-full mt-3 py-3 text-gray-500 font-semibold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors',
+        confirmButton: 'w-full mt-6 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
+        cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors',
         actions: 'flex flex-col gap-0 w-full mt-2'
       }
     }).then(async (result) => {
@@ -426,13 +426,13 @@ function ActiveChatPane({
 
   return (
     <>
-      <div className="bg-white px-4 sm:px-6 py-4 border-b border-[#e5deff] flex items-center gap-3 sticky top-0 z-20 shadow-sm shrink-0">
-        <button onClick={onBack} className="md:hidden text-[#474553] p-1 -ml-2 rounded-lg hover:bg-[#eae5ff] transition-colors">
+      <div className="bg-white px-4 sm:px-6 py-4 border-b border-surface-variant flex items-center gap-3 sticky top-0 z-20 shadow-sm shrink-0">
+        <button onClick={onBack} className="md:hidden text-on-surface-variant p-1 -ml-2 rounded-lg hover:bg-surface-container-high transition-colors">
           <TbArrowLeft className="text-2xl" />
         </button>
         {!isSidebarOpen && (
           <button
-            className="hidden md:block cursor-pointer p-2 -ml-2 mr-1 text-[#474553] hover:text-[#5140b3] hover:bg-[#eae5ff] rounded-lg transition-colors"
+            className="hidden md:block cursor-pointer p-2 -ml-2 mr-1 text-on-surface-variant hover:text-primary-dark hover:bg-surface-container-high rounded-lg transition-colors"
             onClick={onOpenSidebar}
           >
             <TbLayoutSidebarRightCollapse className="text-[24px]" />
@@ -448,16 +448,16 @@ function ActiveChatPane({
               />
             </div>
           ) : (
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8a7cf0] to-[#6a5acd] text-white flex items-center justify-center font-bold shadow-md text-lg border-2 border-white">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary-light to-primary text-white flex items-center justify-center font-bold shadow-md text-lg border-2 border-white">
                {contact.name.replace("Dr. ", "").charAt(0)}
             </div>
           )}
           <div>
-            <h2 className="font-extrabold text-[#1a1345] leading-tight text-[17px]">
+            <h2 className="font-extrabold text-on-surface leading-tight text-[17px]">
               {!isDoctor && contact.doctorId && contact.name !== "AI Medical Assistant" ? (
                 <span 
                   onClick={() => navigate(`/doctors/${contact.doctorId}`)} 
-                  className="hover:underline hover:text-[#6a5acd] cursor-pointer"
+                  className="hover:underline hover:text-primary cursor-pointer"
                   title="View Profile"
                 >
                   {contact.name}
@@ -467,14 +467,14 @@ function ActiveChatPane({
               )}
             </h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={`w-2 h-2 rounded-full ${contact.online ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-gray-400"}`}></span>
-              <span className="text-[12px] font-semibold text-[#787584]">
+              <span className={`w-2 h-2 rounded-full ${contact.online ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-outline-variant"}`}></span>
+              <span className="text-[12px] font-semibold text-outline">
                 {contact.online ? "Online" : "Offline"}
               </span>
               {!isDoctor && contact.specialty && (
                 <>
-                  <span className="text-[#e5deff]">|</span>
-                  <span className="text-[12px] font-semibold text-[#6a5acd]">{contact.specialty}</span>
+                  <span className="text-surface-variant">|</span>
+                  <span className="text-[12px] font-semibold text-primary">{contact.specialty}</span>
                 </>
               )}
             </div>
@@ -482,7 +482,7 @@ function ActiveChatPane({
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 bg-[#fcf8ff]">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 bg-surface-bright">
         {!isDoctor && sessionDetails?.isCompanyPaid && (
           <div className="bg-green-100 border border-green-300 text-green-800 p-3 rounded-lg text-sm mb-2 text-center">
             You can only send exactly one message. Make sure to describe your issue completely.
@@ -520,7 +520,7 @@ function ActiveChatPane({
         )}
 
         {displayMessages.length === 0 ? (
-          <p className="text-sm text-[#787584] text-center mt-8 font-medium">
+          <p className="text-sm text-outline text-center mt-8 font-medium">
             No messages yet.
           </p>
         ) : (
@@ -533,10 +533,10 @@ function ActiveChatPane({
       </div>
 
       {showAssessmentButton && (
-        <div className="bg-[#f3f0ff] border-t border-[#e5deff] p-3 flex justify-center items-center shrink-0">
+        <div className="bg-surface-container border-t border-surface-variant p-3 flex justify-center items-center shrink-0">
           <button 
             onClick={handleSendAssessment}
-            className="flex items-center gap-2 bg-[#6a5acd] hover:bg-[#5b4eb8] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm transition-colors"
+            className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />

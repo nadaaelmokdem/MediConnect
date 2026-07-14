@@ -440,13 +440,13 @@ const DoctorsPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => confirmStartChat(false)}
-                    className="w-full text-left p-4 rounded-xl border-2 border-blue-100 hover:border-blue-500 bg-blue-50 hover:bg-blue-100 transition-all group"
+                    className="w-full text-left p-4 rounded-xl border-2 border-primary/15 hover:border-primary bg-primary/5 hover:bg-primary/10 transition-all group"
                   >
-                    <div className="font-bold text-blue-700 mb-1 flex justify-between items-center">
+                    <div className="font-bold text-primary-dark mb-1 flex justify-between items-center">
                       <span>Paid Chat Session</span>
                       <span className="text-primary font-extrabold">{selectedDoctorForChat.chatPrice} EGP</span>
                     </div>
-                    <p className="text-sm text-blue-600 leading-snug">Start a standard 24-hour consultation session with unlimited messages.</p>
+                    <p className="text-sm text-primary/80 leading-snug">Start a standard 24-hour consultation session with unlimited messages.</p>
                   </button>
                 </div>
               </>

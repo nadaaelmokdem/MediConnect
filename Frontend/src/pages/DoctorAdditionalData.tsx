@@ -142,17 +142,17 @@ export default function DoctorAdditionalData() {
   const renderProofPreview = (file: File | null, url: string) => {
     if (file) {
       if (file.type.startsWith("image/")) {
-        return <img src={URL.createObjectURL(file)} alt="Preview" className="h-16 w-16 object-cover rounded mt-2 border border-[#e5deff]" />;
+        return <img src={URL.createObjectURL(file)} alt="Preview" className="h-16 w-16 object-cover rounded mt-2 border border-surface-variant" />;
       }
       if (file.type === "application/pdf") {
-        return <div className="mt-2 flex items-center gap-2 text-[#5140b3] font-medium"><MdAssignment className="text-xl" /> <span>{file.name}</span></div>;
+        return <div className="mt-2 flex items-center gap-2 text-primary-dark font-medium"><MdAssignment className="text-xl" /> <span>{file.name}</span></div>;
       }
     }
     if (url) {
       if (url.toLowerCase().endsWith(".pdf") || url.includes(".pdf?")) {
-        return <div className="mt-2 text-[12px] flex items-center gap-2">Current proof: <a href={getFileUrl(url)} target="_blank" rel="noreferrer" className="text-[#5140b3] font-medium underline flex items-center gap-1"><MdAssignment/> View PDF</a></div>;
+        return <div className="mt-2 text-[12px] flex items-center gap-2">Current proof: <a href={getFileUrl(url)} target="_blank" rel="noreferrer" className="text-primary-dark font-medium underline flex items-center gap-1"><MdAssignment/> View PDF</a></div>;
       }
-      return <div className="mt-2 text-[12px] flex items-center gap-2">Current proof: <a href={getFileUrl(url)} target="_blank" rel="noreferrer" className="text-[#5140b3] font-medium underline"><CachedImage src={url} alt="Current Preview" className="h-16 w-16 object-cover rounded border border-[#e5deff]" /></a></div>;
+      return <div className="mt-2 text-[12px] flex items-center gap-2">Current proof: <a href={getFileUrl(url)} target="_blank" rel="noreferrer" className="text-primary-dark font-medium underline"><CachedImage src={url} alt="Current Preview" className="h-16 w-16 object-cover rounded border border-surface-variant" /></a></div>;
     }
     return null;
   };
@@ -360,7 +360,7 @@ export default function DoctorAdditionalData() {
   };
 
   return (
-    <div className="bg-[#fcf8ff] text-[#1a1345] text-[15px] lg:text-[16px] leading-[24px] font-normal antialiased h-screen max-h-screen overflow-hidden flex flex-col selection:bg-[#6a5acd] selection:text-[#f0ebff]">
+    <div className="bg-surface-bright text-on-surface text-[15px] lg:text-[16px] leading-[24px] font-normal antialiased h-screen max-h-screen overflow-hidden flex flex-col selection:bg-primary selection:text-surface-container">
       <main className="flex-grow flex w-full h-full relative overflow-hidden">
         {/* Background Image Layer */}
         <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
@@ -395,10 +395,10 @@ export default function DoctorAdditionalData() {
           <div className="w-full lg:w-[65%] h-full flex items-center justify-center p-4 lg:p-8 ml-auto overflow-hidden">
             <div className="w-full max-w-3xl flex flex-col gap-4 lg:gap-5 bg-white/95 backdrop-blur-md p-6 lg:p-10 rounded-3xl shadow-2xl border border-white/20 max-h-[96vh] overflow-y-auto custom-scrollbar">
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-1.5 pb-2">
-                <h1 className="text-[24px] lg:text-[28px] leading-[30px] lg:leading-[36px] font-bold text-[#1a1345]">
+                <h1 className="text-[24px] lg:text-[28px] leading-[30px] lg:leading-[36px] font-bold text-on-surface">
                   Welcome, Dr. {user?.fullName}!
                 </h1>
-                <p className="text-[14px] leading-[20px] text-[#474553]">
+                <p className="text-[14px] leading-[20px] text-on-surface-variant">
                   Please fulfill your credential application below to finalize
                   verification processes on our network.
                 </p>
@@ -412,26 +412,26 @@ export default function DoctorAdditionalData() {
                 {globalError && <ErrorBanner message={globalError} />}
 
                 {/* Section 1: Profile Information */}
-                <section className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5deff] space-y-5">
-                   <div className="border-b border-[#e5deff] pb-3">
-                     <h2 className="text-lg font-bold text-[#1a1345]">Profile Information</h2>
-                     <p className="text-sm text-[#787584]">Your basic professional details.</p>
+                <section className="bg-white p-6 rounded-2xl shadow-sm border border-surface-variant space-y-5">
+                   <div className="border-b border-surface-variant pb-3">
+                     <h2 className="text-lg font-bold text-on-surface">Profile Information</h2>
+                     <p className="text-sm text-outline">Your basic professional details.</p>
                    </div>
                    
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {/* Profile Picture */}
-                      <div className="md:col-span-2 p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff]">
+                      <div className="md:col-span-2 p-4 bg-surface-container rounded-xl border border-surface-variant">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
                           <div className="flex flex-col">
-                            <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
+                            <label className="text-[13px] lg:text-[14px] font-semibold text-on-surface">
                               Profile Picture (Optional)
                             </label>
-                            <span className="text-[11px] text-[#787584]">You can add it later</span>
+                            <span className="text-[11px] text-outline">You can add it later</span>
                           </div>
                         </div>
                         {profilePicUrl && (
                           <div className="mb-3 text-[12px]">
-                            Current picture: <a href={getFileUrl(profilePicUrl)} target="_blank" rel="noreferrer" className="text-[#5140b3] font-medium underline">View Picture</a>
+                            Current picture: <a href={getFileUrl(profilePicUrl)} target="_blank" rel="noreferrer" className="text-primary-dark font-medium underline">View Picture</a>
                           </div>
                         )}
                         <input
@@ -440,17 +440,17 @@ export default function DoctorAdditionalData() {
                           onChange={(e) =>
                             setProfilePicFile(e.target.files?.[0] || null)
                           }
-                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          className="w-full text-[13px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-surface-container file:text-primary-dark hover:file:bg-surface-variant transition-colors"
                           disabled={isLoading}
                         />
                       </div>
 
                       {/* National ID */}
                       <div>
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1">
                           National ID Number
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">Format: 14 consecutive digits</p>
+                        <p className="text-[11px] text-outline mb-1.5">Format: 14 consecutive digits</p>
                         <input
                           name="nationalIdNumber"
                           value={formData.nationalIdNumber}
@@ -458,7 +458,7 @@ export default function DoctorAdditionalData() {
                           className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                             errors.nationalIdNumber
                               ? "border-red-400 focus:border-red-500"
-                              : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3]"
+                              : "border-surface-variant focus:ring-1 focus:ring-primary-dark"
                           }`}
                           placeholder="e.g. 29901011234567"
                           type="text"
@@ -473,10 +473,10 @@ export default function DoctorAdditionalData() {
 
                       {/* License Number */}
                       <div>
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1">
                           Medical License Number
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">Format: Valid professional license ID</p>
+                        <p className="text-[11px] text-outline mb-1.5">Format: Valid professional license ID</p>
                         <input
                           name="licenseNumber"
                           value={formData.licenseNumber}
@@ -484,7 +484,7 @@ export default function DoctorAdditionalData() {
                           className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                             errors.licenseNumber
                               ? "border-red-400 focus:border-red-500"
-                              : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3]"
+                              : "border-surface-variant focus:ring-1 focus:ring-primary-dark"
                           }`}
                           placeholder="e.g. 123456"
                           type="text"
@@ -499,10 +499,10 @@ export default function DoctorAdditionalData() {
 
                       {/* License Expiry Date */}
                       <div>
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1">
                           License Expiry Date
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">Must be a future date</p>
+                        <p className="text-[11px] text-outline mb-1.5">Must be a future date</p>
                         <input
                           name="licenseExpiryDate"
                           value={formData.licenseExpiryDate}
@@ -510,7 +510,7 @@ export default function DoctorAdditionalData() {
                           className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                             errors.licenseExpiryDate
                               ? "border-red-400 focus:border-red-500"
-                              : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3]"
+                              : "border-surface-variant focus:ring-1 focus:ring-primary-dark"
                           }`}
                           type="date"
                           disabled={isLoading}
@@ -524,10 +524,10 @@ export default function DoctorAdditionalData() {
 
                       {/* Years of Experience */}
                       <div>
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1">
                           Years of Experience
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">Number of active clinical years</p>
+                        <p className="text-[11px] text-outline mb-1.5">Number of active clinical years</p>
                         <input
                           name="yearsOfExperience"
                           value={formData.yearsOfExperience}
@@ -535,7 +535,7 @@ export default function DoctorAdditionalData() {
                           className={`w-full h-11 px-4 bg-white border rounded-lg text-[14px] lg:text-[15px] outline-none transition-all ${
                             errors.yearsOfExperience
                               ? "border-red-400 focus:border-red-500"
-                              : "border-[#e5deff] focus:ring-1 focus:ring-[#5140b3]"
+                              : "border-surface-variant focus:ring-1 focus:ring-primary-dark"
                           }`}
                           placeholder="e.g. 8"
                           type="number"
@@ -551,16 +551,16 @@ export default function DoctorAdditionalData() {
 
                       {/* Professional Bio Statement */}
                       <div className="md:col-span-2">
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-0.5">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-0.5">
                           Professional Bio (Optional)
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">You can add it later</p>
+                        <p className="text-[11px] text-outline mb-1.5">You can add it later</p>
                         <textarea
                           name="bio"
                           value={formData.bio}
                           onChange={handleInputChange}
                           rows={3}
-                          className="w-full p-3 bg-white border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] outline-none transition-all focus:ring-1 focus:ring-[#5140b3] resize-none"
+                          className="w-full p-3 bg-white border border-surface-variant rounded-lg text-[14px] lg:text-[15px] outline-none transition-all focus:ring-1 focus:ring-primary-dark resize-none"
                           placeholder="Brief description about your clinical focus, background, and achievements..."
                           disabled={isLoading}
                         />
@@ -569,39 +569,39 @@ export default function DoctorAdditionalData() {
                 </section>
 
                 {/* Section 2: Clinic Information */}
-                <section className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5deff] space-y-5">
-                   <div className="border-b border-[#e5deff] pb-3">
-                     <h2 className="text-lg font-bold text-[#1a1345] flex items-center gap-2">
-                       <MdLocationOn className="text-[#5140b3]" /> Clinic Information (Optional)
+                <section className="bg-white p-6 rounded-2xl shadow-sm border border-surface-variant space-y-5">
+                   <div className="border-b border-surface-variant pb-3">
+                     <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
+                       <MdLocationOn className="text-primary-dark" /> Clinic Information (Optional)
                      </h2>
-                     <p className="text-sm text-[#787584]">Details about your physical clinic. You can add it later.</p>
+                     <p className="text-sm text-outline">Details about your physical clinic. You can add it later.</p>
                    </div>
                    
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1">
                           Physical Clinic Address
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">Your main practice location</p>
+                        <p className="text-[11px] text-outline mb-1.5">Your main practice location</p>
                         <input
                           name="clinicLocation"
                           value={formData.clinicLocation}
                           onChange={handleInputChange}
-                          className="w-full h-11 px-4 bg-white border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] outline-none transition-all focus:ring-1 focus:ring-[#5140b3]"
+                          className="w-full h-11 px-4 bg-white border border-surface-variant rounded-lg text-[14px] lg:text-[15px] outline-none transition-all focus:ring-1 focus:ring-primary-dark"
                           placeholder="Building 4, Medical Square"
                           disabled={isLoading}
                         />
                       </div>
                       <div>
-                        <label className="block text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-1">
+                        <label className="block text-[13px] lg:text-[14px] font-semibold text-on-surface mb-1">
                           Clinic Desk Line
                         </label>
-                        <p className="text-[11px] text-[#787584] mb-1.5">Primary contact number</p>
+                        <p className="text-[11px] text-outline mb-1.5">Primary contact number</p>
                         <input
                           name="clinicPhoneNumber"
                           value={formData.clinicPhoneNumber}
                           onChange={handleInputChange}
-                          className="w-full h-11 px-4 bg-white border border-[#e5deff] rounded-lg text-[14px] lg:text-[15px] outline-none transition-all focus:ring-1 focus:ring-[#5140b3]"
+                          className="w-full h-11 px-4 bg-white border border-surface-variant rounded-lg text-[14px] lg:text-[15px] outline-none transition-all focus:ring-1 focus:ring-primary-dark"
                           placeholder="+202XXXXXXXX"
                           disabled={isLoading}
                         />
@@ -610,21 +610,21 @@ export default function DoctorAdditionalData() {
                 </section>
 
                 {/* Section 3: Paperwork & Verifications */}
-                <section className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5deff] space-y-5">
-                   <div className="border-b border-[#e5deff] pb-3">
-                     <h2 className="text-lg font-bold text-[#1a1345]">Paperwork & Verifications</h2>
-                     <p className="text-sm text-[#787584]">Required documents for your verification process.</p>
+                <section className="bg-white p-6 rounded-2xl shadow-sm border border-surface-variant space-y-5">
+                   <div className="border-b border-surface-variant pb-3">
+                     <h2 className="text-lg font-bold text-on-surface">Paperwork & Verifications</h2>
+                     <p className="text-sm text-outline">Required documents for your verification process.</p>
                    </div>
                    
                    <div className="space-y-4">
                       {/* License Proof Document */}
-                      <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff]">
+                      <div className="p-4 bg-surface-container rounded-xl border border-surface-variant">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
                           <div className="flex flex-col">
-                            <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
+                            <label className="text-[13px] lg:text-[14px] font-semibold text-on-surface">
                               License Document Verification Proof
                             </label>
-                            <span className="text-[11px] text-[#787584]">Required: Upload PDF or image</span>
+                            <span className="text-[11px] text-outline">Required: Upload PDF or image</span>
                           </div>
                         </div>
                         {renderProofPreview(licenseProofFile, licenseProofUrl)}
@@ -632,7 +632,7 @@ export default function DoctorAdditionalData() {
                           type="file"
                           accept=".pdf,image/*"
                           onChange={(e) => handleProofChange(e, setLicenseProofFile, "licenseProof")}
-                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          className="w-full text-[13px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-surface-container file:text-primary-dark hover:file:bg-surface-variant transition-colors"
                           disabled={isLoading}
                         />
                         {errors.licenseProof && (
@@ -643,13 +643,13 @@ export default function DoctorAdditionalData() {
                       </div>
 
                       {/* ID Proof Document */}
-                      <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff]">
+                      <div className="p-4 bg-surface-container rounded-xl border border-surface-variant">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
                           <div className="flex flex-col">
-                            <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
+                            <label className="text-[13px] lg:text-[14px] font-semibold text-on-surface">
                               ID Verification Proof
                             </label>
-                            <span className="text-[11px] text-[#787584]">Required: Accepted formats: PDF or image</span>
+                            <span className="text-[11px] text-outline">Required: Accepted formats: PDF or image</span>
                           </div>
                         </div>
                         {renderProofPreview(idProofFile, idProofUrl)}
@@ -657,7 +657,7 @@ export default function DoctorAdditionalData() {
                           type="file"
                           accept=".pdf,image/*"
                           onChange={(e) => handleProofChange(e, setIdProofFile, "idProof")}
-                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          className="w-full text-[13px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-surface-container file:text-primary-dark hover:file:bg-surface-variant transition-colors"
                           disabled={isLoading}
                         />
                         {errors.idProof && (
@@ -668,13 +668,13 @@ export default function DoctorAdditionalData() {
                       </div>
 
                       {/* Degree Proof Document */}
-                      <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff]">
+                      <div className="p-4 bg-surface-container rounded-xl border border-surface-variant">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
                           <div className="flex flex-col">
-                            <label className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345]">
+                            <label className="text-[13px] lg:text-[14px] font-semibold text-on-surface">
                               Degree Verification Proof
                             </label>
-                            <span className="text-[11px] text-[#787584]">Required: Accepted formats: PDF or image</span>
+                            <span className="text-[11px] text-outline">Required: Accepted formats: PDF or image</span>
                           </div>
                         </div>
                         {renderProofPreview(degreeProofFile, degreeProofUrl)}
@@ -682,7 +682,7 @@ export default function DoctorAdditionalData() {
                           type="file"
                           accept=".pdf,image/*"
                           onChange={(e) => handleProofChange(e, setDegreeProofFile, "degreeProof")}
-                          className="w-full text-[13px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-[#f0ebff] file:text-[#5140b3] hover:file:bg-[#e5deff] transition-colors"
+                          className="w-full text-[13px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[13px] file:font-semibold file:bg-surface-container file:text-primary-dark hover:file:bg-surface-variant transition-colors"
                           disabled={isLoading}
                         />
                         {errors.degreeProof && (
@@ -695,26 +695,26 @@ export default function DoctorAdditionalData() {
                 </section>
 
                 {/* Section 4: Specialties & Pricing */}
-                <section className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5deff] space-y-6">
-                   <div className="border-b border-[#e5deff] pb-3">
-                     <h2 className="text-lg font-bold text-[#1a1345]">Specialties & Pricing</h2>
-                     <p className="text-sm text-[#787584]">Your medical focus and consultation rates.</p>
+                <section className="bg-white p-6 rounded-2xl shadow-sm border border-surface-variant space-y-6">
+                   <div className="border-b border-surface-variant pb-3">
+                     <h2 className="text-lg font-bold text-on-surface">Specialties & Pricing</h2>
+                     <p className="text-sm text-outline">Your medical focus and consultation rates.</p>
                    </div>
                    
                    {/* Specialties Array Injection */}
-                   <div className="p-4 bg-[#f6f1ff]/60 rounded-xl border border-[#e5deff] space-y-3">
+                   <div className="p-4 bg-surface-container/60 rounded-xl border border-surface-variant space-y-3">
                      <div className="flex justify-between items-center mb-1">
                        <div>
-                         <h3 className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345] flex items-center gap-2">
-                           <MdAssignment className="text-xl text-[#5140b3]" />
+                         <h3 className="text-[13px] lg:text-[14px] font-semibold text-on-surface flex items-center gap-2">
+                           <MdAssignment className="text-xl text-primary-dark" />
                            Offered Specialties
                          </h3>
-                         <p className="text-[11px] text-[#787584] mt-0.5 ml-7">Select one or more medical specialties you practice</p>
+                         <p className="text-[11px] text-outline mt-0.5 ml-7">Select one or more medical specialties you practice</p>
                        </div>
                        <button
                          type="button"
                          onClick={addSpecialtyField}
-                         className="flex items-center gap-1 text-[12px] bg-[#5140b3] text-white font-semibold py-1 px-2.5 rounded-md hover:bg-[#6a5acd] transition-all cursor-pointer"
+                         className="flex items-center gap-1 text-[12px] bg-primary-dark text-white font-semibold py-1 px-2.5 rounded-md hover:bg-primary transition-all cursor-pointer"
                          disabled={isLoading}
                        >
                          <MdAdd /> Add Specialty
@@ -724,7 +724,7 @@ export default function DoctorAdditionalData() {
                      {formData.specialties.map((spec: string, index: number) => (
                        <div
                          key={index}
-                         className="flex gap-3 items-center bg-white border border-[#e5deff] p-3 rounded-lg relative"
+                         className="flex gap-3 items-center bg-white border border-surface-variant p-3 rounded-lg relative"
                        >
                          <div className="flex-grow">
                            <select
@@ -732,10 +732,10 @@ export default function DoctorAdditionalData() {
                              onChange={(e) =>
                                handleSpecialtyChange(index, e.target.value)
                              }
-                             className={`w-full h-10 px-3 bg-white border rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-[#5140b3] transition-all ${
+                             className={`w-full h-10 px-3 bg-white border rounded-lg text-[13px] outline-none focus:ring-1 focus:ring-primary-dark transition-all ${
                                errors[`specialty_${index}`]
                                  ? "border-red-400 focus:border-red-500"
-                                 : "border-[#e5deff]"
+                                 : "border-surface-variant"
                              }`}
                              disabled={isLoading}
                            >
@@ -766,32 +766,32 @@ export default function DoctorAdditionalData() {
                    </div>
 
                    {/* Consultation Pricing */}
-                   <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#e5deff] space-y-4">
+                   <div className="p-4 bg-surface-container rounded-xl border border-surface-variant space-y-4">
                      <div>
-                       <h3 className="text-[13px] lg:text-[14px] font-semibold text-[#1a1345] mb-0.5">
+                       <h3 className="text-[13px] lg:text-[14px] font-semibold text-on-surface mb-0.5">
                          Consultation Pricing & Availability
                        </h3>
-                       <p className="text-[11px] text-[#787584] mb-2">Set your rates for different types of consultations. Please enter values greater than 0.</p>
+                       <p className="text-[11px] text-outline mb-2">Set your rates for different types of consultations. Please enter values greater than 0.</p>
                      </div>
 
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        {/* Clinic */}
-                       <div className="bg-white p-4 border border-[#e5deff] rounded-lg shadow-sm">
+                       <div className="bg-white p-4 border border-surface-variant rounded-lg shadow-sm">
                          <div className="flex items-center justify-between mb-3">
-                           <label className="text-[14px] font-semibold text-[#1a1345]">Clinic Visit</label>
+                           <label className="text-[14px] font-semibold text-on-surface">Clinic Visit</label>
                            <input
                              type="checkbox"
                              name="isClinicEnabled"
                              checked={formData.isClinicEnabled}
                              onChange={handleInputChange}
                              disabled={isLoading}
-                             className="w-4 h-4 text-[#5140b3] rounded cursor-pointer"
+                             className="w-4 h-4 text-primary-dark rounded cursor-pointer"
                            />
                          </div>
                          {formData.isClinicEnabled && (
                            <>
-                             <div className="flex items-center gap-2 bg-[#f8f9fa] rounded-md border border-[#e5deff] px-3 focus-within:ring-1 focus-within:ring-[#5140b3] focus-within:border-[#5140b3] overflow-hidden transition-all">
-                               <span className="text-[#787584] text-[13px] font-semibold select-none">EGP</span>
+                             <div className="flex items-center gap-2 bg-surface-container rounded-md border border-surface-variant px-3 focus-within:ring-1 focus-within:ring-primary-dark focus-within:border-primary-dark overflow-hidden transition-all">
+                               <span className="text-outline text-[13px] font-semibold select-none">EGP</span>
                                <input
                                  type="number"
                                  name="clinicPrice"
@@ -801,7 +801,7 @@ export default function DoctorAdditionalData() {
                                  placeholder="0.00"
                                  min="0"
                                  step="0.01"
-                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-[#1a1345]"
+                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-on-surface"
                                />
                              </div>
                              {errors.clinicPrice && <p className="text-red-500 text-[11px] mt-1.5 font-medium">{errors.clinicPrice}</p>}
@@ -810,22 +810,22 @@ export default function DoctorAdditionalData() {
                        </div>
 
                        {/* Video */}
-                       <div className="bg-white p-4 border border-[#e5deff] rounded-lg shadow-sm">
+                       <div className="bg-white p-4 border border-surface-variant rounded-lg shadow-sm">
                          <div className="flex items-center justify-between mb-3">
-                           <label className="text-[14px] font-semibold text-[#1a1345]">Video Call</label>
+                           <label className="text-[14px] font-semibold text-on-surface">Video Call</label>
                            <input
                              type="checkbox"
                              name="isVideoEnabled"
                              checked={formData.isVideoEnabled}
                              onChange={handleInputChange}
                              disabled={isLoading}
-                             className="w-4 h-4 text-[#5140b3] rounded cursor-pointer"
+                             className="w-4 h-4 text-primary-dark rounded cursor-pointer"
                            />
                          </div>
                          {formData.isVideoEnabled && (
                            <>
-                             <div className="flex items-center gap-2 bg-[#f8f9fa] rounded-md border border-[#e5deff] px-3 focus-within:ring-1 focus-within:ring-[#5140b3] focus-within:border-[#5140b3] overflow-hidden transition-all">
-                               <span className="text-[#787584] text-[13px] font-semibold select-none">EGP</span>
+                             <div className="flex items-center gap-2 bg-surface-container rounded-md border border-surface-variant px-3 focus-within:ring-1 focus-within:ring-primary-dark focus-within:border-primary-dark overflow-hidden transition-all">
+                               <span className="text-outline text-[13px] font-semibold select-none">EGP</span>
                                <input
                                  type="number"
                                  name="videoPrice"
@@ -835,7 +835,7 @@ export default function DoctorAdditionalData() {
                                  placeholder="0.00"
                                  min="0"
                                  step="0.01"
-                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-[#1a1345]"
+                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-on-surface"
                                />
                              </div>
                              {errors.videoPrice && <p className="text-red-500 text-[11px] mt-1.5 font-medium">{errors.videoPrice}</p>}
@@ -844,22 +844,22 @@ export default function DoctorAdditionalData() {
                        </div>
 
                        {/* Chat */}
-                       <div className="bg-white p-4 border border-[#e5deff] rounded-lg shadow-sm">
+                       <div className="bg-white p-4 border border-surface-variant rounded-lg shadow-sm">
                          <div className="flex items-center justify-between mb-3">
-                           <label className="text-[14px] font-semibold text-[#1a1345]">Chat Consultation</label>
+                           <label className="text-[14px] font-semibold text-on-surface">Chat Consultation</label>
                            <input
                              type="checkbox"
                              name="isChatEnabled"
                              checked={formData.isChatEnabled}
                              onChange={handleInputChange}
                              disabled={isLoading}
-                             className="w-4 h-4 text-[#5140b3] rounded cursor-pointer"
+                             className="w-4 h-4 text-primary-dark rounded cursor-pointer"
                            />
                          </div>
                          {formData.isChatEnabled && (
                            <>
-                             <div className="flex items-center gap-2 bg-[#f8f9fa] rounded-md border border-[#e5deff] px-3 focus-within:ring-1 focus-within:ring-[#5140b3] focus-within:border-[#5140b3] overflow-hidden transition-all">
-                               <span className="text-[#787584] text-[13px] font-semibold select-none">EGP</span>
+                             <div className="flex items-center gap-2 bg-surface-container rounded-md border border-surface-variant px-3 focus-within:ring-1 focus-within:ring-primary-dark focus-within:border-primary-dark overflow-hidden transition-all">
+                               <span className="text-outline text-[13px] font-semibold select-none">EGP</span>
                                <input
                                  type="number"
                                  name="chatPrice"
@@ -869,7 +869,7 @@ export default function DoctorAdditionalData() {
                                  placeholder="0.00"
                                  min="0"
                                  step="0.01"
-                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-[#1a1345]"
+                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-on-surface"
                                />
                              </div>
                              {errors.chatPrice && <p className="text-red-500 text-[11px] mt-1.5 font-medium">{errors.chatPrice}</p>}
@@ -878,22 +878,22 @@ export default function DoctorAdditionalData() {
                        </div>
 
                        {/* Voice Call */}
-                       <div className="bg-white p-4 border border-[#e5deff] rounded-lg shadow-sm">
+                       <div className="bg-white p-4 border border-surface-variant rounded-lg shadow-sm">
                          <div className="flex items-center justify-between mb-3">
-                           <label className="text-[14px] font-semibold text-[#1a1345]">Voice Call</label>
+                           <label className="text-[14px] font-semibold text-on-surface">Voice Call</label>
                            <input
                              type="checkbox"
                              name="isCallEnabled"
                              checked={formData.isCallEnabled}
                              onChange={handleInputChange}
                              disabled={isLoading}
-                             className="w-4 h-4 text-[#5140b3] rounded cursor-pointer"
+                             className="w-4 h-4 text-primary-dark rounded cursor-pointer"
                            />
                          </div>
                          {formData.isCallEnabled && (
                            <>
-                             <div className="flex items-center gap-2 bg-[#f8f9fa] rounded-md border border-[#e5deff] px-3 focus-within:ring-1 focus-within:ring-[#5140b3] focus-within:border-[#5140b3] overflow-hidden transition-all">
-                               <span className="text-[#787584] text-[13px] font-semibold select-none">EGP</span>
+                             <div className="flex items-center gap-2 bg-surface-container rounded-md border border-surface-variant px-3 focus-within:ring-1 focus-within:ring-primary-dark focus-within:border-primary-dark overflow-hidden transition-all">
+                               <span className="text-outline text-[13px] font-semibold select-none">EGP</span>
                                <input
                                  type="number"
                                  name="callPrice"
@@ -903,7 +903,7 @@ export default function DoctorAdditionalData() {
                                  placeholder="0.00"
                                  min="0"
                                  step="0.01"
-                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-[#1a1345]"
+                                 className="flex-1 h-10 bg-transparent text-[14px] font-medium outline-none text-on-surface"
                                />
                              </div>
                              {errors.callPrice && <p className="text-red-500 text-[11px] mt-1.5 font-medium">{errors.callPrice}</p>}
@@ -915,10 +915,10 @@ export default function DoctorAdditionalData() {
                 </section>
 
                 {/* Operations Layer */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4 mt-8 border-t border-[#e5deff]">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4 mt-8 border-t border-surface-variant">
                   <button
                     type="button"
-                    className={`w-full sm:w-auto px-10 h-12 flex items-center justify-center bg-[#6a5acd] text-white hover:bg-[#5140b3] rounded-xl text-[15px] font-bold transition-all shadow-md active:scale-[0.98] ${
+                    className={`w-full sm:w-auto px-10 h-12 flex items-center justify-center bg-primary text-white hover:bg-primary-dark rounded-xl text-[15px] font-bold transition-all shadow-md active:scale-[0.98] ${
                       isLoading
                         ? "opacity-70 cursor-not-allowed"
                         : "cursor-pointer"
