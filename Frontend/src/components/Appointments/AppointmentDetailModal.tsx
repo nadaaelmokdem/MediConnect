@@ -90,9 +90,6 @@ export default function AppointmentDetailModal({
           {appointment.price != null && (
             <DetailRow label="Price" value={formatMoney(appointment.price)} />
           )}
-          {appointment.chiefComplaint && (
-            <DetailRow label="Chief Complaint" value={appointment.chiefComplaint} />
-          )}
           {appointment.notes && (
             <DetailRow label="Notes" value={appointment.notes} />
           )}

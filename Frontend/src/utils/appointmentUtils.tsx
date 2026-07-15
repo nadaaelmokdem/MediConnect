@@ -22,7 +22,6 @@ export interface AppointmentListItem {
   status: AppointmentStatusName | string;
   durationMins: number;
   price?: number;
-  chiefComplaint?: string;
   notes?: string;
   doctorProfilePictureUrl?: string;
   patientProfilePictureUrl?: string;

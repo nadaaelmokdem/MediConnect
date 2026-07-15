@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import Peer, { MediaConnection } from "peerjs";
+import Peer from "peerjs";
+import type { MediaConnection } from "peerjs";
 import { useAuth } from "../context/AuthContext";
 import { videoCallHubService } from "../services/videoCallHubService";
 
@@ -69,7 +70,7 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
 
   // Lifecycle Event Bindings
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = () => {
       // Synchronous beacon to backend to inform them this user dropped
       if (sessionId && user?.id) {
         const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5009/api"}/videocall/leave`;

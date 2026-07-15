@@ -1,0 +1,9 @@
+using Tabibi.Application.DTOs;
+
+namespace Tabibi.Application.Interfaces;
+
+public interface IReviewService
+{
+    Task<ServiceResult<PagedReviewsDTO>> GetDoctorReviewsAsync(int doctorId, int page = 1, int pageSize = 10);
+    Task<ServiceResult> SubmitReviewAsync(string userId, CreateReviewDTO dto);
+}

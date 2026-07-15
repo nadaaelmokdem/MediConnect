@@ -9,7 +9,6 @@ export interface BookAppointmentRequest {
   doctorId: number;
   scheduledAt: string;
   type: ConsultationType;
-  chiefComplaint?: string;
 }
 
 export interface AppointmentBooked {
@@ -20,7 +19,6 @@ export interface AppointmentBooked {
   status: string;
   durationMins: number;
   price: number;
-  chiefComplaint?: string;
   paymentUrl?: string;
 }
 

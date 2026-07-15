@@ -39,3 +39,16 @@ export interface StatCardProps {
   icon: ElementType;
   isPrimary?: boolean;
 }
+
+export interface StarRatingProps {
+  rating: number;
+  onRate: (rating: number, comment: string) => void;
+}
+
+export interface SystemMessageComponentProps {
+  doctorName: string;
+  doctorId?: string | number;
+  doctorProfilePictureUrl?: string;
+  onRate: (rating: number, comment: string) => void;
+  onDiscard: () => void;
+}

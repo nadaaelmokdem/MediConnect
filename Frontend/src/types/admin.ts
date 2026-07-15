@@ -75,3 +75,5 @@ export interface AdminAppointment {
   amountPaid?: number;
 }
 
+export const TABS = ["Overview", "Users", "Doctor Verification", "Appointments & Payments"] as const;
+export type Tab = (typeof TABS)[number];

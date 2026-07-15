@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="Tabibi.csproj" />
+  <Project Path="Tabibi.API/Tabibi.API.csproj" />
+  <Project Path="Tabibi.Application/Tabibi.Application.csproj" />
+  <Project Path="Tabibi.Core/Tabibi.Core.csproj" />
+  <Project Path="Tabibi.Infrastructure/Tabibi.Infrastructure.csproj" />
 </Solution>
