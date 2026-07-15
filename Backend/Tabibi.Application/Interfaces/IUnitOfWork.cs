@@ -18,6 +18,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<Payment> Payments { get; }
     IRepository<DoctorProfileChangeLog> DoctorProfileChangeLogs { get; }
     IRepository<PatientQuota> PatientQuotas { get; }    
+    IRepository<AiRecharge> AiRecharges { get; }
     IRepository<AppUser> Users { get; }
     IRepository<Microsoft.AspNetCore.Identity.IdentityRole> Roles { get; }
     IRepository<Microsoft.AspNetCore.Identity.IdentityUserRole<string>> UserRoles { get; }

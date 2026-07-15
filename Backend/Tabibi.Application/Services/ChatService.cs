@@ -6,7 +6,7 @@ using Tabibi.Application.Shared;
 
 namespace Tabibi.Application.Services
 {
-    public class ChatService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces.IChatService
+    public class ChatService(IUnitOfWork unitOfWork, IPaymentService paymentService) : Tabibi.Application.Interfaces.IChatService
     {
         // Confirms this user is actually one of the two participants in the
         // session before letting them join the SignalR group, read history,
@@ -54,6 +54,27 @@ namespace Tabibi.Application.Services
             return new ChatAccessResult { Allowed = false };
 
 
+        }
+
+        public async Task<bool> IsSessionPaidAsync(long sessionId)
+        {
+            var session = await unitOfWork.ChatSessions.Query()
+                .Include(s => s.Appointment)
+                    .ThenInclude(a => a != null ? a.Payment : null)
+                .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+            if (session == null) return false;
+
+            // Free sessions (company-paid, AI, or no-appointment) are always accessible
+            if (session.IsCompanyPaid || session.IsFreeMessage || session.Appointment == null)
+                return true;
+
+            // Online-payment appointments must have a confirmed payment
+            if (session.Appointment.PaymentMethod == PaymentMethod.Online)
+                return session.Appointment.Payment?.Status == PaymentStatus.Paid;
+
+            // Cash/in-person — no gateway record required
+            return true;
         }
 
         public async Task<List<ChatMessageDTO>> GetHistory(long sessionId)
@@ -227,22 +248,18 @@ namespace Tabibi.Application.Services
                 throw new Exception("Doctor is not verified.");
             }
 
-            // Check for existing active session first for both paid and unpaid
-            var existingSession = await unitOfWork.ChatSessions.Query()
-                .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.DoctorId == doctorId && s.IsCompanyPaid == isCompanyPaid && s.Status == SessionStatus.Active && s.StartedAt >= DateTime.UtcNow.AddDays(-1));
-            
-            if (existingSession != null)
-            {
-                return existingSession;
-            }
-
             if (isCompanyPaid)
             {
-                var hasNonGP = doctor.DoctorSpecialties.Any(ds => ds.SpecialtyId != 18 && ds.SpecialtyId != 20);
-                var hasGP = doctor.DoctorSpecialties.Any(ds => ds.SpecialtyId == 18 || ds.SpecialtyId == 20);
-                if (hasNonGP || !hasGP) 
+                // SECURITY: Only pure GP doctors (specialty 18 = General Practice, 20 = Family Medicine)
+                // are eligible for company-paid free sessions.
+                // A doctor who has GP *plus any other specialty* is treated as a specialist
+                // and must be booked through the paid appointment system.
+                bool isExclusivelyGP = doctor.DoctorSpecialties.Any()
+                    && doctor.DoctorSpecialties.All(ds => ds.SpecialtyId == 18 || ds.SpecialtyId == 20);
+
+                if (!isExclusivelyGP)
                 {
-                    throw new Exception("This doctor is not eligible for free GP messages.");
+                    throw new InvalidOperationException("This doctor is not eligible for free GP messages. Please book an appointment through the appointment system.");
                 }
 
                 if (patient.Quota == null)
@@ -250,7 +267,7 @@ namespace Tabibi.Application.Services
                     patient.Quota = new PatientQuota { PatientId = patient.PatientId };
                     await unitOfWork.PatientQuotas.AddAsync(patient.Quota);
                 }
-                
+
                 // reset logic for GP
                 if (DateTime.UtcNow.Month != patient.Quota.LastFreeGpMessageReset.Month || DateTime.UtcNow.Year != patient.Quota.LastFreeGpMessageReset.Year)
                 {
@@ -260,9 +277,17 @@ namespace Tabibi.Application.Services
 
                 if (patient.Quota.AvailableFreeGpMessages <= 0)
                 {
-                    throw new Exception("No free GP messages available for this month.");
+                    throw new InvalidOperationException("No free GP messages available for this month.");
                 }
+            }
 
+            // Check for existing active session first for both paid and unpaid
+            var existingSession = await unitOfWork.ChatSessions.Query()
+                .FirstOrDefaultAsync(s => s.PatientId == patient.PatientId && s.DoctorId == doctorId && s.IsCompanyPaid == isCompanyPaid && s.Status == SessionStatus.Active && s.StartedAt >= DateTime.UtcNow.AddDays(-1));
+            
+            if (existingSession != null)
+            {
+                return existingSession;
             }
 
             var newSession = new ChatSession
@@ -316,26 +341,85 @@ namespace Tabibi.Application.Services
             return newSession;
         }
 
-        public async Task<ChatSession> FollowUpSessionAsync(long sessionId, string patientUserId)
+        public async Task<ServiceResult<InitiateFollowUpResponseDTO>> InitiateFollowUpAsync(long sessionId, string patientUserId)
         {
             var session = await unitOfWork.ChatSessions.Query()
-                .Include(s => s.Patient)
+                .Include(s => s.Patient).ThenInclude(p => p.User)
                 .Include(s => s.Doctor)
-                .ThenInclude(d => d!.DoctorSpecialties)
+                .Include(s => s.Payment)
                 .FirstOrDefaultAsync(s => s.SessionId == sessionId && s.Patient.UserId == patientUserId);
 
-            if (session == null) throw new Exception("Session not found or access denied.");
-            
-            // "Follow-Up pricing tier: users can pay 40% of the original chat price"
-            // For now, we simulate this by just updating the session.
-            var doctorChatPrice = session.Doctor?.ChatPrice ?? 0;
-            session.Price = doctorChatPrice * 0.4m;
-            session.IsFollowUp = true;
-            session.IsCompanyPaid = false; // It's no longer free company paid, it's paid now.
-            session.StartedAt = DateTime.UtcNow; // Reset clock
+            if (session == null)
+                return ServiceResult<InitiateFollowUpResponseDTO>.Failure("Session not found or access denied.");
 
+            if (session.Doctor == null)
+                return ServiceResult<InitiateFollowUpResponseDTO>.Failure("Cannot initiate a follow-up on an AI session.");
+
+            if (session.Payment != null && session.Payment.IsFollowUp && session.Payment.Status == PaymentStatus.Pending)
+            {
+                try
+                {
+                    var existingUrl = await paymentService.GenerateFollowUpPaymentLinkAsync(
+                        session.Payment, session,
+                        session.Patient.User.Email ?? "",
+                        session.Patient.User.PhoneNumber ?? "",
+                        session.Patient.User.FullName);
+                    await unitOfWork.CompleteAsync();
+
+                    return ServiceResult<InitiateFollowUpResponseDTO>.Success(new InitiateFollowUpResponseDTO
+                    {
+                        PaymentUrl = existingUrl,
+                        Amount = session.Payment.Amount,
+                        SessionId = sessionId
+                    });
+                }
+                catch
+                {
+                    return ServiceResult<InitiateFollowUpResponseDTO>.Failure("Failed to generate payment link. Please try again.");
+                }
+            }
+
+            var followUpAmount = (session.Doctor?.ChatPrice ?? 0m) * 0.4m;
+            if (followUpAmount <= 0)
+                return ServiceResult<InitiateFollowUpResponseDTO>.Failure("Doctor has no chat price set. Cannot initiate follow-up.");
+
+            var payment = new Payment
+            {
+                AppointmentId = null,
+                SessionId = sessionId,
+                IsFollowUp = true,
+                Amount = followUpAmount,
+                Currency = "EGP",
+                Status = PaymentStatus.Pending,
+                Gateway = PaymentGateway.Geidea
+            };
+
+            await unitOfWork.Payments.AddAsync(payment);
             await unitOfWork.CompleteAsync();
-            return session;
+
+            try
+            {
+                var paymentUrl = await paymentService.GenerateFollowUpPaymentLinkAsync(
+                    payment, session,
+                    session.Patient.User.Email ?? "",
+                    session.Patient.User.PhoneNumber ?? "",
+                    session.Patient.User.FullName);
+
+                await unitOfWork.CompleteAsync();
+
+                return ServiceResult<InitiateFollowUpResponseDTO>.Success(new InitiateFollowUpResponseDTO
+                {
+                    PaymentUrl = paymentUrl,
+                    Amount = followUpAmount,
+                    SessionId = sessionId
+                });
+            }
+            catch
+            {
+                unitOfWork.Payments.Remove(payment);
+                await unitOfWork.CompleteAsync();
+                return ServiceResult<InitiateFollowUpResponseDTO>.Failure("Failed to generate payment link. Please try again.");
+            }
         }
     }
 }

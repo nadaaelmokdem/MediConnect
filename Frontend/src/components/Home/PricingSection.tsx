@@ -104,10 +104,6 @@ export default function PricingSection() {
           >
             Get Started — It's Free <FaArrowRight size={14} />
           </button>
-          <div className="flex items-center gap-2 text-xs text-text-muted">
-            <FaCheck size={12} className="text-[#0a8a60]" />
-            No registration fee · No credit card required
-          </div>
         </div>
       </div>
     </section>

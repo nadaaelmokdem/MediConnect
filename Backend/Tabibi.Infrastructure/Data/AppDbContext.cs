@@ -20,6 +20,7 @@ namespace Tabibi.Infrastructure.Data
         public DbSet<PatientQuota> PatientQuotas { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<AiRecharge> AiRecharges { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

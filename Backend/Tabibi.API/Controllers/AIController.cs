@@ -24,11 +24,11 @@ namespace Tabibi.API.Controllers
             return Ok(result.Data);
         }
 
-        [HttpPost("recharge")]
-        public async Task<IActionResult> Recharge([FromBody] RechargeRequest request)
+        [HttpPost("initiate-recharge")]
+        public async Task<IActionResult> InitiateRecharge([FromBody] RechargeRequest request)
         {
             var userId = User.GetId();
-            var result = await patientAIService.RechargeAsync(userId!, request.Amount);
+            var result = await patientAIService.InitiateRechargeAsync(userId!, request.Amount);
 
             if (!result.IsSuccess)
                 return BadRequest(result.ErrorMessage);

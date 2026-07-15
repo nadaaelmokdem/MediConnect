@@ -75,6 +75,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const googleLogin = useCallback(async (token: string, requiredRole?: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await authService.googleLogin(token, requiredRole);
+      if (response.user && !response.isNewUser) {
+        setUser(response.user);
+      }
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Google Login failed";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const switchRole = useCallback((newRole: string) => {
     setUser((prevUser) => {
       if (!prevUser) return null;
@@ -93,9 +111,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (
       fullName: string,
       email: string,
-      password: string,
+      password: string | undefined,
       phoneNumber: string,
       role?: "user" | "doctor",
+      googleToken?: string,
     ) => {
       setIsLoading(true);
       setError(null);
@@ -103,9 +122,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await authService.register({
           fullName,
           email,
-          password,
+          password: password || "",
           phoneNumber,
           role,
+          googleToken,
         });
         if (response.user) {
           setUser(response.user);
@@ -162,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     error,
     login,
+    googleLogin,
     switchRole,
     register,
     logout,

@@ -29,7 +29,7 @@ const PASSWORD_REGEX = new RegExp(
 
 /* ─── Validation Logic ─── */
 
-function validateForm(form: SignUpForm): Record<string, string> {
+function validateForm(form: SignUpForm, isGoogleSignup: boolean): Record<string, string> {
   const errors: Record<string, string> = {};
 
   if (!form.fullName.trim()) {
@@ -50,15 +50,17 @@ function validateForm(form: SignUpForm): Record<string, string> {
     errors.phoneNumber = "Please enter a valid phone number";
   }
 
-  if (!form.password) {
-    errors.password = "Password is required";
-  } else if (!PASSWORD_REGEX.test(form.password)) {
-    errors.password =
-      "Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character";
-  }
+  if (!isGoogleSignup) {
+    if (!form.password) {
+      errors.password = "Password is required";
+    } else if (!PASSWORD_REGEX.test(form.password)) {
+      errors.password =
+        "Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character";
+    }
 
-  if (form.password !== form.confirmPassword) {
-    errors.confirmPassword = "Passwords do not match";
+    if (form.password !== form.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
   }
 
   return errors;
@@ -77,6 +79,8 @@ export default function SignUp({
   const navigate = useNavigate();
   const { register, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleSignup, setIsGoogleSignup] = useState(false);
+  const [googleToken, setGoogleToken] = useState<string | undefined>();
 
   const [form, setForm] = useState<SignUpForm>({
     fullName: "",
@@ -103,7 +107,7 @@ export default function SignUp({
     e.preventDefault();
     setLocalError("");
 
-    const validationErrors = validateForm(form);
+    const validationErrors = validateForm(form, isGoogleSignup);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
@@ -111,9 +115,10 @@ export default function SignUp({
       await register(
         form.fullName,
         form.email,
-        form.password,
+        isGoogleSignup ? undefined : form.password,
         form.phoneNumber,
         requiredRole === "Doctor" ? "doctor" : "user",
+        googleToken,
       );
       navigate(`/${continueDataLink}`, { state: { fromSignIn: true } });
     } catch (error) {
@@ -191,9 +196,29 @@ export default function SignUp({
       />
 
       {/* Primary Action: Google */}
-      <div className="mt-3 mb-1">
-        <GoogleButton disabled={isLoading} isPrimary />
-      </div>
+      {!isGoogleSignup && (
+        <div className="mt-3 mb-1">
+          <GoogleButton 
+            disabled={isLoading} 
+            isPrimary 
+            requiredRole={requiredRole === "Doctor" ? "Doctor" : "Patient"}
+            onSuccess={(res, rawToken) => {
+              if (res.isNewUser) {
+                setIsGoogleSignup(true);
+                setGoogleToken(rawToken);
+                setForm(prev => ({ 
+                  ...prev, 
+                  fullName: res.googleName || prev.fullName, 
+                  email: res.googleEmail || prev.email 
+                }));
+              } else {
+                navigate(`/${continueDataLink}`, { state: { fromSignIn: true } });
+              }
+            }}
+            onError={() => setLocalError("Google signup failed")}
+          />
+        </div>
+      )}
 
       {/* Divider */}
       <Divider />
@@ -255,30 +280,32 @@ export default function SignUp({
         />
 
         {/* Passwords Side-by-Side */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <PasswordField
-            id="password"
-            label="Password"
-            value={form.password}
-            onChange={handleInputChange}
-            showPassword={showPassword}
-            togglePassword={() => setShowPassword(!showPassword)}
-            disabled={isLoading}
-            borderClass={getInputBorderClass("password")}
-            error={errors.password}
-          />
-          <PasswordField
-            id="confirmPassword"
-            label="Confirm Password"
-            value={form.confirmPassword}
-            onChange={handleInputChange}
-            showPassword={showPassword}
-            togglePassword={() => setShowPassword(!showPassword)}
-            disabled={isLoading}
-            borderClass={getInputBorderClass("confirmPassword")}
-            error={errors.confirmPassword}
-          />
-        </div>
+        {!isGoogleSignup && (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <PasswordField
+              id="password"
+              label="Password"
+              value={form.password}
+              onChange={handleInputChange}
+              showPassword={showPassword}
+              togglePassword={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
+              borderClass={getInputBorderClass("password")}
+              error={errors.password}
+            />
+            <PasswordField
+              id="confirmPassword"
+              label="Confirm Password"
+              value={form.confirmPassword}
+              onChange={handleInputChange}
+              showPassword={showPassword}
+              togglePassword={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
+              borderClass={getInputBorderClass("confirmPassword")}
+              error={errors.confirmPassword}
+            />
+          </div>
+        )}
 
         {/* Submit */}
         <button

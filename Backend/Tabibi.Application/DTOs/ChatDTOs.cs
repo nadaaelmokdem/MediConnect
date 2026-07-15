@@ -29,4 +29,11 @@ namespace Tabibi.Application.DTOs
         public string Content { get; set; } = string.Empty;
         public DateTime SentAt { get; set; }
     }
+
+    public class InitiateFollowUpResponseDTO
+    {
+        public string PaymentUrl { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public long SessionId { get; set; }
+    }
 }

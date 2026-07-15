@@ -47,6 +47,43 @@ class AuthService {
   }
 
   /**
+   * Login with Google
+   */
+  async googleLogin(token: string, requiredRole?: string): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>(
+      `${AUTH_API}/google-login`,
+      { token, role: requiredRole || "Patient" },
+      { withCredentials: true },
+    );
+
+    if (response.data.user && !response.data.isNewUser) {
+      const user = response.data.user;
+      if (user.roles) {
+        user.roles = user.roles.map((r) =>
+          r.toLowerCase() === "user" ? "User" : r.toLowerCase() === "doctor" ? "Doctor" : r
+        );
+      }
+
+      if (requiredRole) {
+        const reqLower = requiredRole.toLowerCase();
+        const hasRole = user.roles?.some((r) => r.toLowerCase() === reqLower);
+        if (hasRole) {
+          user.activeRole = requiredRole;
+        } else if (user.roles?.some((r) => r.toLowerCase() === "admin")) {
+          user.activeRole = "Admin";
+        }
+      }
+      
+      if (!user.activeRole && user.roles && user.roles.length > 0) {
+        user.activeRole = user.roles[0];
+      }
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+
+    return response.data;
+  }
+
+  /**
    * Register a new account
    */
   async register(data: SignupRequest): Promise<AuthResponse> {

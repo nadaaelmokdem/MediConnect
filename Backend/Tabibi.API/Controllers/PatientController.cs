@@ -106,8 +106,9 @@ namespace Tabibi.API.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated");
 
-            if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded");
+            var validation = FileValidationHelper.ValidateImage(file);
+            if (!validation.IsSuccess)
+                return BadRequest(validation.ErrorMessage);
 
             var fileUrl = await fileService.UploadFileAsync(file, "avatars");
 

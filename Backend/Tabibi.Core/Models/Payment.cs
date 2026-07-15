@@ -8,7 +8,11 @@ namespace Tabibi.Core.Models
         [Key]
         public long Id { get; set; }
 
-        public long AppointmentId { get; set; }
+        public long? AppointmentId { get; set; }
+
+        public long? SessionId { get; set; }
+
+        public bool IsFollowUp { get; set; } = false;
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal Amount { get; set; }
@@ -29,7 +33,10 @@ namespace Tabibi.Core.Models
 
         // Navigation
         [ForeignKey(nameof(AppointmentId))]
-        public Appointment Appointment { get; set; } = null!;
+        public Appointment? Appointment { get; set; }
+
+        [ForeignKey(nameof(SessionId))]
+        public ChatSession? ChatSession { get; set; }
     }
 
     public enum PaymentStatus { Pending, Paid, Refunded, Failed }

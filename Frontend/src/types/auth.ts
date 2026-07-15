@@ -19,12 +19,14 @@ export interface AuthContextType {
   error: string | null;
   login: (email: string, password: string, requiredRole?: string) => Promise<AppUser | undefined>;
   switchRole: (role: string) => void;
+  googleLogin: (token: string, requiredRole?: string) => Promise<AuthResponse>;
   register: (
     fullName: string,
     email: string,
-    password: string,
+    password: string | undefined,
     phoneNumber: string,
     role?: "user" | "doctor",
+    googleToken?: string,
   ) => Promise<void>;
   logout: () => void;
   clearError: () => void;
@@ -42,12 +44,16 @@ export interface SignupRequest {
   password: string;
   phoneNumber: string;
   role?: "user" | "doctor";
+  googleToken?: string;
 }
 
 export interface AuthResponse {
   success: boolean;
   message: string;
   user?: AppUser;
+  isNewUser?: boolean;
+  googleName?: string;
+  googleEmail?: string;
 }
 
 export interface ForgotPasswordRequest {

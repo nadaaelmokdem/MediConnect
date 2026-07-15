@@ -1,5 +1,7 @@
 using Tabibi.Infrastructure.Services;
 using Tabibi.Application.Interfaces;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Tabibi.API.Services;
 using Tabibi.API.Extensions;
 using Tabibi.Application.DTOs;
@@ -98,6 +100,27 @@ namespace Tabibi.API
                                   });
             });
 
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddFixedWindowLimiter("AuthPolicy", o =>
+                {
+                    o.Window = TimeSpan.FromMinutes(1);
+                    o.PermitLimit = 10;
+                    o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    o.QueueLimit = 0;
+                });
+
+                options.AddFixedWindowLimiter("WebhookPolicy", o =>
+                {
+                    o.Window = TimeSpan.FromMinutes(1);
+                    o.PermitLimit = 60;
+                    o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    o.QueueLimit = 0;
+                });
+
+                options.RejectionStatusCode = 429;
+            });
+
             var jwtSecret = builder.Configuration["JwtSettings:Secret"];
             if (string.IsNullOrEmpty(jwtSecret))
             {
@@ -162,6 +185,7 @@ namespace Tabibi.API
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseRateLimiter();
 
             app.MapControllers();
             app.MapHub<ChatHub>("/hubs/chat");

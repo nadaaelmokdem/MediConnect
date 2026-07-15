@@ -45,10 +45,36 @@ export default function HeroSection() {
       />
 
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
+        {/* Right: image + floating chips */}
+        <div className="relative flex justify-center lg:justify-end lg:order-2 mt-4 lg:mt-0">
+          <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-floating border border-primary/10">
+            <div className="relative bg-surface-variant">
+              <img
+                src="/doctor-hero.jpg"
+                alt="Certified doctor ready to assist you"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/85 via-primary-dark/15 to-transparent" />
+
+              <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/92 text-[#0a8a60] shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#0a8a60] animate-pulse" />
+                Doctors online now
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 px-5 py-4">
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1 text-primary-light/90">
+                  Our commitment
+                </p>
+                <p className="text-base font-bold leading-snug text-white tracking-tight">
+                  Every doctor on Tabibi is licensed, verified, and dedicated to your health.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Left: copy */}
-        <div className="flex flex-col gap-5">
-
-
+        <div className="flex flex-col gap-5 lg:order-1">
           <div className="text-center lg:text-left">
             <h1 className="font-heading font-extrabold text-primary-dark leading-[1.1] tracking-tight text-4xl sm:text-5xl lg:text-6xl mb-3">
               Your doctor is{" "}
@@ -112,36 +138,6 @@ export default function HeroSection() {
               })}
             </div>
           </div>
-        </div>
-
-        {/* Right: image + floating chips */}
-        <div className="relative flex justify-center lg:justify-end mt-4 lg:mt-0">
-          <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-floating border border-primary/10">
-            <div className="relative bg-surface-variant">
-              <img
-                src="/doctor-hero.jpg"
-                alt="Certified doctor ready to assist you"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/85 via-primary-dark/15 to-transparent" />
-
-              <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/92 text-[#0a8a60] shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#0a8a60] animate-pulse" />
-                Doctors online now
-              </div>
-
-              <div className="absolute bottom-0 left-0 right-0 px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-widest mb-1 text-primary-light/90">
-                  Our commitment
-                </p>
-                <p className="text-base font-bold leading-snug text-white tracking-tight">
-                  Every doctor on Tabibi is licensed, verified, and dedicated to your health.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          
         </div>
       </div>
     </section>

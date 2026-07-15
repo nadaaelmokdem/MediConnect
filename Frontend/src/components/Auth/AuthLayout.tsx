@@ -29,7 +29,7 @@ export default function AuthLayout({
             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-primary-light shadow-floating">
               <FaStethoscope size={15} className="text-white" />
             </div>
-            <span className="text-2xl font-extrabold tracking-tight text-white drop-shadow-md">Tabibi</span>
+            <span className="text-2xl font-extrabold tracking-tight text-primary-dark drop-shadow-md">Tabibi</span>
           </button>
         </header>
 

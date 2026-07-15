@@ -103,9 +103,13 @@ namespace Tabibi.API.Controllers
                 return Unauthorized("User not authenticated");
             }
 
-            if (file == null || file.Length == 0)
+            var validation = fieldName == "profilePictureUrl"
+                ? FileValidationHelper.ValidateImage(file)
+                : FileValidationHelper.ValidateDocument(file);
+
+            if (!validation.IsSuccess)
             {
-                return BadRequest("No file uploaded");
+                return BadRequest(validation.ErrorMessage);
             }
 
             // Valid field names for proofs

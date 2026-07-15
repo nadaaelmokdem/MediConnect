@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Tabibi.Application.DTOs;
 using Tabibi.Core.Models;
 using Tabibi.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Tabibi.Application.Services;
 
@@ -11,7 +12,8 @@ public class AppointmentService(
     ISlotService slotService,
     IPricingService pricingService,
     IAppointmentNotificationService notificationService,
-    IPaymentService paymentService) : IAppointmentService
+    IPaymentService paymentService,
+    Microsoft.Extensions.Logging.ILogger<AppointmentService> logger) : IAppointmentService
 {
     public async Task<List<AvailableSlotDTO>> GetAvailableSlots(
         long doctorId,
@@ -122,6 +124,12 @@ public class AppointmentService(
                 }
             }
 
+            if (request.PaymentMethod != PaymentMethod.Online && (request.Type == ConsultationType.Chat || request.Type == ConsultationType.VideoCall))
+            {
+                await transaction.RollbackAsync();
+                return ServiceResult<AppointmentBookedDTO>.Failure("Online payment is required for remote consultations (Chat / Video).");
+            }
+
             var appointment = new Appointment
             {
                 PatientId = patient.PatientId,
@@ -137,7 +145,7 @@ public class AppointmentService(
 
             await unitOfWork.Appointments.AddAsync(appointment);
             
-            if (appointment.ConsultationType == ConsultationType.Chat || appointment.ConsultationType == ConsultationType.VideoCall)
+            if (request.PaymentMethod != PaymentMethod.Online && (appointment.ConsultationType == ConsultationType.Chat || appointment.ConsultationType == ConsultationType.VideoCall))
             {
                 var chatSession = new ChatSession
                 {
@@ -211,7 +219,13 @@ public class AppointmentService(
         catch (InvalidOperationException ex)
         {
             await transaction.RollbackAsync();
-            return ServiceResult<AppointmentBookedDTO>.Failure(ex.Message);
+            logger.LogError(ex, "Failed to book appointment for patient {PatientId} with doctor {DoctorId} at {ScheduledAt}",
+                patient.PatientId, request.DoctorId, request.ScheduledAt);
+
+            // SECURITY: Return a generic message so internal exception details
+            // (e.g. detailed Gateway network exceptions/credentials) aren't leaked.
+            return ServiceResult<AppointmentBookedDTO>.Failure(
+                "Failed to generate payment link. Please try again later or contact support.");
         }
         catch (DbUpdateException)
         {

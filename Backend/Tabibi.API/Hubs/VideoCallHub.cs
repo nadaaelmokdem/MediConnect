@@ -4,10 +4,12 @@ using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
+using Tabibi.Application.Interfaces;
+
 namespace Tabibi.API.Hubs
 {
     [Authorize]
-    public class VideoCallHub : Hub
+    public class VideoCallHub(IChatService chatService) : Hub
     {
         // SessionId -> (UserId -> ConnectionId)
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _roomUsers = new();
@@ -16,6 +18,26 @@ namespace Tabibi.API.Hubs
         {
             var userId = Context.UserIdentifier;
             if (string.IsNullOrEmpty(userId)) return;
+
+            if (!long.TryParse(sessionId, out var parsedSessionId))
+            {
+                await Clients.Caller.SendAsync("Unauthorized", "Invalid session format.");
+                return;
+            }
+
+            var access = await chatService.ValidateAccess(parsedSessionId, userId);
+            if (!access.Allowed)
+            {
+                await Clients.Caller.SendAsync("Unauthorized", "You do not have access to this video call session.");
+                return;
+            }
+
+            // SECURITY: Require payment before joining video call room
+            if (!await chatService.IsSessionPaidAsync(parsedSessionId))
+            {
+                await Clients.Caller.SendAsync("Unauthorized", "Payment required to join this video call session.");
+                return;
+            }
 
             var room = _roomUsers.GetOrAdd(sessionId, _ => new ConcurrentDictionary<string, string>());
             room.AddOrUpdate(userId, Context.ConnectionId, (_, _) => Context.ConnectionId);
@@ -56,6 +78,10 @@ namespace Tabibi.API.Hubs
         {
             var userId = Context.UserIdentifier;
             if (string.IsNullOrEmpty(userId)) return;
+
+            if (!long.TryParse(sessionId, out var parsedSessionId)) return;
+            var access = await chatService.ValidateAccess(parsedSessionId, userId);
+            if (!access.Allowed) return;
 
             await Clients.Group(sessionId).SendAsync("ReceiveInCallMessage", userId, message);
         }

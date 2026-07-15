@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace Tabibi.Application.Services
 {
-    public class PatientAIService(IUnitOfWork unitOfWork, IAIDoctor aiDoctor, IChatService chatService) : Tabibi.Application.Interfaces.IPatientAIService
+    public class PatientAIService(IUnitOfWork unitOfWork, IAIDoctor aiDoctor, IChatService chatService, IPaymentService paymentService) : Tabibi.Application.Interfaces.IPatientAIService
     {
         public async Task<ServiceResult<QuotaResponseDTO>> GetQuotaAsync(string userId)
         {
@@ -47,66 +47,101 @@ namespace Tabibi.Application.Services
             });
         }
 
-        public async Task<ServiceResult<RechargeResponseDTO>> RechargeAsync(string userId, decimal amount)
+        public async Task<ServiceResult<InitiateRechargeResponseDTO>> InitiateRechargeAsync(string userId, decimal amount)
         {
             if (amount < 10 || amount % 10 != 0)
             {
-                return ServiceResult<RechargeResponseDTO>.Failure("Amount must be a multiple of 10 LE.");
+                return ServiceResult<InitiateRechargeResponseDTO>.Failure("Amount must be a multiple of 10 EGP (minimum 10 EGP).");
             }
 
-            var patient = await unitOfWork.PatientProfiles.Query().Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == userId);
-            if (patient == null) return ServiceResult<RechargeResponseDTO>.Failure("Patient not found");
+            var patient = await unitOfWork.PatientProfiles.Query().Include(p => p.User).Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == userId);
+            if (patient == null) return ServiceResult<InitiateRechargeResponseDTO>.Failure("Patient not found");
 
-            if (patient.Quota == null)
+            int messagesGranted = (int)(amount / 10) * 20;
+
+            var recharge = new AiRecharge
             {
-                patient.Quota = new PatientQuota { PatientId = patient.PatientId };
-                await unitOfWork.PatientQuotas.AddAsync(patient.Quota);
-            }
+                PatientId = patient.PatientId,
+                Amount = amount,
+                MessagesGranted = messagesGranted,
+                Status = PaymentStatus.Pending,
+                Gateway = PaymentGateway.Geidea
+            };
 
-            int messagesToAdd = (int)(amount / 10) * 20;
-            patient.Quota.AvailablePremiumAiMessages += messagesToAdd;
-
+            await unitOfWork.AiRecharges.AddAsync(recharge);
             await unitOfWork.CompleteAsync();
 
-            return ServiceResult<RechargeResponseDTO>.Success(new RechargeResponseDTO 
-            { 
-                Message = "Recharge successful", 
-                FreeAiMessages = patient.Quota.AvailableAiMessages, 
-                PremiumAiMessages = patient.Quota.AvailablePremiumAiMessages 
-            });
+            try
+            {
+                var paymentUrl = await paymentService.GenerateRechargePaymentLinkAsync(
+                    recharge,
+                    patient.User.Email ?? "",
+                    patient.User.PhoneNumber ?? "",
+                    patient.User.FullName);
+
+                await unitOfWork.CompleteAsync();
+
+                return ServiceResult<InitiateRechargeResponseDTO>.Success(new InitiateRechargeResponseDTO
+                {
+                    PaymentUrl = paymentUrl,
+                    MessagesGranted = messagesGranted,
+                    Amount = amount
+                });
+            }
+            catch
+            {
+                unitOfWork.AiRecharges.Remove(recharge);
+                await unitOfWork.CompleteAsync();
+                return ServiceResult<InitiateRechargeResponseDTO>.Failure("Failed to generate payment link. Please try again.");
+            }
         }
 
         public async Task<ServiceResult<string>> AskAIAsync(string userId, SendAIMessageDTO request)
         {
-            var patient = await unitOfWork.PatientProfiles.Query().Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == userId);
-            if (patient == null) return ServiceResult<string>.Failure("Patient not found");
+            await using var transaction = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+            try
+            {
+                var patient = await unitOfWork.PatientProfiles.Query().Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == userId);
+                if (patient == null)
+                {
+                    await transaction.RollbackAsync();
+                    return ServiceResult<string>.Failure("Patient not found");
+                }
 
-            if (patient.Quota == null)
-            {
-                patient.Quota = new PatientQuota { PatientId = patient.PatientId };
-                await unitOfWork.PatientQuotas.AddAsync(patient.Quota);
-            }
+                if (patient.Quota == null)
+                {
+                    patient.Quota = new PatientQuota { PatientId = patient.PatientId };
+                    await unitOfWork.PatientQuotas.AddAsync(patient.Quota);
+                }
 
-            if (DateTime.UtcNow - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
-            {
-                patient.Quota.AvailableAiMessages = 15;
-                patient.Quota.LastAiMessageReset = DateTime.UtcNow;
-            }
+                if (DateTime.UtcNow - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
+                {
+                    patient.Quota.AvailableAiMessages = 15;
+                    patient.Quota.LastAiMessageReset = DateTime.UtcNow;
+                }
 
-            if (patient.Quota.AvailableAiMessages > 0)
-            {
-                patient.Quota.AvailableAiMessages--;
-            }
-            else if (patient.Quota.AvailablePremiumAiMessages > 0)
-            {
-                patient.Quota.AvailablePremiumAiMessages--;
-            }
-            else
-            {
-                return ServiceResult<string>.Failure("AI message quota exceeded. Please recharge.");
-            }
+                if (patient.Quota.AvailableAiMessages > 0)
+                {
+                    patient.Quota.AvailableAiMessages--;
+                }
+                else if (patient.Quota.AvailablePremiumAiMessages > 0)
+                {
+                    patient.Quota.AvailablePremiumAiMessages--;
+                }
+                else
+                {
+                    await transaction.RollbackAsync();
+                    return ServiceResult<string>.Failure("AI message quota exceeded. Please recharge.");
+                }
 
-            await unitOfWork.CompleteAsync();
+                await unitOfWork.CompleteAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             var session = await chatService.StartOrGetAISessionAsync(userId, request.SessionId);
             

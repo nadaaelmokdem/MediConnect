@@ -4,6 +4,7 @@ using Tabibi.Application.DTOs;
 using Tabibi.Application.Interfaces;
 using LoginRequest = Tabibi.Application.DTOs.LoginRequest;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Tabibi.API.Controllers
 {
@@ -14,6 +15,7 @@ namespace Tabibi.API.Controllers
         ITokenService tokenService) : ControllerBase
     {      
 
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] SignupRequest signupRequest)
         {
@@ -45,6 +47,7 @@ namespace Tabibi.API.Controllers
 
 
 
+        [EnableRateLimiting("AuthPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
@@ -60,7 +63,29 @@ namespace Tabibi.API.Controllers
                 Success = true,
                 User = res.Data.User
             });
+        }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest req)
+        {
+            var res = await authService.GoogleLogin(req);
+            if (!res.IsSuccess)
+                return BadRequest(res.ErrorMessage);
+
+            if (res.Data != null && !res.Data.IsNewUser)
+            {
+                Response.Cookies.SetRefreshTokenCookie(res.Data.RefreshToken!);
+                Response.Cookies.SetAccessTokenCookie(res.Data.Token!);
+            }
+
+            return Ok(new AuthResponse
+            {
+                Success = true,
+                User = res.Data?.User,
+                IsNewUser = res.Data?.IsNewUser ?? false,
+                GoogleName = res.Data?.GoogleName,
+                GoogleEmail = res.Data?.GoogleEmail
+            });
         }
 
 

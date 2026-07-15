@@ -1,5 +1,6 @@
 using Tabibi.Application.Extensions;
 using Microsoft.AspNetCore.Identity;
+using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Tabibi.Application.DTOs;
@@ -15,7 +16,8 @@ public class AuthService(
     UserManager<AppUser> userManager,
     IAuthUtils authUtils,
     IUnitOfWork unitOfWork,
-    ILogger<AuthService> logger) : IAuthService
+    ILogger<AuthService> logger,
+    Microsoft.Extensions.Configuration.IConfiguration configuration) : IAuthService
 {
     public async Task<ServiceResult> Logout(string token)
     {
@@ -73,6 +75,60 @@ public class AuthService(
         return ServiceResult<LoginDTO?>.Failure("Incorrect username or password!");
     }
 
+    public async Task<ServiceResult<LoginDTO?>> GoogleLogin(GoogleLoginRequest req)
+    {
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new List<string> { configuration["GoogleAuth:ClientId"] ?? "" }
+            };
+            payload = await GoogleJsonWebSignature.ValidateAsync(req.Token, settings);
+        }
+        catch (InvalidJwtException)
+        {
+            return ServiceResult<LoginDTO?>.Failure("Invalid Google Token");
+        }
+
+        var user = await userManager.FindByEmailAsync(payload.Email);
+        if (user is null)
+        {
+            return ServiceResult<LoginDTO?>.Success(new LoginDTO
+            {
+                IsNewUser = true,
+                GoogleName = payload.Name,
+                GoogleEmail = payload.Email,
+                Token = null,
+                RefreshToken = null,
+                User = null
+            });
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        var userResponse = user.ToResponse();
+        userResponse.Roles = roles.ToList();
+
+        if (roles.Contains(UserRoles.Doctor))
+        {
+            var doctor = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
+            userResponse.IsVerified = doctor?.IsVerified ?? false;
+            userResponse.ProfilePictureUrl = doctor?.ProfilePictureUrl;
+        }
+
+        var refreshToken = authUtils.GenerateRefreshToken();
+        TimeSpan tokenLifetime = TimeSpan.FromDays(7);
+        await tokenStore.StoreTokenAsync(refreshToken, user.Id, tokenLifetime);
+
+        return ServiceResult<LoginDTO?>.Success(new LoginDTO
+        {
+            User = userResponse,
+            Token = authUtils.GenerateJwtToken(user, roles),
+            RefreshToken = refreshToken,
+            IsNewUser = false
+        });
+    }
+
     public async Task<ServiceResult<LoginDTO?>> Register(SignupRequest signupRequest)
     {
         if (string.IsNullOrEmpty(signupRequest.Email))
@@ -85,17 +141,50 @@ public class AuthService(
         if (phoneExists)
             return ServiceResult<LoginDTO?>.Failure("Phone number is already registered!");
 
+        GoogleJsonWebSignature.Payload? googlePayload = null;
+        if (!string.IsNullOrEmpty(signupRequest.GoogleToken))
+        {
+            try
+            {
+                var settings = new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new List<string> { configuration["GoogleAuth:ClientId"] ?? "" }
+                };
+                googlePayload = await GoogleJsonWebSignature.ValidateAsync(signupRequest.GoogleToken, settings);
+            }
+            catch
+            {
+                return ServiceResult<LoginDTO?>.Failure("Invalid Google Token");
+            }
+            // Use Google's email to ensure it is verified
+            signupRequest.Email = googlePayload.Email;
+        }
+
         var user = new AppUser
         {
             UserName = signupRequest.Email,
             FullName = signupRequest.FullName,
             Email = signupRequest.Email,
-            EmailConfirmed = false,
+            EmailConfirmed = googlePayload != null,
             PhoneNumber = signupRequest.PhoneNumber,
             PhoneNumberConfirmed = false
         };
 
-        var res = await userManager.CreateAsync(user, signupRequest.Password);
+        IdentityResult res;
+        if (googlePayload != null)
+        {
+            var randomPassword = Guid.NewGuid().ToString("N") + "Aa1@";
+            res = await userManager.CreateAsync(user, randomPassword);
+            if (res.Succeeded)
+            {
+                await userManager.AddLoginAsync(user, new UserLoginInfo("Google", googlePayload.Subject, "Google"));
+            }
+        }
+        else
+        {
+            res = await userManager.CreateAsync(user, signupRequest.Password);
+        }
+
         if (!res.Succeeded)
             return ServiceResult<LoginDTO?>.Failure(string.Join(", ", res.Errors.Select(e => e.Description)));
 
@@ -155,6 +244,10 @@ public class AuthService(
 
     public async Task<ServiceResult> AddToRole(string email, string role)
     {
+        // SECURITY: Never allow elevation to Admin via this endpoint.
+        if (role.Equals(UserRoles.Admin, StringComparison.OrdinalIgnoreCase))
+            return ServiceResult.Failure("Role assignment to Admin is not permitted through this endpoint.");
+
         var user = await userManager.FindByEmailAsync(email);
         if (user is null)
             return ServiceResult.Failure("User doesn't exist!");

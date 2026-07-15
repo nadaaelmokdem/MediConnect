@@ -9,7 +9,7 @@ namespace Tabibi.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VideoCallController(IHubContext<VideoCallHub> hubContext) : ControllerBase
+    public class VideoCallController(IHubContext<VideoCallHub> hubContext, Tabibi.Application.Interfaces.IChatService chatService) : ControllerBase
     {
         [HttpPost("leave-beacon/{sessionId}")]
         [Authorize]
@@ -19,6 +19,17 @@ namespace Tabibi.API.Controllers
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
+            }
+
+            if (!long.TryParse(sessionId, out var parsedSessionId))
+            {
+                return BadRequest("Invalid session format.");
+            }
+
+            var access = await chatService.ValidateAccess(parsedSessionId, userId);
+            if (!access.Allowed)
+            {
+                return Forbid();
             }
 
             // Using SendAsync to broadcast to the group directly from the controller

@@ -23,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Payment> Payments { get; private set; }
     public IRepository<DoctorProfileChangeLog> DoctorProfileChangeLogs { get; private set; }
     public IRepository<PatientQuota> PatientQuotas { get; private set; }
+    public IRepository<AiRecharge> AiRecharges { get; private set; }
     public IRepository<AppUser> Users { get; private set; }
     public IRepository<Microsoft.AspNetCore.Identity.IdentityRole> Roles { get; private set; }
     public IRepository<Microsoft.AspNetCore.Identity.IdentityUserRole<string>> UserRoles { get; private set; }
@@ -43,7 +44,7 @@ public class UnitOfWork : IUnitOfWork
         Payments = new Repository<Payment>(_context);
         DoctorProfileChangeLogs = new Repository<DoctorProfileChangeLog>(_context);
         PatientQuotas = new Repository<PatientQuota>(_context);
-        Payments = new Repository<Payment>(_context);
+        AiRecharges = new Repository<AiRecharge>(_context);
         Users = new Repository<AppUser>(_context);
         Roles = new Repository<Microsoft.AspNetCore.Identity.IdentityRole>(_context);
         UserRoles = new Repository<Microsoft.AspNetCore.Identity.IdentityUserRole<string>>(_context);

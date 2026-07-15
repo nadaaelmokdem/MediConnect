@@ -13,5 +13,6 @@ public interface IChatService
     Task<ChatMessage> SaveMessage(long sessionId, string role, string content, bool isSystemMessage = false);
     Task<ChatSession> StartOrGetSessionAsync(string patientUserId, long doctorId, bool isCompanyPaid = false);
     Task<ChatSession> StartOrGetAISessionAsync(string patientUserId, long? sessionId = null);
-    Task<ChatSession> FollowUpSessionAsync(long sessionId, string patientUserId);
+    Task<bool> IsSessionPaidAsync(long sessionId);
+    Task<ServiceResult<InitiateFollowUpResponseDTO>> InitiateFollowUpAsync(long sessionId, string patientUserId);
 }

@@ -13,7 +13,7 @@ namespace Tabibi.API.Controllers
     {
         [HttpPost("start/{doctorId}")]
         [Authorize(Roles = UserRoles.Patient)]
-        public async Task<IActionResult> StartSession(long doctorId, [FromQuery] bool isCompanyPaid = false, [FromBody] StartSessionRequest? request = null)
+        public async Task<IActionResult> StartSession(long doctorId)
         {
             var userId = User.GetId();
             if (string.IsNullOrEmpty(userId))
@@ -23,12 +23,7 @@ namespace Tabibi.API.Controllers
 
             try
             {
-                if (!isCompanyPaid)
-                {
-                    return BadRequest("Paid chat sessions must be booked through the appointment system.");
-                }
-
-                var session = await chatService.StartOrGetSessionAsync(userId, doctorId, isCompanyPaid);
+                var session = await chatService.StartOrGetSessionAsync(userId, doctorId, isCompanyPaid: true);
                 return Ok(new { sessionId = session.SessionId });
             }
             catch (Exception ex)
@@ -53,6 +48,12 @@ namespace Tabibi.API.Controllers
                 return Forbid();
             }
 
+            // SECURITY: Require payment before returning message history
+            if (!await chatService.IsSessionPaidAsync(sessionId))
+            {
+                return StatusCode(402, "Payment is required to access this session's history.");
+            }
+
             var history = await chatService.GetHistory(sessionId);
             return Ok(history);
         }
@@ -70,6 +71,12 @@ namespace Tabibi.API.Controllers
             if (!access.Allowed)
             {
                 return Forbid();
+            }
+
+            // SECURITY: Require payment before returning session details
+            if (!await chatService.IsSessionPaidAsync(sessionId))
+            {
+                return StatusCode(402, "Payment is required to access this session's details.");
             }
 
             var details = await chatService.GetSessionDetails(sessionId);
@@ -106,12 +113,11 @@ namespace Tabibi.API.Controllers
                 var access = await chatService.ValidateAccess(sessionId, userId);
                 if (!access.Allowed) return Forbid();
 
-                // Here we would ideally integrate with a payment gateway.
-                // For now, we update the session to be a follow-up.
-                // It resets the StartedAt clock and marks IsFollowUp.
+                var result = await chatService.InitiateFollowUpAsync(sessionId, userId);
+                if (!result.IsSuccess)
+                    return BadRequest(result.ErrorMessage);
 
-                var updatedSession = await chatService.FollowUpSessionAsync(sessionId, userId);
-                return Ok(new { message = "Follow up initiated", sessionId = updatedSession.SessionId });
+                return Ok(result.Data);
             }
             catch (Exception ex)
             {
@@ -123,8 +129,9 @@ namespace Tabibi.API.Controllers
         [Authorize]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded");
+            var validation = FileValidationHelper.ValidateDocument(file);
+            if (!validation.IsSuccess)
+                return BadRequest(validation.ErrorMessage);
 
             var fileUrl = await fileService.UploadFileAsync(file, "chats");
             return Ok(new { url = fileUrl, name = file.FileName });

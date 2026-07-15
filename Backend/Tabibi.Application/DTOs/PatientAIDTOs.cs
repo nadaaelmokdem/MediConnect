@@ -16,6 +16,13 @@ namespace Tabibi.Application.DTOs
         public int PremiumAiMessages { get; set; }
     }
 
+    public class InitiateRechargeResponseDTO
+    {
+        public string PaymentUrl { get; set; } = string.Empty;
+        public int MessagesGranted { get; set; }
+        public decimal Amount { get; set; }
+    }
+
     public class ChatHistoryResponseDTO
     {
         public List<ChatMessageDTO> Messages { get; set; } = new();

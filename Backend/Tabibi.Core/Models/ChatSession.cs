@@ -50,6 +50,7 @@ namespace Tabibi.Core.Models
 
             public ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
             public Payment? Payment { get; set; }
+            public Appointment? Appointment { get; set; }
         }
 
         public enum SessionStatus { Active, Completed, Abandoned }

@@ -15,6 +15,7 @@ namespace Tabibi.Application.DTOs
         public string Password { get; set; } = "";
         public string PhoneNumber { get; set; } = "";
         public string Role { get; set; } = UserRoles.Patient;
+        public string? GoogleToken { get; set; }
     }
 
     public class ForgotPasswordRequest
@@ -28,12 +29,21 @@ namespace Tabibi.Application.DTOs
         public string NewPassword { get; set; } = "";
     }
 
+    public class GoogleLoginRequest
+    {
+        public string Token { get; set; } = "";
+        public string Role { get; set; } = UserRoles.Patient;
+    }
+
     public class AuthResponse
     {
         public bool Success { get; set; }
         public string Message { get; set; } = "";
         public UserResponse? User { get; set; }
         public string? Token { get; set; }
+        public bool IsNewUser { get; set; }
+        public string? GoogleName { get; set; }
+        public string? GoogleEmail { get; set; }
     }
 
     public class UserResponse

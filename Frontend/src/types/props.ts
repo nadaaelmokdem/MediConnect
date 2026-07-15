@@ -105,6 +105,8 @@ export interface TermsFooterProps {
 
 export interface GoogleButtonProps {
   disabled?: boolean;
-  onClick?: () => void;
   isPrimary?: boolean;
+  requiredRole?: string;
+  onSuccess?: (response: any, rawToken: string) => void;
+  onError?: (error: any) => void;
 }

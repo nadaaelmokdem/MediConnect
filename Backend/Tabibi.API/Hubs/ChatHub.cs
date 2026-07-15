@@ -86,7 +86,14 @@ namespace Tabibi.API.Hubs
             if (!access.Allowed)
             {
                 await SendUnauthorized("You do not have access to this chat session.");
-            return;
+                return;
+            }
+
+            // SECURITY: Require payment before joining the session.
+            if (!await chatService.IsSessionPaidAsync(sessionId))
+            {
+                await SendUnauthorized("Payment required to join this session.");
+                return;
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(sessionId));
@@ -116,7 +123,12 @@ namespace Tabibi.API.Hubs
                 return;
             }
 
-
+            // SECURITY: Require payment before sending messages
+            if (!await chatService.IsSessionPaidAsync(request.SessionId))
+            {
+                await Clients.Caller.SendAsync("SendMessageError", "Payment required for this session.");
+                return;
+            }
 
             if (string.IsNullOrWhiteSpace(request.Content))
             {
