@@ -187,12 +187,14 @@ export default function CalendarModal({
                   key={ev.id}
                   className="bg-surface-container-lowest p-4 rounded-xl border border-surface-variant/30 shadow-sm relative group"
                 >
-                  <button
-                    onClick={() => onCancelAppointment(ev.id)}
-                    className="absolute top-2 right-2 text-on-surface-variant/40 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                  >
-                    <MdDelete size={14} />
-                  </button>
+                  {ev.paymentMethod === "OnSite" && (
+                    <button
+                      onClick={() => onCancelAppointment(ev.id)}
+                      className="absolute top-2 right-2 text-on-surface-variant/40 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    >
+                      <MdDelete size={14} />
+                    </button>
+                  )}
                   <div className="text-primary font-bold text-xs mb-1 flex items-center gap-1">
                     <MdAccessTime size={12} /> {ev.time}
                   </div>

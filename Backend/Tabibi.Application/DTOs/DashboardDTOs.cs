@@ -18,6 +18,7 @@ namespace Tabibi.Application.DTOs
         public string? DoctorProfilePictureUrl { get; set; }
         public string ConsultationType { get; set; } = string.Empty; 
         public string Status { get; set; } = string.Empty; 
+        public string PaymentMethod { get; set; } = string.Empty;
     }
 
     public class UnreviewedAppointmentDTO

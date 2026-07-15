@@ -49,6 +49,7 @@ interface BookingScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBookingSuccess?: (slot: SelectedSlot) => void;
+  initialType?: ConsultationType;
 }
 
 const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
@@ -56,6 +57,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
   isOpen,
   onClose,
   onBookingSuccess,
+  initialType,
 }) => {
   const [weekStart, setWeekStart] = useState(() => getStartOfWeek(new Date()));
   const [selectedDateKey, setSelectedDateKey] = useState(() =>
@@ -70,7 +72,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
   const [isBooking, setIsBooking] = useState(false);
 
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [consultType, setConsultType] = useState<ConsultationType>("clinic");
+  const [consultType, setConsultType] = useState<ConsultationType>(initialType || "clinic");
   const [paymentMethod, setPaymentMethod] = useState<number>(1); // 1 = Online, 2 = OnSite
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
@@ -80,6 +82,12 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
     () => CONSULT_TYPES.filter((ct) => doctor[ct.enabledKey]),
     [doctor],
   );
+
+  useEffect(() => {
+    if (isOpen) {
+      setConsultType(initialType || "clinic");
+    }
+  }, [isOpen, initialType]);
 
   useEffect(() => {
     if (enabledTypes.length > 0 && !enabledTypes.find((ct) => ct.id === consultType)) {
@@ -479,7 +487,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
               </div>
             ) : (
               <div className="flex items-center gap-2 border border-green-200 p-2 rounded-xl bg-green-50 shadow-sm text-green-700 text-sm font-semibold">
-                Online Payment Required
+                Online Payment Only
               </div>
             )}
 

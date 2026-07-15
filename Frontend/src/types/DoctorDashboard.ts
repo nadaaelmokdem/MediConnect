@@ -8,6 +8,7 @@ export interface ScheduleItem {
   date: string;
   initials: string;
   avatar?: string;
+  paymentMethod?: string;
 }
 
 export interface ChatMessage {

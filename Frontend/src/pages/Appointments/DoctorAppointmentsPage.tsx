@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { MdClear, MdAccessTime, MdChat } from "react-icons/md";
+import { FaVideo } from "react-icons/fa";
 import { LuCalendarDays } from "react-icons/lu";
 import AppointmentFilters from "../../components/Appointments/AppointmentFilters";
 import AppointmentDetailModal from "../../components/Appointments/AppointmentDetailModal";
@@ -11,6 +12,7 @@ import {
   type AppointmentListItem,
   getStatusBadgeClasses,
   isChatConsultation,
+  isVideoConsultation,
   getConsultationTypeIcon,
   getConsultationTypeLabel,
   getStatusLabel,
@@ -161,6 +163,24 @@ export default function DoctorAppointmentsPage() {
                             >
                               <MdChat size={14} /> Open Chat
                             </Link>
+                          ) : isVideoConsultation(app.consultationType) && app.sessionId && getStatusLabel(app.status) === "Confirmed" ? (
+                            new Date() >= new Date(app.scheduledAt) ? (
+                              <Link
+                                to={`/video-call/${app.sessionId}`}
+                                className="flex items-center gap-1.5 text-white bg-primary hover:bg-primary-dark px-4 py-1.5 rounded-lg font-semibold text-sm transition-all shadow-sm group-hover:shadow-md w-fit"
+                                title="Join the video call room"
+                              >
+                                <FaVideo size={14} /> Join Call
+                              </Link>
+                            ) : (
+                              <button
+                                disabled
+                                className="flex items-center gap-1.5 text-white/70 bg-primary/50 cursor-not-allowed px-4 py-1.5 rounded-lg font-semibold text-sm transition-all w-fit"
+                                title={`This call will be available at ${format(new Date(app.scheduledAt), "h:mm a")}`}
+                              >
+                                <FaVideo size={14} /> Join Call
+                              </button>
+                            )
                           ) : (
                             <button
                               onClick={() => setSelectedAppointment(app)}

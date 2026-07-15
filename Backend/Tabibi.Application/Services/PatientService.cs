@@ -212,7 +212,12 @@ namespace Tabibi.Application.Services
             bool changed = false;
             foreach (var a in toComplete)
             {
-                if (now >= a.ScheduledAt.AddMinutes(a.DurationMins))
+                if (a.ConsultationType == ConsultationType.Clinic && now >= a.ScheduledAt.AddMinutes(a.DurationMins))
+                {
+                    a.Status = AppointmentStatus.Completed;
+                    changed = true;
+                }
+                else if (a.ConsultationType == ConsultationType.Chat && now >= a.ScheduledAt.AddDays(7))
                 {
                     a.Status = AppointmentStatus.Completed;
                     changed = true;
@@ -232,7 +237,8 @@ namespace Tabibi.Application.Services
                     ScheduledAt = a.ScheduledAt,
                     DoctorProfilePictureUrl = a.Doctor.ProfilePictureUrl,
                     ConsultationType = a.ConsultationType.ToString(),
-                    Status = a.Status.ToString()
+                    Status = a.Status.ToString(),
+                    PaymentMethod = a.PaymentMethod.ToString()
                 })
                 .ToListAsync();
 

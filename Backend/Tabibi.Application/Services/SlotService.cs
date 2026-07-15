@@ -66,19 +66,85 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
         TimeSpan time,
         int durationMins)
     {
-        return time >= availability.StartTime
-               && time.Add(TimeSpan.FromMinutes(durationMins)) <= availability.EndTime;
+        if (availability.StartTime < availability.EndTime)
+        {
+            return time >= availability.StartTime
+                   && time.Add(TimeSpan.FromMinutes(durationMins)) <= availability.EndTime;
+        }
+        else
+        {
+            var slotEnd = time.Add(TimeSpan.FromMinutes(durationMins));
+            var limit = availability.EndTime.Add(TimeSpan.FromHours(24));
+            return (time >= availability.StartTime && slotEnd <= limit)
+                   || (slotEnd <= availability.EndTime);
+        }
     }
 
     public static bool IsAlignedToSlotGrid(
         DoctorAvailability availability,
         TimeSpan time)
     {
-        if (time < availability.StartTime || time >= availability.EndTime)
-            return false;
+        if (availability.StartTime < availability.EndTime)
+        {
+            if (time < availability.StartTime || time >= availability.EndTime)
+                return false;
 
-        var offsetMinutes = (time - availability.StartTime).TotalMinutes;
-        return offsetMinutes % availability.SlotDurationMins == 0;
+            var offsetMinutes = (time - availability.StartTime).TotalMinutes;
+            return offsetMinutes % availability.SlotDurationMins == 0;
+        }
+        else
+        {
+            if (time >= availability.StartTime)
+            {
+                var offsetMinutes = (time - availability.StartTime).TotalMinutes;
+                return offsetMinutes % availability.SlotDurationMins == 0;
+            }
+            else if (time < availability.EndTime)
+            {
+                var offsetMinutes = (time + TimeSpan.FromHours(24) - availability.StartTime).TotalMinutes;
+                return offsetMinutes % availability.SlotDurationMins == 0;
+            }
+            return false;
+        }
+    }
+
+    public static bool IsSlotWithinAvailability(
+        DoctorAvailability availability,
+        DateOnly slotDate,
+        TimeSpan slotTime,
+        int durationMins,
+        DateOnly availabilityDate)
+    {
+        if (availabilityDate == slotDate)
+        {
+            if (availability.StartTime < availability.EndTime)
+            {
+                return slotTime >= availability.StartTime
+                       && slotTime.Add(TimeSpan.FromMinutes(durationMins)) <= availability.EndTime
+                       && (slotTime - availability.StartTime).TotalMinutes % availability.SlotDurationMins == 0;
+            }
+            else
+            {
+                var slotEnd = slotTime.Add(TimeSpan.FromMinutes(durationMins));
+                var limit = availability.EndTime.Add(TimeSpan.FromHours(24));
+                return slotTime >= availability.StartTime
+                       && slotEnd <= limit
+                       && (slotTime - availability.StartTime).TotalMinutes % availability.SlotDurationMins == 0;
+            }
+        }
+        else if (availabilityDate == slotDate.AddDays(-1))
+        {
+            if (availability.StartTime >= availability.EndTime)
+            {
+                var slotEnd = slotTime.Add(TimeSpan.FromMinutes(durationMins));
+                if (slotEnd <= availability.EndTime)
+                {
+                    var offsetMinutes = (slotTime + TimeSpan.FromHours(24) - availability.StartTime).TotalMinutes;
+                    return offsetMinutes % availability.SlotDurationMins == 0;
+                }
+            }
+        }
+        return false;
     }
 
     public async Task<List<Appointment>> GetBlockingAppointmentsAsync(
@@ -142,15 +208,21 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
             return SlotValidationResult.Invalid("Doctor is not verified.");
 
         var date = DateOnly.FromDateTime(normalized);
-        var availabilities = await GetActiveAvailabilitiesAsync(doctorId, date);
+        var currentAvailabilities = await GetActiveAvailabilitiesAsync(doctorId, date);
+        var prevAvailabilities = await GetActiveAvailabilitiesAsync(doctorId, date.AddDays(-1));
 
-        if (availabilities.Count == 0)
+        if (currentAvailabilities.Count == 0 && prevAvailabilities.Count == 0)
             return SlotValidationResult.Invalid("Doctor has no availability on this day.");
 
         var slotTime = normalized.TimeOfDay;
-        var matchingAvailability = availabilities.FirstOrDefault(a =>
-            IsTimeWithinAvailability(a, slotTime, durationMins)
-            && IsAlignedToSlotGrid(a, slotTime));
+        var matchingAvailability = currentAvailabilities.FirstOrDefault(a =>
+            IsSlotWithinAvailability(a, date, slotTime, durationMins, date));
+
+        if (matchingAvailability == null)
+        {
+            matchingAvailability = prevAvailabilities.FirstOrDefault(a =>
+                IsSlotWithinAvailability(a, date, slotTime, durationMins, date.AddDays(-1)));
+        }
 
         if (matchingAvailability == null)
             return SlotValidationResult.Invalid("Selected time is outside doctor availability.");

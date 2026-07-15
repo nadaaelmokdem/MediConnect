@@ -40,6 +40,7 @@ export default function DoctorDetailsPage() {
   
   // ── Booking Modal State ──────────────────────────────────────────────────────
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingModalInitialType, setBookingModalInitialType] = useState<"clinic" | "video" | "chat">("clinic");
   // ────────────────────────────────────────────────────────────────────────────
 
   const [reviews, setReviews] = useState<any[]>([]);
@@ -353,36 +354,8 @@ export default function DoctorDetailsPage() {
       return;
     }
 
-    try {
-      const res: any = await AppointmentService.bookAppointment({
-        doctorId: doctor.doctorId,
-        scheduledAt: new Date().toISOString(),
-        type: 1 as any, // 1 = Video
-        paymentMethod: 1 // 1 = Online
-      });
-      
-      const redirectUrl = res?.paymentUrl || res?.PaymentUrl || res?.sessionUrl || res?.data?.paymentUrl || res?.data?.PaymentUrl;
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-        return;
-      } else {
-        if (res?.sessionId) {
-          navigate(`/video-call/${res.sessionId}`);
-        } else {
-          throw new Error("Payment link or session could not be generated.");
-        }
-      }
-    } catch (err: any) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Cannot start Video Call',
-        text: err.response?.data?.message || err.message || err.response?.data || "Failed to start session.",
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl',
-          confirmButton: 'w-full bg-red-500 text-white font-bold py-3 px-4 rounded-xl',
-        }
-      });
-    }
+    setBookingModalInitialType("video");
+    setIsBookingModalOpen(true);
   };
 
   const handleChatClick = () => {
@@ -494,6 +467,7 @@ export default function DoctorDetailsPage() {
       alert("Doctors cannot book appointments.");
       return;
     }
+    setBookingModalInitialType("clinic");
     setIsBookingModalOpen(true);
   };
 
@@ -594,6 +568,7 @@ export default function DoctorDetailsPage() {
           isOpen={isBookingModalOpen}
           onClose={handleCloseBookingModal}
           onBookingSuccess={handleBookingSuccess}
+          initialType={bookingModalInitialType}
         />
 
       </div>

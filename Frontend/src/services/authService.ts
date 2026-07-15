@@ -47,12 +47,24 @@ class AuthService {
   }
 
   /**
-   * Login with Google
+   * Login with Google (auth-code flow)
    */
-  async googleLogin(token: string, requiredRole?: string): Promise<AuthResponse> {
+  async googleLogin(tokenOrAuthCode: string | { code: string; role?: string }, requiredRole?: string): Promise<AuthResponse> {
+    let code: string;
+    let role: string;
+
+    if (typeof tokenOrAuthCode === "string") {
+      // Legacy token flow - still support for backward compatibility
+      code = tokenOrAuthCode;
+      role = requiredRole || "Patient";
+    } else {
+      code = tokenOrAuthCode.code;
+      role = tokenOrAuthCode.role || requiredRole || "Patient";
+    }
+
     const response = await api.post<AuthResponse>(
-      `${AUTH_API}/google-login`,
-      { token, role: requiredRole || "Patient" },
+      `${AUTH_API}/google-auth-code`,
+      { code, redirectUri: "localhost:5173/auth/callback", role },
       { withCredentials: true },
     );
 

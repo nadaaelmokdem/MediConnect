@@ -320,6 +320,9 @@ namespace Tabibi.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<long?>("VideoCallSessionId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("AppointmentId");
 
                     b.HasIndex("DoctorId");
@@ -329,6 +332,10 @@ namespace Tabibi.Infrastructure.Migrations
                     b.HasIndex("SessionId")
                         .IsUnique()
                         .HasFilter("[SessionId] IS NOT NULL");
+
+                    b.HasIndex("VideoCallSessionId")
+                        .IsUnique()
+                        .HasFilter("[VideoCallSessionId] IS NOT NULL");
 
                     b.HasIndex("PatientId", "DoctorId");
 
@@ -823,6 +830,41 @@ namespace Tabibi.Infrastructure.Migrations
                     b.ToTable("Specialties");
                 });
 
+            modelBuilder.Entity("Tabibi.Core.Models.VideoCallSession", b =>
+                {
+                    b.Property<long>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SessionId"));
+
+                    b.Property<long>("DoctorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("PatientId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("VideoCallSessions");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -903,11 +945,17 @@ namespace Tabibi.Infrastructure.Migrations
                         .WithOne("Appointment")
                         .HasForeignKey("Tabibi.Core.Models.Appointment", "SessionId");
 
+                    b.HasOne("Tabibi.Core.Models.VideoCallSession", "VideoCallSession")
+                        .WithOne("Appointment")
+                        .HasForeignKey("Tabibi.Core.Models.Appointment", "VideoCallSessionId");
+
                     b.Navigation("ChatSession");
 
                     b.Navigation("Doctor");
 
                     b.Navigation("Patient");
+
+                    b.Navigation("VideoCallSession");
                 });
 
             modelBuilder.Entity("Tabibi.Core.Models.ChatMessage", b =>
@@ -1059,6 +1107,25 @@ namespace Tabibi.Infrastructure.Migrations
                     b.Navigation("ChatSession");
                 });
 
+            modelBuilder.Entity("Tabibi.Core.Models.VideoCallSession", b =>
+                {
+                    b.HasOne("Tabibi.Core.Models.DoctorProfile", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Tabibi.Core.Models.PatientProfile", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("Tabibi.Core.Models.AppUser", b =>
                 {
                     b.Navigation("DoctorProfile");
@@ -1107,6 +1174,11 @@ namespace Tabibi.Infrastructure.Migrations
                     b.Navigation("DoctorOldSpecialties");
 
                     b.Navigation("DoctorSpecialties");
+                });
+
+            modelBuilder.Entity("Tabibi.Core.Models.VideoCallSession", b =>
+                {
+                    b.Navigation("Appointment");
                 });
 #pragma warning restore 612, 618
         }

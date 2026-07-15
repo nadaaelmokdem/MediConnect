@@ -51,7 +51,7 @@ namespace Tabibi.Infrastructure.Services.Payments
                 merchantReferenceId = orderId,
                 signature = signature,
                 callbackUrl = _configuration["Payment:WebhookUrl"] ?? "http://localhost:5009/api/Payment/webhook/Geidea",
-                returnUrl = $"{baseReturnUrl}/payment-result?sessionId={appointment.SessionId}&type={(appointment.ConsultationType == ConsultationType.VideoCall ? "video" : "chat")}",
+                returnUrl = $"{baseReturnUrl}/payment-result?sessionId={(appointment.ConsultationType == ConsultationType.VideoCall ? appointment.VideoCallSessionId : appointment.SessionId)}&type={(appointment.ConsultationType == ConsultationType.VideoCall ? "video" : "chat")}",
                 language = "en",
                 paymentOperation = "Pay",
                 customer = new

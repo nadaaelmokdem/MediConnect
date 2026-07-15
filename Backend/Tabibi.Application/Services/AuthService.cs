@@ -17,7 +17,8 @@ public class AuthService(
     IAuthUtils authUtils,
     IUnitOfWork unitOfWork,
     ILogger<AuthService> logger,
-    Microsoft.Extensions.Configuration.IConfiguration configuration) : IAuthService
+    Microsoft.Extensions.Configuration.IConfiguration configuration,
+    System.Net.Http.IHttpClientFactory httpClientFactory) : IAuthService
 {
     public async Task<ServiceResult> Logout(string token)
     {
@@ -77,16 +78,8 @@ public class AuthService(
 
     public async Task<ServiceResult<LoginDTO?>> GoogleLogin(GoogleLoginRequest req)
     {
-        GoogleJsonWebSignature.Payload payload;
-        try
-        {
-            var settings = new GoogleJsonWebSignature.ValidationSettings
-            {
-                Audience = new List<string> { configuration["GoogleAuth:ClientId"] ?? "" }
-            };
-            payload = await GoogleJsonWebSignature.ValidateAsync(req.Token, settings);
-        }
-        catch (InvalidJwtException)
+        var payload = await ValidateAccessTokenAsync(req.Token);
+        if (payload is null)
         {
             return ServiceResult<LoginDTO?>.Failure("Invalid Google Token");
         }
@@ -99,10 +92,129 @@ public class AuthService(
                 IsNewUser = true,
                 GoogleName = payload.Name,
                 GoogleEmail = payload.Email,
+                GoogleToken = req.Token,
                 Token = null,
                 RefreshToken = null,
                 User = null
             });
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        var userResponse = user.ToResponse();
+        userResponse.Roles = roles.ToList();
+
+        if (roles.Contains(UserRoles.Doctor))
+        {
+            var doctor = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
+            userResponse.IsVerified = doctor?.IsVerified ?? false;
+            userResponse.ProfilePictureUrl = doctor?.ProfilePictureUrl;
+        }
+
+        var refreshToken = authUtils.GenerateRefreshToken();
+        TimeSpan tokenLifetime = TimeSpan.FromDays(7);
+        await tokenStore.StoreTokenAsync(refreshToken, user.Id, tokenLifetime);
+
+        return ServiceResult<LoginDTO?>.Success(new LoginDTO
+        {
+            User = userResponse,
+            Token = authUtils.GenerateJwtToken(user, roles),
+            RefreshToken = refreshToken,
+            IsNewUser = false
+        });
+    }
+
+    public async Task<ServiceResult<LoginDTO?>> GoogleAuthCodeExchange(GoogleAuthCodeRequest req)
+    {
+        // Exchange the auth code for tokens using Google's token endpoint
+        using var httpClient = new HttpClient();
+        var tokenResponse = await httpClient.PostAsync(
+            "https://oauth2.googleapis.com/token",
+            new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "code", req.Code },
+                { "client_id", configuration["GoogleAuth:ClientId"] ?? "" },
+                { "client_secret", configuration["GoogleAuth:ClientSecret"] ?? "" },
+                { "redirect_uri", req.RedirectUri },
+                { "grant_type", "authorization_code" }
+            }),
+            CancellationToken.None);
+
+        if (!tokenResponse.IsSuccessStatusCode)
+        {
+            return ServiceResult<LoginDTO?>.Failure(await tokenResponse.Content.ReadAsStringAsync() ?? "");
+        }
+
+        var tokenContent = await tokenResponse.Content.ReadAsStringAsync();
+        var tokenResponseObj = System.Text.Json.JsonSerializer.Deserialize<GoogleTokenResponse>(tokenContent, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (tokenResponseObj?.AccessToken == null)
+        {
+            return ServiceResult<LoginDTO?>.Failure("Failed to exchange auth code for tokens");
+        }
+
+        // Fetch user info using the access token
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenResponseObj.AccessToken);
+        var userInfoResponse = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v3/userinfo");
+        if (!userInfoResponse.IsSuccessStatusCode)
+        {
+            return ServiceResult<LoginDTO?>.Failure("Failed to get user info from Google");
+        }
+
+        var userInfoContent = await userInfoResponse.Content.ReadAsStringAsync();
+        var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleUserInfo>(userInfoContent, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (userInfo == null)
+        {
+            return ServiceResult<LoginDTO?>.Failure("Failed to parse user info from Google");
+        }
+
+        var user = await userManager.FindByEmailAsync(userInfo.Email);
+        if (user is null)
+        {
+            return ServiceResult<LoginDTO?>.Success(new LoginDTO
+            {
+                User = null,
+                Token = null,
+                RefreshToken = null,
+                IsNewUser = true,
+                GoogleName = userInfo.Name,
+                GoogleEmail = userInfo.Email,
+                GoogleToken = tokenResponseObj.AccessToken
+            });
+        }
+        else
+        {
+            // Update existing user
+            if (req.Role.Equals(UserRoles.Doctor, StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (!await userManager.IsInRoleAsync(user, UserRoles.Doctor))
+                {
+                    await userManager.AddToRoleAsync(user, UserRoles.Doctor);
+                }
+                var existingDoctorProfile = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
+                if (existingDoctorProfile == null)
+                {
+                    await unitOfWork.DoctorProfiles.AddAsync(new DoctorProfile { UserId = user.Id });
+                }
+            }
+            else if (req.Role.Equals(UserRoles.Patient, StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (!await userManager.IsInRoleAsync(user, UserRoles.Patient))
+                {
+                    await userManager.AddToRoleAsync(user, UserRoles.Patient);
+                }
+                var existingPatientProfile = await unitOfWork.PatientProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+                if (existingPatientProfile == null)
+                {
+                    var patientProfile = new PatientProfile { UserId = user.Id };
+                    await unitOfWork.PatientProfiles.AddAsync(patientProfile);
+                    await unitOfWork.PatientQuotas.AddAsync(new PatientQuota { Patient = patientProfile });
+                }
+            }
+
+            user.FullName = userInfo.Name;
+            user.Email = userInfo.Email;
+            await userManager.UpdateAsync(user);
         }
 
         var roles = await userManager.GetRolesAsync(user);
@@ -141,18 +253,11 @@ public class AuthService(
         if (phoneExists)
             return ServiceResult<LoginDTO?>.Failure("Phone number is already registered!");
 
-        GoogleJsonWebSignature.Payload? googlePayload = null;
+        GoogleUserInfo? googlePayload = null;
         if (!string.IsNullOrEmpty(signupRequest.GoogleToken))
         {
-            try
-            {
-                var settings = new GoogleJsonWebSignature.ValidationSettings
-                {
-                    Audience = new List<string> { configuration["GoogleAuth:ClientId"] ?? "" }
-                };
-                googlePayload = await GoogleJsonWebSignature.ValidateAsync(signupRequest.GoogleToken, settings);
-            }
-            catch
+            googlePayload = await ValidateAccessTokenAsync(signupRequest.GoogleToken);
+            if (googlePayload is null)
             {
                 return ServiceResult<LoginDTO?>.Failure("Invalid Google Token");
             }
@@ -297,6 +402,76 @@ public class AuthService(
             logger.LogError(ex, "AddToRole failed for user {Email}", email);
             throw;
         }
+    }
+
+    private async Task<GoogleUserInfo?> ValidateAccessTokenAsync(string accessToken)
+    {
+        try
+        {
+            var client = httpClientFactory.CreateClient();
+            
+            // 1. Verify token audience
+            var tokenInfoResponse = await client.GetAsync($"https://oauth2.googleapis.com/tokeninfo?access_token={accessToken}");
+            if (!tokenInfoResponse.IsSuccessStatusCode)
+            {
+                logger.LogWarning("Google TokenInfo validation failed. Status: {Status}", tokenInfoResponse.StatusCode);
+                return null;
+            }
+            
+            var tokenInfoContent = await tokenInfoResponse.Content.ReadAsStringAsync();
+            var tokenInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleTokenInfo>(tokenInfoContent, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            
+            var expectedClientId = configuration["GoogleAuth:ClientId"] ?? "";
+            if (tokenInfo == null || (tokenInfo.Audience != expectedClientId && tokenInfo.IssuedTo != expectedClientId))
+            {
+                logger.LogWarning("Google Token audience mismatch. Expected: {Expected}, Got: {Audience} / {IssuedTo}", 
+                    expectedClientId, tokenInfo?.Audience, tokenInfo?.IssuedTo);
+                return null;
+            }
+            
+            // 2. Fetch user profile info
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            var userInfoResponse = await client.GetAsync("https://www.googleapis.com/oauth2/v3/userinfo");
+            if (!userInfoResponse.IsSuccessStatusCode)
+            {
+                logger.LogWarning("Google UserInfo request failed. Status: {Status}", userInfoResponse.StatusCode);
+                return null;
+            }
+            
+            var userInfoContent = await userInfoResponse.Content.ReadAsStringAsync();
+            return System.Text.Json.JsonSerializer.Deserialize<GoogleUserInfo>(userInfoContent, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error validating Google access token");
+            return null;
+        }
+    }
+
+    private class GoogleTokenInfo
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("audience")]
+        public string Audience { get; set; } = "";
+        
+        [System.Text.Json.Serialization.JsonPropertyName("issued_to")]
+        public string IssuedTo { get; set; } = "";
+    }
+
+    private class GoogleUserInfo
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("sub")]
+        public string Sub { get; set; } = "";
+        
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; set; } = "";
+        
+        [System.Text.Json.Serialization.JsonPropertyName("email")]
+        public string Email { get; set; } = "";
+        
+        [System.Text.Json.Serialization.JsonPropertyName("picture")]
+        public string Picture { get; set; } = "";
+
+        public string Subject => Sub;
     }
 }
 

@@ -17,6 +17,7 @@ export interface ScheduleItem {
   date: string;
   initials: string;
   avatar?: string;
+  paymentMethod?: string;
 }
 
 function BadgeIcon({ badge }: { badge: string }) {
@@ -77,14 +78,16 @@ export default function ScheduleItemComponent({
           <BadgeIcon badge={item.badge} />
           {getConsultationTypeLabel(item.badge)}
         </span>
-        <button
-          onClick={() => onCancel(item.id)}
-          disabled={cancelling}
-          className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50 cursor-pointer"
-          title="Cancel Appointment"
-        >
-          <MdDelete size={16} />
-        </button>
+        {item.paymentMethod === "OnSite" && (
+          <button
+            onClick={() => onCancel(item.id)}
+            disabled={cancelling}
+            className="p-1.5 text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50 cursor-pointer"
+            title="Cancel Appointment"
+          >
+            <MdDelete size={16} />
+          </button>
+        )}
       </div>
     </div>
   );

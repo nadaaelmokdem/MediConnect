@@ -26,7 +26,7 @@ namespace Tabibi.API.Controllers
                 return BadRequest("Invalid session format.");
             }
 
-            var access = await chatService.ValidateAccess(parsedSessionId, userId);
+            var access = await chatService.ValidateVideoCallAccess(parsedSessionId, userId);
             if (!access.Allowed)
             {
                 return Forbid();
@@ -35,6 +35,11 @@ namespace Tabibi.API.Controllers
             // Using SendAsync to broadcast to the group directly from the controller
             // The remaining peer will receive "UserLeftFallback" and reconnect
             await hubContext.Clients.Group(sessionId).SendAsync("UserLeftFallback", userId);
+
+            if (VideoCallHub.CallStarted.TryRemove(parsedSessionId, out _))
+            {
+                await chatService.CompleteVideoCallSessionAsync(parsedSessionId);
+            }
 
             return Ok();
         }

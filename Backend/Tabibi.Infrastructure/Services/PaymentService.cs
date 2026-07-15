@@ -94,6 +94,14 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
                         dbContext.ChatSessions.Remove(session);
                     }
                 }
+                if (payment.Appointment.VideoCallSessionId != null)
+                {
+                    var session = await dbContext.VideoCallSessions.FindAsync(payment.Appointment.VideoCallSessionId);
+                    if (session != null)
+                    {
+                        dbContext.VideoCallSessions.Remove(session);
+                    }
+                }
                 dbContext.Appointments.Remove(payment.Appointment);
             }
             dbContext.Payments.Remove(payment);
@@ -108,7 +116,7 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
                 {
                     payment.Appointment.Status = AppointmentStatus.Confirmed;
                     
-                    if ((payment.Appointment.ConsultationType == ConsultationType.Chat || payment.Appointment.ConsultationType == ConsultationType.VideoCall) && payment.Appointment.SessionId == null)
+                    if (payment.Appointment.ConsultationType == ConsultationType.Chat && payment.Appointment.SessionId == null)
                     {
                         var chatSession = new ChatSession
                         {
@@ -123,6 +131,19 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
                         };
                         dbContext.ChatSessions.Add(chatSession);
                         payment.Appointment.ChatSession = chatSession;
+                    }
+                    else if (payment.Appointment.ConsultationType == ConsultationType.VideoCall && payment.Appointment.VideoCallSessionId == null)
+                    {
+                        var videoCallSession = new VideoCallSession
+                        {
+                            PatientId = payment.Appointment.PatientId,
+                            DoctorId = payment.Appointment.DoctorId,
+                            Status = SessionStatus.Active,
+                            StartedAt = payment.Appointment.ScheduledAt,
+                            Price = payment.Amount
+                        };
+                        dbContext.VideoCallSessions.Add(videoCallSession);
+                        payment.Appointment.VideoCallSession = videoCallSession;
                     }
                 }
             }

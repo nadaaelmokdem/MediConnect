@@ -20,11 +20,19 @@ public class AppointmentService(
         DateOnly date,
         ConsultationType? consultationType = null)
     {
-        var availabilities = await slotService.GetActiveAvailabilitiesAsync(
+        var currentAvailabilities = await slotService.GetActiveAvailabilitiesAsync(
             doctorId,
             date);
 
-        if (availabilities.Count == 0)
+        var prevAvailabilities = await slotService.GetActiveAvailabilitiesAsync(
+            doctorId,
+            date.AddDays(-1));
+
+        var overnightPrevAvailabilities = prevAvailabilities
+            .Where(a => a.StartTime >= a.EndTime)
+            .ToList();
+
+        if (currentAvailabilities.Count == 0 && overnightPrevAvailabilities.Count == 0)
             return [];
 
         var blockingAppointments = await slotService.GetBlockingAppointmentsAsync(
@@ -39,15 +47,88 @@ public class AppointmentService(
 
         var slots = new List<AvailableSlotDTO>();
 
-        foreach (var availability in availabilities)
+        // Generate slots from current day's availabilities
+        foreach (var availability in currentAvailabilities)
         {
             var current = availability.StartTime;
             var slotStep = TimeSpan.FromMinutes(availability.SlotDurationMins);
 
-            while (current + slotStep <= availability.EndTime)
+            if (availability.StartTime < availability.EndTime)
             {
+                while (current + slotStep <= availability.EndTime)
+                {
+                    var start = SlotService.TruncateToMinute(
+                        date.ToDateTime(TimeOnly.MinValue).Add(current));
+
+                    var end = start.AddMinutes(availability.SlotDurationMins);
+
+                    var isAvailable = !slotService.IsBlockedByExistingAppointment(
+                        start,
+                        availability.SlotDurationMins,
+                        blockingAppointments);
+
+                    if (start > DateTime.UtcNow)
+                    {
+                        slots.Add(new AvailableSlotDTO
+                        {
+                            Start = start,
+                            End = end,
+                            IsAvailable = isAvailable,
+                            Price = price
+                        });
+                    }
+
+                    current += slotStep;
+                }
+            }
+            else
+            {
+                var limit = availability.EndTime.Add(TimeSpan.FromHours(24));
+                while (current < TimeSpan.FromHours(24) && (current + slotStep <= limit))
+                {
+                    var start = SlotService.TruncateToMinute(
+                        date.ToDateTime(TimeOnly.MinValue).Add(current));
+
+                    var end = start.AddMinutes(availability.SlotDurationMins);
+
+                    var isAvailable = !slotService.IsBlockedByExistingAppointment(
+                        start,
+                        availability.SlotDurationMins,
+                        blockingAppointments);
+
+                    if (start > DateTime.UtcNow)
+                    {
+                        slots.Add(new AvailableSlotDTO
+                        {
+                            Start = start,
+                            End = end,
+                            IsAvailable = isAvailable,
+                            Price = price
+                        });
+                    }
+
+                    current += slotStep;
+                }
+            }
+        }
+
+        // Generate slots from previous day's overnight availabilities
+        foreach (var availability in overnightPrevAvailabilities)
+        {
+            var slotStep = TimeSpan.FromMinutes(availability.SlotDurationMins);
+            var current = availability.StartTime;
+
+            while (current < TimeSpan.FromHours(24))
+            {
+                current += slotStep;
+            }
+
+            var limit = availability.EndTime.Add(TimeSpan.FromHours(24));
+            while (current + slotStep <= limit)
+            {
+                var todayTime = current - TimeSpan.FromHours(24);
                 var start = SlotService.TruncateToMinute(
-                    date.ToDateTime(TimeOnly.FromTimeSpan(current)));
+                    date.ToDateTime(TimeOnly.MinValue).Add(todayTime));
 
                 var end = start.AddMinutes(availability.SlotDurationMins);
 
@@ -147,19 +228,35 @@ public class AppointmentService(
             
             if (request.PaymentMethod != PaymentMethod.Online && (appointment.ConsultationType == ConsultationType.Chat || appointment.ConsultationType == ConsultationType.VideoCall))
             {
-                var chatSession = new ChatSession
+                if (appointment.ConsultationType == ConsultationType.Chat)
                 {
-                    PatientId = patient.PatientId,
-                    DoctorId = request.DoctorId,
-                    ConsultationType = request.Type,
-                    Status = SessionStatus.Active,
-                    StartedAt = normalizedScheduledAt,
-                    IsCompanyPaid = false,
-                    IsFreeMessage = false,
-                    Price = price.Value
-                };
-                await unitOfWork.ChatSessions.AddAsync(chatSession);
-                appointment.ChatSession = chatSession;
+                    var chatSession = new ChatSession
+                    {
+                        PatientId = patient.PatientId,
+                        DoctorId = request.DoctorId,
+                        ConsultationType = request.Type,
+                        Status = SessionStatus.Active,
+                        StartedAt = normalizedScheduledAt,
+                        IsCompanyPaid = false,
+                        IsFreeMessage = false,
+                        Price = price.Value
+                    };
+                    await unitOfWork.ChatSessions.AddAsync(chatSession);
+                    appointment.ChatSession = chatSession;
+                }
+                else if (appointment.ConsultationType == ConsultationType.VideoCall)
+                {
+                    var videoCallSession = new VideoCallSession
+                    {
+                        PatientId = patient.PatientId,
+                        DoctorId = request.DoctorId,
+                        Status = SessionStatus.Active,
+                        StartedAt = normalizedScheduledAt,
+                        Price = price.Value
+                    };
+                    await unitOfWork.VideoCallSessions.AddAsync(videoCallSession);
+                    appointment.VideoCallSession = videoCallSession;
+                }
             }
 
             await unitOfWork.CompleteAsync();
@@ -254,7 +351,12 @@ public class AppointmentService(
 
         foreach (var a in toComplete)
         {
-            if (now >= a.ScheduledAt.AddMinutes(a.DurationMins))
+            if (a.ConsultationType == ConsultationType.Clinic && now >= a.ScheduledAt.AddMinutes(a.DurationMins))
+            {
+                a.Status = AppointmentStatus.Completed;
+                changed = true;
+            }
+            else if (a.ConsultationType == ConsultationType.Chat && now >= a.ScheduledAt.AddDays(7))
             {
                 a.Status = AppointmentStatus.Completed;
                 changed = true;
@@ -295,7 +397,8 @@ public class AppointmentService(
                 Price = a.Price,
                 Notes = a.Notes,
                 PatientProfilePictureUrl = null,
-                SessionId = a.SessionId
+                SessionId = a.ConsultationType == ConsultationType.VideoCall ? a.VideoCallSessionId : a.SessionId,
+                PaymentMethod = a.PaymentMethod
             }).ToListAsync();
     }
 
@@ -329,9 +432,10 @@ public class AppointmentService(
                 Price = a.Price,
                 Notes = a.Notes,
                 DoctorProfilePictureUrl = a.Doctor.ProfilePictureUrl,
-                SessionId = a.SessionId,
+                SessionId = a.ConsultationType == ConsultationType.VideoCall ? a.VideoCallSessionId : a.SessionId,
                 ReviewRating = a.Review != null ? a.Review.Rating : null,
-                ReviewComment = a.Review != null ? a.Review.Comment : null
+                ReviewComment = a.Review != null ? a.Review.Comment : null,
+                PaymentMethod = a.PaymentMethod
             }).ToListAsync();
     }
 
@@ -381,6 +485,9 @@ public class AppointmentService(
         if (appointment == null)
             return ServiceResult<AppointmentListDTO>.Failure("Appointment not found.");
 
+        if (appointment.PaymentMethod != PaymentMethod.OnSite)
+            return ServiceResult<AppointmentListDTO>.Failure("Only appointments with onsite payment can be cancelled.");
+
         if (appointment.Status == AppointmentStatus.Cancelled)
             return ServiceResult<AppointmentListDTO>.Failure("Appointment is already cancelled.");
 
@@ -402,7 +509,8 @@ public class AppointmentService(
             Price = appointment.Price,
             Notes = appointment.Notes,
             PatientProfilePictureUrl = null,
-            SessionId = appointment.SessionId
+            SessionId = appointment.ConsultationType == ConsultationType.VideoCall ? appointment.VideoCallSessionId : appointment.SessionId,
+            PaymentMethod = appointment.PaymentMethod
         };
 
         var patientUserId = appointment.Patient.UserId;

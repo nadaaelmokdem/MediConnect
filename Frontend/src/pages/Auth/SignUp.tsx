@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   MdOutlineMail,
@@ -77,18 +77,26 @@ export default function SignUp({
   requiredRole,
 }: SignUpProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as {
+    isGoogleSignup?: boolean;
+    googleEmail?: string;
+    googleName?: string;
+    googleToken?: string;
+  } | null;
+
   const { register, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [isGoogleSignup, setIsGoogleSignup] = useState(false);
-  const [googleToken, setGoogleToken] = useState<string | undefined>();
+  const [isGoogleSignup, setIsGoogleSignup] = useState(locationState?.isGoogleSignup ?? false);
+  const [googleToken, setGoogleToken] = useState<string | undefined>(locationState?.googleToken);
 
   const [form, setForm] = useState<SignUpForm>({
-    fullName: "",
-    email: "",
+    fullName: locationState?.googleName ?? "",
+    email: locationState?.googleEmail ?? "",
     phoneNumber: "",
     password: "",
     confirmPassword: "",
-    userType: "user",
+    userType: requiredRole === "Doctor" ? "doctor" : "user",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -202,10 +210,10 @@ export default function SignUp({
             disabled={isLoading} 
             isPrimary 
             requiredRole={requiredRole === "Doctor" ? "Doctor" : "Patient"}
-            onSuccess={(res, rawToken) => {
+            onSuccess={(res) => {
               if (res.isNewUser) {
                 setIsGoogleSignup(true);
-                setGoogleToken(rawToken);
+                setGoogleToken(res.googleToken || res.googleEmail);
                 setForm(prev => ({ 
                   ...prev, 
                   fullName: res.googleName || prev.fullName, 
@@ -258,7 +266,7 @@ export default function SignUp({
           type="email"
           value={form.email}
           onChange={handleInputChange}
-          disabled={isLoading}
+          disabled={isLoading || isGoogleSignup}
           borderClass={getInputBorderClass("email")}
           error={errors.email}
         />

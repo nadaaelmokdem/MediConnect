@@ -19,7 +19,7 @@ export interface AuthContextType {
   error: string | null;
   login: (email: string, password: string, requiredRole?: string) => Promise<AppUser | undefined>;
   switchRole: (role: string) => void;
-  googleLogin: (token: string, requiredRole?: string) => Promise<AuthResponse>;
+  googleLogin: (tokenOrAuthCode: string | { code: string; role?: string }, requiredRole?: string) => Promise<AuthResponse>;
   register: (
     fullName: string,
     email: string,
@@ -54,6 +54,7 @@ export interface AuthResponse {
   isNewUser?: boolean;
   googleName?: string;
   googleEmail?: string;
+  googleToken?: string;
 }
 
 export interface ForgotPasswordRequest {

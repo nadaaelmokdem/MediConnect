@@ -25,6 +25,7 @@ export interface AppointmentListItem {
   doctorProfilePictureUrl?: string;
   patientProfilePictureUrl?: string;
   sessionId?: number;
+  paymentMethod?: number | string;
 }
 
 export const CONSULTATION_TYPE_OPTIONS = [
@@ -43,27 +44,30 @@ export const STATUS_OPTIONS = [
 
 export function getConsultationTypeLabel(type: string | number): string {
   if (typeof type === "string" && type) return type;
-  const labels = ["Chat", "Video", "Clinic"];
-  if (typeof type === "number" && type >= 0 && type < labels.length) {
-    return labels[type];
-  }
-  return "—";
+  const labelMap = ["Chat", "Video", "Clinic"];
+  return typeof type === "number" && type >= 0 && type < labelMap.length
+    ? labelMap[type]
+    : "—";
 }
 
 export function getStatusLabel(status: string | number): string {
   if (typeof status === "string" && status) return status;
-  const labels = ["Confirmed", "Completed", "Cancelled"];
-  if (typeof status === "number" && status >= 0 && status < labels.length) return labels[status];
-  return "—";
+  const statusMap = ["Pending", "Confirmed", "Completed", "Cancelled"];
+  return typeof status === "number" && status >= 0 && status < statusMap.length
+    ? statusMap[status]
+    : "—";
 }
 
 export function isChatConsultation(type: string | number): boolean {
   return type === "Chat" || type === 0;
 }
 
+export function isVideoConsultation(type: string | number): boolean {
+  return type === "Video" || type === 1;
+}
+
 export function getConsultationTypeIcon(type: string | number, size = 13): ReactNode {
-  const name = getConsultationTypeLabel(type);
-  switch (name) {
+  switch (getConsultationTypeLabel(type)) {
     case "Chat":
       return <MdChat size={size} />;
     case "Video":
@@ -71,7 +75,7 @@ export function getConsultationTypeIcon(type: string | number, size = 13): React
     case "Clinic":
       return <MdLocalHospital size={size} />;
     default:
-      return <MdAccessTime size={size} />;
+      return <MdLocalHospital size={size} />;
   }
 }
 
@@ -89,9 +93,9 @@ export function getStatusBadgeClasses(status: string | number): string {
   }
 }
 
-export function canCancelAppointment(status: string | number): boolean {
+export function canCancelAppointment(status: string | number, paymentMethod?: string | number): boolean {
   const name = getStatusLabel(status);
-  return name === "Confirmed";
+  return name === "Confirmed" && (paymentMethod === 2 || paymentMethod === "OnSite");
 }
 
 export { MdCircle };

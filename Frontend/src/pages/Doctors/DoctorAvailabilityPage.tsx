@@ -63,15 +63,6 @@ export default function DoctorAvailabilityPage() {
         toast.error("Slot duration must be greater than 0 minutes.");
         return false;
       }
-      const start = new Date(`1970-01-01T${slot.startTime}:00`);
-      const end = new Date(`1970-01-01T${slot.endTime}:00`);
-      if (start >= end) {
-        const label = slot.specificDate
-          ? format(new Date(slot.specificDate + "T00:00:00"), "MMM d, yyyy")
-          : DAYS.find((d) => d.value === slot.dayOfWeek)?.label;
-        toast.error(`Invalid times for ${label}: Start time must be before end time.`);
-        return false;
-      }
     }
     // Check for specific dates in the past
     const today = new Date();

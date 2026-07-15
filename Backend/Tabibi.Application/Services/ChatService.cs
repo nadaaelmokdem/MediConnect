@@ -56,6 +56,63 @@ namespace Tabibi.Application.Services
 
         }
 
+        public async Task<ChatAccessResult> ValidateVideoCallAccess(long sessionId, string userId)
+        {
+            var session = await unitOfWork.VideoCallSessions.Query()
+                .Include(s => s.Patient).ThenInclude(p => p.User)
+                .Include(s => s.Doctor).ThenInclude(d => d!.User)
+                .Include(s => s.Appointment)
+                .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+            if (session == null)
+            {
+                return new ChatAccessResult { Allowed = false, ErrorMessage = "Video call session not found." };
+            }
+
+            if (session.Status == SessionStatus.Completed)
+            {
+                return new ChatAccessResult { Allowed = false, ErrorMessage = "This video call session has already been completed." };
+            }
+
+            if (session.Appointment != null && DateTime.UtcNow < session.Appointment.ScheduledAt)
+            {
+                return new ChatAccessResult 
+                { 
+                    Allowed = false, 
+                    ErrorMessage = $"This video call appointment has not started yet. It is scheduled to start at {session.Appointment.ScheduledAt.ToLocalTime():h:mm tt}." 
+                };
+            }
+
+            var isDual = session.Patient.UserId == userId && session.Doctor.UserId == userId;
+
+            if (isDual)
+            {
+                return new ChatAccessResult { Allowed = false, ErrorMessage = "You cannot start a video call with yourself." };
+            }
+
+            if (session.Patient.UserId == userId)
+            {
+                return new ChatAccessResult
+                {
+                    Allowed = true,
+                    Role = UserRoles.Patient,
+                    SenderName = session.Patient.User.FullName
+                };
+            }
+
+            if (session.Doctor.UserId == userId)
+            {
+                return new ChatAccessResult
+                {
+                    Allowed = true,
+                    Role = UserRoles.Doctor,
+                    SenderName = session.Doctor.User.FullName
+                };
+            }
+
+            return new ChatAccessResult { Allowed = false, ErrorMessage = "You do not have access to this video call session." };
+        }
+
         public async Task<bool> IsSessionPaidAsync(long sessionId)
         {
             var session = await unitOfWork.ChatSessions.Query()
@@ -74,6 +131,24 @@ namespace Tabibi.Application.Services
                 return session.Appointment.Payment?.Status == PaymentStatus.Paid;
 
             // Cash/in-person — no gateway record required
+            return true;
+        }
+
+        public async Task<bool> IsVideoCallSessionPaidAsync(long sessionId)
+        {
+            var session = await unitOfWork.VideoCallSessions.Query()
+                .Include(s => s.Appointment)
+                    .ThenInclude(a => a != null ? a.Payment : null)
+                .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+            if (session == null) return false;
+
+            if (session.Appointment == null)
+                return true;
+
+            if (session.Appointment.PaymentMethod == PaymentMethod.Online)
+                return session.Appointment.Payment?.Status == PaymentStatus.Paid;
+
             return true;
         }
 
@@ -420,6 +495,26 @@ namespace Tabibi.Application.Services
                 unitOfWork.Payments.Remove(payment);
                 await unitOfWork.CompleteAsync();
                 return ServiceResult<InitiateFollowUpResponseDTO>.Failure("Failed to generate payment link. Please try again.");
+            }
+        }
+
+        public async Task CompleteVideoCallSessionAsync(long sessionId)
+        {
+            var session = await unitOfWork.VideoCallSessions.Query()
+                .Include(s => s.Appointment)
+                .FirstOrDefaultAsync(s => s.SessionId == sessionId);
+
+            if (session != null)
+            {
+                session.Status = SessionStatus.Completed;
+                session.EndedAt = DateTime.UtcNow;
+
+                if (session.Appointment != null)
+                {
+                    session.Appointment.Status = AppointmentStatus.Completed;
+                }
+
+                await unitOfWork.CompleteAsync();
             }
         }
     }

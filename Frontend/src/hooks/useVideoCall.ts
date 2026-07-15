@@ -73,11 +73,8 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
     const handleBeforeUnload = () => {
       // Synchronous beacon to backend to inform them this user dropped
       if (sessionId && user?.id) {
-        const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5009/api"}/videocall/leave`;
-        const data = new Blob([JSON.stringify({ sessionId, userId: user.id })], {
-          type: "application/json"
-        });
-        navigator.sendBeacon(url, data);
+        const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5009/api"}/VideoCall/leave-beacon/${sessionId}`;
+        navigator.sendBeacon(url);
       }
       
       if (peerRef.current) {

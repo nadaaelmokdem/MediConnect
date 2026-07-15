@@ -29,4 +29,5 @@ public class AppointmentListDTO
     public long? SessionId { get; set; }
     public int? ReviewRating { get; set; }
     public string? ReviewComment { get; set; }
+    public PaymentMethod PaymentMethod { get; set; }
 }

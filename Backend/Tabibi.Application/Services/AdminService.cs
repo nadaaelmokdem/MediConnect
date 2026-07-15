@@ -333,8 +333,8 @@ namespace Tabibi.Application.Services
              .ToDictionaryAsync(g => g.Key, g => string.Join(", ", g.Select(x => x.RoleName)));
 
             var spendByPatientUserId = await unitOfWork.Payments.Query()
-                .Where(p => p.Status == PaymentStatus.Paid)
-                .Select(p => new { p.Amount, p.Appointment.Patient.UserId })
+                .Where(p => p.Status == PaymentStatus.Paid && p.Appointment != null && p.Appointment.Patient != null)
+                .Select(p => new { p.Amount, UserId = p.Appointment!.Patient!.UserId })
                 .GroupBy(x => x.UserId)
                 .Select(g => new { UserId = g.Key, Total = g.Sum(x => x.Amount) })
                 .ToDictionaryAsync(x => x.UserId, x => x.Total);

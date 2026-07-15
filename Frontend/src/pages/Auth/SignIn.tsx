@@ -255,21 +255,21 @@ export default function TabibiLogin({
       {/* Divider */}
       <Divider />
 
-      {/* Google Sign-in */}
-      <div className="flex flex-col gap-2 lg:gap-3">
-        <GoogleButton 
-          disabled={isLoading} 
-          requiredRole={requiredRole}
-          onSuccess={(res) => {
-            if (!res.isNewUser) {
-              navigate(from);
-            } else {
-              setDisplayError("Account not found. Please register first.");
-            }
-          }}
-          onError={() => setDisplayError("Google Login failed")}
-        />
-      </div>
+       {/* Google Sign-in */}
+       <div className="flex flex-col gap-2 lg:gap-3">
+         <GoogleButton 
+           disabled={isLoading} 
+           requiredRole={requiredRole}
+           onSuccess={(res) => {
+             if (!res.isNewUser) {
+               navigate(from);
+             } else {
+               setDisplayError("Account not found. Please register first.");
+             }
+           }}
+           onError={() => setDisplayError("Google Login failed")}
+         />
+       </div>
 
       {/* Footer */}
       <TermsFooter />

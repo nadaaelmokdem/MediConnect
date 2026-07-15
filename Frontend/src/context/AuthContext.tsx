@@ -75,11 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const googleLogin = useCallback(async (token: string, requiredRole?: string) => {
+  const googleLogin = useCallback(async (tokenOrAuthCode: string | { code: string; role?: string }, requiredRole?: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authService.googleLogin(token, requiredRole);
+      const response = await authService.googleLogin(tokenOrAuthCode, requiredRole);
       if (response.user && !response.isNewUser) {
         setUser(response.user);
       }
@@ -141,7 +141,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [],
   );
-
 
   const logout = useCallback(async () => {
     setIsLoading(true);

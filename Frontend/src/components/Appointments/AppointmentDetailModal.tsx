@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { MdClose, MdAccessTime, MdChat } from "react-icons/md";
+import { FaVideo } from "react-icons/fa";
 import { formatMoney } from "../../utils/formatMoney";
 import {
   type AppointmentListItem,
@@ -10,6 +11,7 @@ import {
   getStatusBadgeClasses,
   canCancelAppointment,
   isChatConsultation,
+  isVideoConsultation,
   MdCircle,
 } from "../../utils/appointmentUtils";
 
@@ -33,7 +35,8 @@ export default function AppointmentDetailModal({
   if (!appointment) return null;
 
   const showChat = isChatConsultation(appointment.consultationType) && !!appointment.sessionId;
-  const showCancel = onCancel && canCancelAppointment(appointment.status);
+  const showJoinCall = isVideoConsultation(appointment.consultationType) && !!appointment.sessionId && getStatusLabel(appointment.status) === "Confirmed";
+  const showCancel = onCancel && canCancelAppointment(appointment.status, appointment.paymentMethod);
 
   return (
     <div
@@ -112,6 +115,24 @@ export default function AppointmentDetailModal({
             >
               <MdChat size={14} /> Open Chat
             </Link>
+          )}
+          {showJoinCall && (
+            new Date() >= new Date(appointment.scheduledAt) ? (
+              <Link
+                to={`/video-call/${appointment.sessionId}`}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary-dark transition-colors"
+              >
+                <FaVideo size={14} /> Join Call
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-primary/50 text-white/70 font-semibold text-sm cursor-not-allowed"
+                title={`This call will be available at ${format(new Date(appointment.scheduledAt), "h:mm a")}`}
+              >
+                <FaVideo size={14} /> Join Call
+              </button>
+            )
           )}
           <button
             onClick={onClose}

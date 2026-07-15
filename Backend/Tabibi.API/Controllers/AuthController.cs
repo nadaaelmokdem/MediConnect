@@ -23,8 +23,8 @@ namespace Tabibi.API.Controllers
             if (!res.IsSuccess)
                 return BadRequest(res.ErrorMessage);
 
-            Response.Cookies.SetRefreshTokenCookie(res.Data!.RefreshToken);
-            Response.Cookies.SetAccessTokenCookie(res.Data!.Token);
+            Response.Cookies.SetRefreshTokenCookie(res.Data!.RefreshToken!);
+            Response.Cookies.SetAccessTokenCookie(res.Data!.Token!);
 
             return Ok(new AuthResponse
             {
@@ -55,8 +55,8 @@ namespace Tabibi.API.Controllers
             if (!res.IsSuccess)
                 return NotFound("Invalid Email Or Password");
 
-            Response.Cookies.SetRefreshTokenCookie(res.Data!.RefreshToken);
-            Response.Cookies.SetAccessTokenCookie(res.Data!.Token);
+            Response.Cookies.SetRefreshTokenCookie(res.Data!.RefreshToken!);
+            Response.Cookies.SetAccessTokenCookie(res.Data!.Token!);
 
             return Ok(new AuthResponse 
             { 
@@ -84,7 +84,33 @@ namespace Tabibi.API.Controllers
                 User = res.Data?.User,
                 IsNewUser = res.Data?.IsNewUser ?? false,
                 GoogleName = res.Data?.GoogleName,
-                GoogleEmail = res.Data?.GoogleEmail
+                GoogleEmail = res.Data?.GoogleEmail,
+                GoogleToken = res.Data?.GoogleToken
+            });
+        }
+
+        [HttpPost("google-auth-code")]
+        public async Task<IActionResult> GoogleAuthCodeExchange([FromBody] GoogleAuthCodeRequest req)
+        {
+            var res = await authService.GoogleAuthCodeExchange(req);
+            if (!res.IsSuccess)
+                return BadRequest(res.ErrorMessage);
+
+            if (res.Data != null && !res.Data.IsNewUser)
+            {
+                Response.Cookies.SetRefreshTokenCookie(res.Data.RefreshToken!);
+                Response.Cookies.SetAccessTokenCookie(res.Data.Token!);
+            }
+
+            return Ok(new AuthResponse
+            {
+                Success = true,
+                User = res.Data?.User,
+                IsNewUser = res.Data?.IsNewUser ?? false,
+                GoogleName = res.Data?.GoogleName,
+                GoogleEmail = res.Data?.GoogleEmail,
+                GoogleToken = res.Data?.GoogleToken,
+                Token = res.Data?.Token
             });
         }
 

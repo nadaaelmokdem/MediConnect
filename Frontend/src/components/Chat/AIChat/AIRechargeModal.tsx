@@ -3,7 +3,6 @@ interface AIRechargeModalProps {
   setRechargeAmount: (amount: number) => void;
   setShowRecharge: (show: boolean) => void;
   rechargeAiQuota: (amount: number) => Promise<any>;
-  setQuota: React.Dispatch<React.SetStateAction<any>>;
   navigate: (path: string) => void;
 }
 
@@ -12,7 +11,6 @@ export default function AIRechargeModal({
   setRechargeAmount,
   setShowRecharge,
   rechargeAiQuota,
-  setQuota,
   navigate
 }: AIRechargeModalProps) {
 

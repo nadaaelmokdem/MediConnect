@@ -41,6 +41,7 @@ const DoctorsPage: React.FC = () => {
   // ── Booking Modal State ──────────────────────────────────────────────────────
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingModalInitialType, setBookingModalInitialType] = useState<"clinic" | "video" | "chat">("clinic");
   // ────────────────────────────────────────────────────────────────────────────
 
   const consultationTypes = [
@@ -145,6 +146,7 @@ const DoctorsPage: React.FC = () => {
       alert("Doctors cannot book appointments.");
       return;
     }
+    setBookingModalInitialType("clinic");
     setSelectedDoctorId(doctorId);
     setIsBookingModalOpen(true);
   };
@@ -214,23 +216,9 @@ const DoctorsPage: React.FC = () => {
       return;
     }
 
-    try {
-      const res: any = await AppointmentService.bookAppointment({
-        doctorId,
-        scheduledAt: new Date().toISOString(),
-        type: 1 as any, // 1 = Video
-        paymentMethod: 1, // 1 = Online
-      });
-
-      const redirectUrl = res?.paymentUrl || res?.PaymentUrl || res?.sessionUrl || res?.data?.paymentUrl || res?.data?.PaymentUrl;
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-        return;
-      }
-      throw new Error("Payment link could not be generated.");
-    } catch (err: any) {
-      alert(err.response?.data?.message || err.response?.data || err.message || "Failed to start video call session.");
-    }
+    setBookingModalInitialType("video");
+    setSelectedDoctorId(doctorId);
+    setIsBookingModalOpen(true);
   };
 
   const confirmStartChat = async (isCompanyPaid: boolean) => {
@@ -317,6 +305,7 @@ const DoctorsPage: React.FC = () => {
           isOpen={isBookingModalOpen}
           onClose={handleCloseBookingModal}
           onBookingSuccess={handleBookingSuccess}
+          initialType={bookingModalInitialType}
         />
       )}
 

@@ -526,7 +526,12 @@ namespace Tabibi.Application.Services
             bool changed = false;
             foreach (var a in toComplete)
             {
-                if (now >= a.ScheduledAt.AddMinutes(a.DurationMins))
+                if (a.ConsultationType == ConsultationType.Clinic && now >= a.ScheduledAt.AddMinutes(a.DurationMins))
+                {
+                    a.Status = AppointmentStatus.Completed;
+                    changed = true;
+                }
+                else if (a.ConsultationType == ConsultationType.Chat && now >= a.ScheduledAt.AddDays(7))
                 {
                     a.Status = AppointmentStatus.Completed;
                     changed = true;
@@ -560,7 +565,8 @@ namespace Tabibi.Application.Services
                     PatientName = a.Patient.User.FullName,
                     ScheduledAt = a.ScheduledAt,
                     ConsultationType = a.ConsultationType.ToString(),
-                    Status = a.Status.ToString()
+                    Status = a.Status.ToString(),
+                    PaymentMethod = a.PaymentMethod.ToString()
                 })
                 .ToListAsync();
 
@@ -606,6 +612,35 @@ namespace Tabibi.Application.Services
             return availabilities;
         }
 
+        private static bool IsNewCoveringExisting(TimeSpan newStart, TimeSpan newEnd, TimeSpan existingStart, TimeSpan existingEnd)
+        {
+            var existingIsOvernight = existingStart >= existingEnd;
+            var newIsOvernight = newStart >= newEnd;
+
+            if (!existingIsOvernight)
+            {
+                if (!newIsOvernight)
+                {
+                    return newStart <= existingStart && newEnd >= existingEnd;
+                }
+                else
+                {
+                    return existingStart >= newStart || existingEnd <= newEnd;
+                }
+            }
+            else
+            {
+                if (!newIsOvernight)
+                {
+                    return false;
+                }
+                else
+                {
+                    return newStart <= existingStart && newEnd >= existingEnd;
+                }
+            }
+        }
+
         public async Task<ServiceResult> UpdateAvailabilities(string userId, UpdateAvailabilityRequestDTO request)
         {
             var doctor = await unitOfWork.DoctorProfiles.Query().FirstOrDefaultAsync(d => d.UserId == userId);
@@ -629,15 +664,13 @@ namespace Tabibi.Application.Services
                     ? request.Availabilities.FirstOrDefault(a =>
                         a.SpecificDate.HasValue &&
                         a.SpecificDate.Value.Date == existing.SpecificDate.Value.Date &&
-                        TimeSpan.Parse(a.StartTime) <= existing.StartTime &&
-                        TimeSpan.Parse(a.EndTime) >= existing.EndTime &&
+                        IsNewCoveringExisting(TimeSpan.Parse(a.StartTime), TimeSpan.Parse(a.EndTime), existing.StartTime, existing.EndTime) &&
                         a.IsActive)
                     // For weekly slots: match on DayOfWeek + time coverage
                     : request.Availabilities.FirstOrDefault(a =>
                         !a.SpecificDate.HasValue &&
                         a.DayOfWeek == existing.DayOfWeek &&
-                        TimeSpan.Parse(a.StartTime) <= existing.StartTime &&
-                        TimeSpan.Parse(a.EndTime) >= existing.EndTime &&
+                        IsNewCoveringExisting(TimeSpan.Parse(a.StartTime), TimeSpan.Parse(a.EndTime), existing.StartTime, existing.EndTime) &&
                         a.IsActive);
 
                 if (matchingNew == null)
@@ -645,20 +678,37 @@ namespace Tabibi.Application.Services
                     bool hasConflict;
                     if (existing.SpecificDate.HasValue)
                     {
-                        // Only check appointments on that specific date
                         var specificDay = existing.SpecificDate.Value.Date;
-                        hasConflict = activeAppointments.Any(app =>
-                            app.ScheduledAt.Date == specificDay &&
-                            app.ScheduledAt.TimeOfDay >= existing.StartTime &&
-                            app.ScheduledAt.TimeOfDay < existing.EndTime);
+                        if (existing.StartTime < existing.EndTime)
+                        {
+                            hasConflict = activeAppointments.Any(app =>
+                                app.ScheduledAt.Date == specificDay &&
+                                app.ScheduledAt.TimeOfDay >= existing.StartTime &&
+                                app.ScheduledAt.TimeOfDay < existing.EndTime);
+                        }
+                        else
+                        {
+                            hasConflict = activeAppointments.Any(app =>
+                                (app.ScheduledAt.Date == specificDay && app.ScheduledAt.TimeOfDay >= existing.StartTime) ||
+                                (app.ScheduledAt.Date == specificDay.AddDays(1) && app.ScheduledAt.TimeOfDay < existing.EndTime));
+                        }
                     }
                     else
                     {
-                        // Check all future appointments on matching weekdays
-                        hasConflict = activeAppointments.Any(app =>
-                            app.ScheduledAt.DayOfWeek == existing.DayOfWeek &&
-                            app.ScheduledAt.TimeOfDay >= existing.StartTime &&
-                            app.ScheduledAt.TimeOfDay < existing.EndTime);
+                        if (existing.StartTime < existing.EndTime)
+                        {
+                            hasConflict = activeAppointments.Any(app =>
+                                app.ScheduledAt.DayOfWeek == existing.DayOfWeek &&
+                                app.ScheduledAt.TimeOfDay >= existing.StartTime &&
+                                app.ScheduledAt.TimeOfDay < existing.EndTime);
+                        }
+                        else
+                        {
+                            var nextDay = (DayOfWeek)(((int)existing.DayOfWeek + 1) % 7);
+                            hasConflict = activeAppointments.Any(app =>
+                                (app.ScheduledAt.DayOfWeek == existing.DayOfWeek && app.ScheduledAt.TimeOfDay >= existing.StartTime) ||
+                                (app.ScheduledAt.DayOfWeek == nextDay && app.ScheduledAt.TimeOfDay < existing.EndTime));
+                        }
                     }
 
                     if (hasConflict)

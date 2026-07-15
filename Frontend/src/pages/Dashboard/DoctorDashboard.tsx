@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [dashboardData, setDashboardData] = useState<DoctorDashboardData | null>(null);
+  const [allAppointments, setAllAppointments] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
@@ -39,6 +40,7 @@ export default function Dashboard() {
     let currentSessions: any[] = [];
     setLoading(true);
     setDashboardData(null);
+    setAllAppointments([]);
     setSessions([]);
     setOnlineUsers({});
 
@@ -49,6 +51,12 @@ export default function Dashboard() {
           updateUser({ isVerified: data.isVerified });
         }
         setLoading(false);
+      })
+      .catch(console.error);
+
+    DoctorService.getAppointments({ status: "Confirmed" })
+      .then((data) => {
+        setAllAppointments(data);
       })
       .catch(console.error);
 
@@ -92,6 +100,7 @@ export default function Dashboard() {
           todaysAppointmentsCount: Math.max(0, (dashboardData.todaysAppointmentsCount || 0) - 1),
         });
       }
+      setAllAppointments((prev) => prev.filter((a) => a.appointmentId !== id));
       toast.success("Appointment cancelled.");
     } catch {
       toast.error("Failed to cancel appointment.");
@@ -141,8 +150,25 @@ export default function Dashboard() {
         name: app.patientName || "Patient",
         type: "Consultation",
         badge: app.consultationType,
-        date: getTodayStr(),
+        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
         initials: (app.patientName || "P").charAt(0).toUpperCase() || "P",
+        paymentMethod: app.paymentMethod,
+      } as ScheduleItem;
+    }) || [];
+
+  const calendarSchedule =
+    allAppointments.map((app) => {
+      const d = new Date(app.scheduledAt);
+      return {
+        id: app.appointmentId,
+        time: formatTimeTo12Hour(d),
+        duration: "30 min",
+        name: app.patientName || "Patient",
+        type: "Consultation",
+        badge: app.consultationType,
+        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+        initials: (app.patientName || "P").charAt(0).toUpperCase() || "P",
+        paymentMethod: app.paymentMethod,
       } as ScheduleItem;
     }) || [];
 
@@ -182,7 +208,7 @@ export default function Dashboard() {
       <CalendarModal
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
-        schedule={mappedSchedule}
+        schedule={calendarSchedule}
         onCancelAppointment={handleCancelAppointment}
       />
     </main>

@@ -16,6 +16,7 @@ namespace Tabibi.Infrastructure.Data
         public DbSet<DoctorAvailability> DoctorAvailabilities { get; set; }
         public DbSet<DoctorReview> DoctorReviews { get; set; }
         public DbSet<ChatSession> ChatSessions { get; set; }
+        public DbSet<VideoCallSession> VideoCallSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<PatientQuota> PatientQuotas { get; set; }
         public DbSet<Appointment> Appointments { get; set; }

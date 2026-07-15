@@ -28,6 +28,7 @@ namespace Tabibi.Core.Models
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Online;
 
         public long? SessionId { get; set; }
+        public long? VideoCallSessionId { get; set; }
 
         // Navigation
         [ForeignKey(nameof(PatientId))]
@@ -38,6 +39,9 @@ namespace Tabibi.Core.Models
 
         [ForeignKey(nameof(SessionId))]
         public ChatSession? ChatSession { get; set; }
+
+        [ForeignKey(nameof(VideoCallSessionId))]
+        public VideoCallSession? VideoCallSession { get; set; }
 
         public Payment? Payment { get; set; }
         public DoctorReview? Review { get; set; }

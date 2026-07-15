@@ -57,7 +57,7 @@ const Navbar = () => {
             Sign In
           </Link>
           <Link
-            to="/register-doctor"
+            to="/doctor-register"
             className="text-sm font-semibold px-4 py-2 rounded-lg border border-primary/20 text-primary hover:bg-primary/5 transition-all duration-200"
           >
             Join as Doctor
@@ -121,7 +121,7 @@ const Navbar = () => {
           
           <div className="flex flex-col gap-2 mt-2">
             <Link
-              to="/register-doctor"
+              to="/doctor-register"
               onClick={() => setIsOpen(false)}
               className="text-center text-xs font-semibold px-4 py-2.5 rounded-lg border border-primary text-primary"
             >

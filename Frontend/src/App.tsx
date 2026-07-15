@@ -12,6 +12,7 @@ import AIChatPage from "./pages/Chat/AIChatPage";
 import DoctorDashboard from "./pages/Dashboard/DoctorDashboard";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
+import GoogleCallback from "./pages/Auth/GoogleCallback";
 import PatientProfilePage from "./pages/Profile/PatientProfile";
 import DoctorProfilePage from "./pages/Profile/DoctorProfile";
 import PatientAdditionalData from "./pages/Profile/PatientAdditionalData";
@@ -60,6 +61,10 @@ function App() {
             <Route
               path="/doctor-register"
               element={<SignUp {...DOCTOR_AUTH_CONFIG} />}
+            />
+            <Route
+              path="/auth/callback"
+              element={<GoogleCallback />}
             />
             <Route
               path="/user-data"

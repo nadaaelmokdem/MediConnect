@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<DoctorProfile> DoctorProfiles { get; }
     IRepository<Appointment> Appointments { get; }
     IRepository<ChatSession> ChatSessions { get; }
+    IRepository<VideoCallSession> VideoCallSessions { get; }
     IRepository<ChatMessage> ChatMessages { get; }
     IRepository<DoctorReview> Reviews { get; }
     IRepository<Specialty> Specialties { get; }

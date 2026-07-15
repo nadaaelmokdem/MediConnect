@@ -9,5 +9,6 @@ namespace Tabibi.Application.DTOs
         public bool IsNewUser { get; set; }
         public string? GoogleName { get; set; }
         public string? GoogleEmail { get; set; }
+        public string? GoogleToken { get; set; }
     }
 }

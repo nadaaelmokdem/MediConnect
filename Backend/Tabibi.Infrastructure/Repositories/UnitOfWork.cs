@@ -14,6 +14,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<DoctorProfile> DoctorProfiles { get; private set; }
     public IRepository<Appointment> Appointments { get; private set; }
     public IRepository<ChatSession> ChatSessions { get; private set; }
+    public IRepository<VideoCallSession> VideoCallSessions { get; private set; }
     public IRepository<ChatMessage> ChatMessages { get; private set; }
     public IRepository<DoctorReview> Reviews { get; private set; }
     public IRepository<Specialty> Specialties { get; private set; }
@@ -35,6 +36,7 @@ public class UnitOfWork : IUnitOfWork
         DoctorProfiles = new Repository<DoctorProfile>(_context);
         Appointments = new Repository<Appointment>(_context);
         ChatSessions = new Repository<ChatSession>(_context);
+        VideoCallSessions = new Repository<VideoCallSession>(_context);
         ChatMessages = new Repository<ChatMessage>(_context);
         Reviews = new Repository<DoctorReview>(_context);
         Specialties = new Repository<Specialty>(_context);
