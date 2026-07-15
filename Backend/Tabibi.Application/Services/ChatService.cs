@@ -114,7 +114,8 @@ namespace Tabibi.Application.Services
                     PatientUserId = s.Patient.UserId,
                     IsCompanyPaid = s.IsCompanyPaid,
                     IsFollowUp = s.IsFollowUp,
-                    StartedAt = s.StartedAt
+                    StartedAt = s.StartedAt,
+                    DoctorChatPrice = s.Doctor != null ? s.Doctor.ChatPrice : 0m
                 })
                 .FirstOrDefaultAsync();
         }

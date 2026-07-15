@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\My Files\\Tabibi\\Backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\My Files\\Tabibi\\Backend\\Tabibi.Infrastructure\\Migrations\\20260715180326_fix.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Tabibi.Infrastructure\\Migrations\\20260715180326_fix.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{E726FDC3-16EF-094F-8CBE-CA379B8CFC34}|Tabibi.API\\Tabibi.API.csproj|c:\\my files\\tabibi\\backend\\tabibi.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{E726FDC3-16EF-094F-8CBE-CA379B8CFC34}|Tabibi.API\\Tabibi.API.csproj|solutionrelative:tabibi.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -31,6 +35,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "20260715180326_fix.cs",
+              "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Tabibi.Infrastructure\\Migrations\\20260715180326_fix.cs",
+              "RelativeDocumentMoniker": "Tabibi.Infrastructure\\Migrations\\20260715180326_fix.cs",
+              "ToolTip": "C:\\My Files\\Tabibi\\Backend\\Tabibi.Infrastructure\\Migrations\\20260715180326_fix.cs",
+              "RelativeToolTip": "Tabibi.Infrastructure\\Migrations\\20260715180326_fix.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAzwBwAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-15T18:03:26.817Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Tabibi.API\\appsettings.Development.json",
               "RelativeDocumentMoniker": "Tabibi.API\\appsettings.Development.json",
@@ -43,7 +60,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "AppUser.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Tabibi.Core\\Models\\AppUser.cs",
               "RelativeDocumentMoniker": "Tabibi.Core\\Models\\AppUser.cs",
@@ -51,12 +68,11 @@
               "RelativeToolTip": "Tabibi.Core\\Models\\AppUser.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-15T15:36:38.594Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-07-15T15:36:38.594Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\My Files\\Tabibi\\Backend\\Tabibi.API\\Program.cs",
               "RelativeDocumentMoniker": "Tabibi.API\\Program.cs",

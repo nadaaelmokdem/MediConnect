@@ -217,7 +217,7 @@ namespace Tabibi.Infrastructure.Services.Payments
                 merchantReferenceId = orderId,
                 signature = signature,
                 callbackUrl = _configuration["Payment:WebhookUrl"] ?? "http://localhost:5009/api/Payment/webhook/Geidea",
-                returnUrl = $"{baseReturnUrl}/payment-result/followup",
+                returnUrl = $"{baseReturnUrl}/payment-result/followup?sessionId={session.SessionId}",
                 language = "en",
                 paymentOperation = "Pay",
                 customer = new

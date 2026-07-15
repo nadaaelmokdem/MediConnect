@@ -14,5 +14,6 @@ namespace Tabibi.Application.DTOs
         public bool IsCompanyPaid { get; set; }
         public bool IsFollowUp { get; set; }
         public DateTime StartedAt { get; set; }
+        public decimal DoctorChatPrice { get; set; }
     }
 }

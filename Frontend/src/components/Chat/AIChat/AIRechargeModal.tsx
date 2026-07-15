@@ -18,8 +18,11 @@ export default function AIRechargeModal({
 
   const handleRecharge = () => {
     rechargeAiQuota(rechargeAmount).then(res => {
-      setQuota(res);
-      setShowRecharge(false);
+      if (res.paymentUrl) {
+        window.location.href = res.paymentUrl;
+      } else {
+        setShowRecharge(false);
+      }
     }).catch(err => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         navigate("/login");

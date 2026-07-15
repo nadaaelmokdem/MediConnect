@@ -13,6 +13,7 @@ import { CachedImage } from "../../common/CachedImage";
 import { getFileUrl } from "../../../utils/fileUtils";
 import { TbArrowLeft, TbLayoutSidebarRightCollapse } from "react-icons/tb";
 import type { SessionInfo } from "../../../types/chat";
+import { MdPayment, MdOutlineHourglassDisabled } from "react-icons/md";
 
 interface ActiveChatPaneProps {
   numericSessionId: number;
@@ -188,25 +189,75 @@ export default function ActiveChatPane({
         )}
 
         {sessionDetails && new Date(sessionDetails.startedAt).getTime() < now - 24 * 60 * 60 * 1000 && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm mb-2 text-center shadow-sm">
-            <strong className="block mb-1 text-base font-bold">Session Expired</strong>
-            This 24-hour consultation session has expired. {isDoctor ? "The patient must initiate a follow-up." : ""}
+          <div className="bg-surface-container-low border border-surface-variant p-6 rounded-2xl text-center shadow-md max-w-md mx-auto my-4 flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center border border-red-100 shadow-sm">
+              <MdOutlineHourglassDisabled className="text-2xl" />
+            </div>
+            <div>
+              <h4 className="text-base font-extrabold text-on-surface">Consultation Expired</h4>
+              <p className="text-xs font-medium text-on-surface-variant mt-1 leading-relaxed">
+                This 24-hour consultation session has expired. {isDoctor ? "The patient must initiate a follow-up to resume." : "You can resume this session by paying a follow-up fee."}
+              </p>
+            </div>
             {!isDoctor && (
-              <div className="mt-3">
-                <button 
-                  onClick={async () => {
-                    try {
-                      await ChatService.followUp(numericSessionId);
-                      window.location.reload();
-                    } catch (e: any) {
-                      alert(e.response?.data || "Failed to initiate follow up.");
+              <button 
+                onClick={() => {
+                  const basePrice = sessionDetails?.doctorChatPrice || 0;
+                  const followUpPrice = basePrice * 0.4;
+                  
+                  Swal.fire({
+                    title: "Confirm Follow-Up Payment",
+                    html: `<div class="text-center">
+                             <p class="text-sm font-medium text-on-surface-variant leading-relaxed">
+                               This session has expired. You can resume it with a follow-up consultation fee of:
+                             </p>
+                             <p class="text-3xl font-extrabold text-primary mt-3 mb-1">
+                               EGP ${followUpPrice.toFixed(2)}
+                             </p>
+                             <p class="text-xs font-semibold text-text-muted">
+                               (40% of standard doctor fee EGP ${basePrice.toFixed(2)})
+                             </p>
+                           </div>`,
+                    showCancelButton: true,
+                    confirmButtonText: "Confirm and Pay",
+                    cancelButtonText: "Cancel",
+                    buttonsStyling: false,
+                    customClass: {
+                      popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
+                      title: 'text-xl font-bold mb-4 text-on-surface text-center w-full',
+                      htmlContainer: 'w-full m-0',
+                      confirmButton: 'w-full mt-6 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg cursor-pointer',
+                      cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
+                      actions: 'flex flex-col gap-0 w-full mt-2'
                     }
-                  }}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors cursor-pointer"
-                >
-                  Pay 40% Follow-Up Fee to Resume
-                </button>
-              </div>
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      try {
+                        const res = await ChatService.followUp(numericSessionId);
+                        if (res.paymentUrl) {
+                          window.location.href = res.paymentUrl;
+                        } else {
+                          window.location.reload();
+                        }
+                      } catch (e: any) {
+                        Swal.fire({
+                          title: "Error",
+                          text: e.response?.data || "Failed to initiate follow up.",
+                          icon: "error",
+                          confirmButtonText: "OK",
+                          customClass: {
+                            confirmButton: "bg-primary text-white font-bold py-2.5 px-6 rounded-xl cursor-pointer"
+                          }
+                        });
+                      }
+                    }
+                  });
+                }}
+                className="mt-1 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <MdPayment className="text-lg" />
+                <span>Pay 40% Follow-Up Fee to Resume</span>
+              </button>
             )}
           </div>
         )}

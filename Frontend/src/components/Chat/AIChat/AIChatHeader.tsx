@@ -10,6 +10,7 @@ interface AIChatHeaderProps {
   activeContact: Contact;
   quota: AiQuotaResponse | null;
   navigate: (path: string | number) => void;
+  onRechargeClick: () => void;
 }
 
 export default function AIChatHeader({
@@ -17,7 +18,8 @@ export default function AIChatHeader({
   setIsSidebarOpen,
   activeContact,
   quota,
-  navigate
+  navigate,
+  onRechargeClick
 }: AIChatHeaderProps) {
   return (
     <div className="bg-white px-4 sm:px-6 py-4 border-b border-surface-variant flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 sticky top-0 z-20 shadow-sm shrink-0">
@@ -71,6 +73,12 @@ export default function AIChatHeader({
               {quota.premiumAiMessages}
             </span>
           </div>
+          <button
+            onClick={onRechargeClick}
+            className="cursor-pointer bg-primary text-white text-xs font-bold px-3.5 py-2 rounded-xl hover:bg-primary-dark transition-all shadow-sm flex items-center gap-1 shrink-0 ml-2"
+          >
+            Recharge
+          </button>
         </div>
       )}
     </div>

@@ -197,6 +197,8 @@ function App() {
                 }
               />
               <Route path="/payment-result" element={<PaymentResultPage />} />
+              <Route path="/payment-result/ai-recharge" element={<PaymentResultPage />} />
+              <Route path="/payment-result/followup" element={<PaymentResultPage />} />
             </Route>
             
             {/* Catch-all Route for invalid URLs */}

@@ -10,6 +10,7 @@ interface PatientDashboardAIWidgetProps {
   aiPrompt: string;
   setAiPrompt: (prompt: string) => void;
   handleAiSubmit: () => void;
+  onRechargeClick: () => void;
 }
 
 export default function PatientDashboardAIWidget({
@@ -19,7 +20,8 @@ export default function PatientDashboardAIWidget({
   fileInputRef,
   aiPrompt,
   setAiPrompt,
-  handleAiSubmit
+  handleAiSubmit,
+  onRechargeClick
 }: PatientDashboardAIWidgetProps) {
   const navigate = useNavigate();
 
@@ -56,6 +58,12 @@ export default function PatientDashboardAIWidget({
               )}
             </div>
           )}
+          <button 
+            onClick={onRechargeClick}
+            className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm whitespace-nowrap"
+          >
+            <span>Recharge</span>
+          </button>
           <button onClick={() => navigate('/ai-chat')} className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary/5 border border-primary/20 text-primary rounded-lg text-xs sm:text-sm font-semibold hover:bg-primary/10 transition-colors shadow-sm whitespace-nowrap">
             <MdHealthAndSafety className="text-base sm:text-lg" />
             <span>Start Check</span>

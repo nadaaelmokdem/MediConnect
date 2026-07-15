@@ -13,9 +13,9 @@ export default class ChatService {
     return response.data.sessionId;
   }
 
-  static async followUp(sessionId: number): Promise<number> {
+  static async followUp(sessionId: number): Promise<{ paymentUrl: string; amount: number }> {
     const response = await api.post(`chat/${sessionId}/followup`);
-    return response.data.sessionId;
+    return response.data;
   }
 
   static async getSessionDetails(sessionId: number): Promise<{
@@ -28,6 +28,7 @@ export default class ChatService {
     isCompanyPaid: boolean;
     isFollowUp: boolean;
     startedAt: string;
+    doctorChatPrice: number;
   }> {
     const response = await api.get(`chat/${sessionId}/details`);
     return response.data;

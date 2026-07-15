@@ -35,8 +35,14 @@ export async function getAiQuota(): Promise<AiQuotaResponse> {
   return response.data;
 }
 
-export async function rechargeAiQuota(amount: number): Promise<AiQuotaResponse> {
-  const response = await api.post<AiQuotaResponse>("AI/recharge", { amount });
+export interface InitiateRechargeResponse {
+  paymentUrl: string;
+  messagesGranted: number;
+  amount: number;
+}
+
+export async function rechargeAiQuota(amount: number): Promise<InitiateRechargeResponse> {
+  const response = await api.post<InitiateRechargeResponse>("AI/initiate-recharge", { amount });
   return response.data;
 }
 
