@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import type { ScheduleItem } from "../../components/DoctorDashboard/ScheduleItem";
 import CalendarModal from "../../components/DoctorDashboard/CalendarModal";
-import { getTodayStr, formatTimeTo12Hour } from "../../utils/dateUtils";
+import { formatTimeTo12Hour } from "../../utils/dateUtils";
 import { formatMessagePreview } from "../../utils/textUtils";
 import ChatService from "../../services/chatService";
 import { onUserPresenceChanged, subscribeToPresence } from "../../services/chatHubService";

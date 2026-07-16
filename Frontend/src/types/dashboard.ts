@@ -6,6 +6,7 @@ export interface UpcomingAppointment {
   doctorProfilePictureUrl?: string;
   consultationType: string;
   status: string;
+  paymentMethod?: string;
 }
 
 export interface RecentPrescription {
