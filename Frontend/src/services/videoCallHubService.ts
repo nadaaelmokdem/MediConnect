@@ -94,6 +94,14 @@ class VideoCallHubService {
       this.emit("CallEndedByPeer", userId);
     });
 
+    this.connection.on("VideoStateChanged", (userId: string, isVideoOff: boolean) => {
+      this.emit("VideoStateChanged", userId, isVideoOff);
+    });
+
+    this.connection.on("AudioStateChanged", (userId: string, isMuted: boolean) => {
+      this.emit("AudioStateChanged", userId, isMuted);
+    });
+
     return this.connection;
   }
 
@@ -163,6 +171,16 @@ class VideoCallHubService {
   public async endCall(sessionId: number): Promise<void> {
     if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) return;
     await this.connection.invoke("EndCall", sessionId);
+  }
+
+  public async toggleVideoState(sessionId: number, isVideoOff: boolean): Promise<void> {
+    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) return;
+    await this.connection.invoke("ToggleVideoState", sessionId, isVideoOff);
+  }
+
+  public async toggleAudioState(sessionId: number, isMuted: boolean): Promise<void> {
+    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) return;
+    await this.connection.invoke("ToggleAudioState", sessionId, isMuted);
   }
 
   public async sendSignal(sessionId: number, targetUserId: string, signalData: any): Promise<void> {

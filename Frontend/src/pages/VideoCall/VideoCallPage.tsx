@@ -128,6 +128,20 @@ export default function VideoCallPage() {
     };
   }, [navigate, cleanupCall]);
 
+  // Listen for video state changes from the peer
+  useEffect(() => {
+    const handleVideoStateChanged = (userId: string, remoteVideoOff: boolean) => {
+      if (userId !== user?.id) {
+        setIsRemoteVideoOff(remoteVideoOff);
+      }
+    };
+
+    videoCallHubService.on("VideoStateChanged", handleVideoStateChanged);
+    return () => {
+      videoCallHubService.off("VideoStateChanged", handleVideoStateChanged);
+    };
+  }, [user?.id]);
+
   // Handle SignalR Chat Messages (only from remote users to avoid duplicates)
   useEffect(() => {
     const handleReceiveMessage = (userId: string, message: string) => {

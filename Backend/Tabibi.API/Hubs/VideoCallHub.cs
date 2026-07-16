@@ -124,6 +124,22 @@ namespace Tabibi.API.Hubs
             await Clients.Group(sessionId.ToString()).SendAsync("CallEndedByPeer", userId);
         }
 
+        public async Task ToggleVideoState(long sessionId, bool isVideoOff)
+        {
+            var userId = Context.UserIdentifier;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            await Clients.GroupExcept(sessionId.ToString(), Context.ConnectionId).SendAsync("VideoStateChanged", userId, isVideoOff);
+        }
+
+        public async Task ToggleAudioState(long sessionId, bool isMuted)
+        {
+            var userId = Context.UserIdentifier;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            await Clients.GroupExcept(sessionId.ToString(), Context.ConnectionId).SendAsync("AudioStateChanged", userId, isMuted);
+        }
+
         public async Task NotifyUserReconnected(long sessionId)
         {
             var userId = Context.UserIdentifier;

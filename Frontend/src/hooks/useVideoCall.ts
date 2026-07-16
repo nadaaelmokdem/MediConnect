@@ -71,12 +71,16 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
       stream.getAudioTracks().forEach((track) => {
         track.enabled = !track.enabled;
       });
-      setIsMuted(!stream.getAudioTracks()[0]?.enabled);
+      const newMuteState = !stream.getAudioTracks()[0]?.enabled;
+      setIsMuted(newMuteState);
+      if (sessionId) {
+        videoCallHubService.toggleAudioState(sessionId, newMuteState).catch(console.error);
+      }
     } else {
       setIsMuted(true);
       toast.error("No microphone device available.");
     }
-  }, []);
+  }, [sessionId]);
 
   const toggleVideo = useCallback(() => {
     const stream = localStreamRef.current;
@@ -84,12 +88,16 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
       stream.getVideoTracks().forEach((track) => {
         track.enabled = !track.enabled;
       });
-      setIsVideoOff(!stream.getVideoTracks()[0]?.enabled);
+      const newVideoState = !stream.getVideoTracks()[0]?.enabled;
+      setIsVideoOff(newVideoState);
+      if (sessionId) {
+        videoCallHubService.toggleVideoState(sessionId, newVideoState).catch(console.error);
+      }
     } else {
       setIsVideoOff(true);
       toast.error("No camera device available.");
     }
-  }, []);
+  }, [sessionId]);
 
   // Clean up function to be called on unmount or unload
   const cleanupCall = useCallback(() => {
