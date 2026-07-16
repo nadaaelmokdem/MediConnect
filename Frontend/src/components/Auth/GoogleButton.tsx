@@ -9,7 +9,7 @@ export default function GoogleButton({ disabled, isPrimary, requiredRole }: Goog
   const login = useGoogleLogin({
     flow: "auth-code",
     ux_mode: "redirect",
-    redirect_uri: window.location.origin + "/auth/callback",
+    redirect_uri: import.meta.env.VITE_APP_BASE_URL + "/auth/callback",
     scope: "email profile",
     state: requiredRole === "Doctor" ? "Doctor" : "User"
   });
