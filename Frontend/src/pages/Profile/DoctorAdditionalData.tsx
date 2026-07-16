@@ -14,7 +14,7 @@ import DoctorSpecialtiesPricingSection from "../../components/Profile/DoctorSpec
 export default function DoctorAdditionalData() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
 
@@ -455,6 +455,9 @@ export default function DoctorAdditionalData() {
       };
 
       await DoctorService.bulkUpdateProfile(bulkData);
+      if (finalProfilePicUrl) {
+        updateUser({ profilePictureUrl: finalProfilePicUrl });
+      }
       setIsLoading(false);
       navigate("/");
     } catch (error) {

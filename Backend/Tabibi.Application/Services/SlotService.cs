@@ -11,7 +11,9 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
 
     private static readonly AppointmentStatus[] BlockingStatuses =
     [
-        AppointmentStatus.Confirmed
+        AppointmentStatus.Confirmed,
+        AppointmentStatus.Pending,
+        AppointmentStatus.Completed
     ];
 
     public static DateTime TruncateToMinute(DateTime value) =>
@@ -23,8 +25,8 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
         DateTime appointmentStart,
         int appointmentDurationMins)
     {
-        var normalizedSlot = TruncateToMinute(slotStart);
-        var normalizedAppointment = TruncateToMinute(appointmentStart);
+        var normalizedSlot = TruncateToMinute(slotStart).ToUniversalTime();
+        var normalizedAppointment = TruncateToMinute(appointmentStart).ToUniversalTime();
 
         return normalizedSlot < normalizedAppointment.AddMinutes(appointmentDurationMins)
                && normalizedSlot.AddMinutes(slotDurationMins) > normalizedAppointment;
@@ -193,8 +195,11 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
         int durationMins = DefaultSlotDurationMins)
     {
         var normalized = TruncateToMinute(scheduledAt);
+        var localNormalized = normalized.Kind == DateTimeKind.Utc 
+            ? normalized.ToLocalTime() 
+            : DateTime.SpecifyKind(normalized, DateTimeKind.Utc).ToLocalTime();
 
-        if (normalized <= DateTime.UtcNow)
+        if (normalized.ToUniversalTime() <= DateTime.UtcNow)
             return SlotValidationResult.Invalid("Cannot book a slot in the past.");
 
         var doctor = await unitOfWork.DoctorProfiles.Query()
@@ -207,14 +212,14 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
         if (!doctor.IsVerified)
             return SlotValidationResult.Invalid("Doctor is not verified.");
 
-        var date = DateOnly.FromDateTime(normalized);
+        var date = DateOnly.FromDateTime(localNormalized);
         var currentAvailabilities = await GetActiveAvailabilitiesAsync(doctorId, date);
         var prevAvailabilities = await GetActiveAvailabilitiesAsync(doctorId, date.AddDays(-1));
 
         if (currentAvailabilities.Count == 0 && prevAvailabilities.Count == 0)
             return SlotValidationResult.Invalid("Doctor has no availability on this day.");
 
-        var slotTime = normalized.TimeOfDay;
+        var slotTime = localNormalized.TimeOfDay;
         var matchingAvailability = currentAvailabilities.FirstOrDefault(a =>
             IsSlotWithinAvailability(a, date, slotTime, durationMins, date));
 
@@ -229,7 +234,7 @@ public class SlotService(IUnitOfWork unitOfWork) : Tabibi.Application.Interfaces
 
         var blockingAppointments = await GetBlockingAppointmentsAsync(doctorId, date);
 
-        if (IsBlockedByExistingAppointment(normalized, durationMins, blockingAppointments))
+        if (IsBlockedByExistingAppointment(localNormalized, durationMins, blockingAppointments))
             return SlotValidationResult.Invalid("This slot is already booked.");
 
         return SlotValidationResult.Valid(matchingAvailability);

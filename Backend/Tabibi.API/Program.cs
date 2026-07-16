@@ -93,7 +93,8 @@ namespace Tabibi.API
                                "http://localhost:5174",
                                "http://127.0.0.1:5500",
                                "https://bankbook-kleenex-retake.ngrok-free.dev",
-                               "https://gqfah-197-120-163-186.free.pinggy.net")
+                               "https://gqfah-197-120-163-186.free.pinggy.net",
+                               "https://tabibi.dpdns.org")
                                             .AllowAnyHeader()
                                             .AllowAnyMethod()
                                             .AllowCredentials();
@@ -134,14 +135,17 @@ namespace Tabibi.API
             })
             .AddJwtBearer(options =>
             {
+                var issuer = builder.Configuration["JwtSettings:ValidIssuer"];
+                var audience = builder.Configuration["JwtSettings:ValidAudience"];
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
+                    ValidateIssuer = !string.IsNullOrEmpty(issuer) && issuer != "empty",
+                    ValidateAudience = !string.IsNullOrEmpty(audience) && audience != "empty",
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JwtSettings:ValidIssuer"],
-                    ValidAudience = builder.Configuration["JwtSettings:ValidAudience"],
+                    ValidIssuer = !string.IsNullOrEmpty(issuer) && issuer != "empty" ? issuer : null,
+                    ValidAudience = !string.IsNullOrEmpty(audience) && audience != "empty" ? audience : null,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
                 };
 

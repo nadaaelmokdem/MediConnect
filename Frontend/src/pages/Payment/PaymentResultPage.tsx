@@ -7,11 +7,19 @@ export default function PaymentResultPage() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   
-  const orderId = searchParams.get("orderId");
+  const orderId = searchParams.get("orderId") || searchParams.get("merchantReferenceId");
   const successStr = searchParams.get("success");
   const sessionId = searchParams.get("sessionId");
   const type = searchParams.get("type");
-  const isSuccess = successStr === "true" || successStr === "True";
+  const code = searchParams.get("code");
+  const responseCode = searchParams.get("responseCode");
+  const status = searchParams.get("status");
+  const isSuccess = 
+    successStr === "true" || 
+    successStr === "True" || 
+    code === "000" || 
+    responseCode === "000" || 
+    status?.toLowerCase() === "success";
 
   const isAiRecharge = pathname.includes("ai-recharge");
   const isFollowUp = pathname.includes("followup");

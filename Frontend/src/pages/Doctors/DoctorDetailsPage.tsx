@@ -331,7 +331,7 @@ export default function DoctorDetailsPage() {
       Swal.fire({
         icon: 'error',
         title: 'Cannot start chat',
-        text: err.response?.data?.message || err.message || err.response?.data || "Failed to start chat session.",
+        text: err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response.data : null) || err.message || "Failed to start chat session.",
         buttonsStyling: false,
         customClass: {
           popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',

@@ -12,6 +12,7 @@ import {
   FaVideo,
   FaCommentDots,
   FaClock,
+  FaLock,
 } from "react-icons/fa";
 import type { DoctorListItem } from "../../types/public";
 import type { BookingFeedback, SelectedSlot, SlotWithMeta } from "../../types/booking";
@@ -165,7 +166,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
 
       const res: any = await AppointmentService.bookAppointment({
         doctorId: selectedSlot.doctorId,
-        scheduledAt: selectedSlot.start,
+        scheduledAt: new Date(selectedSlot.start).toISOString(),
         type: apiType as any,
         paymentMethod: apiPaymentMethod,
       });
@@ -205,7 +206,10 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
       
     } catch (err: any) {
       console.error("Booking failed", err);
-      const errorMsg = err.response?.data?.message || err.message || "Failed to book appointment. Please try again.";
+      const errorMsg = 
+        typeof err.response?.data === "string" 
+          ? err.response.data 
+          : err.response?.data?.message || err.response?.data?.error || err.message || "Failed to book appointment. Please try again.";
       
       Swal.fire({
         icon: 'error',
@@ -376,16 +380,12 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
 
             <div className="flex flex-wrap gap-3 mb-3 text-[10px] sm:text-xs text-text-muted">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded border border-primary/40 bg-white inline-block" />
+                <FaClock className="text-[9px] shrink-0" />
                 Available
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-red-50 border border-red-200 inline-block" />
+                <FaLock className="text-[9px] shrink-0" />
                 Booked
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-surface-container border border-surface-variant inline-block" />
-                Unavailable
               </span>
             </div>
 

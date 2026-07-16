@@ -57,8 +57,9 @@ public class AppointmentService(
             {
                 while (current + slotStep <= availability.EndTime)
                 {
-                    var start = SlotService.TruncateToMinute(
+                    var startLocal = SlotService.TruncateToMinute(
                         date.ToDateTime(TimeOnly.MinValue).Add(current));
+                    var start = startLocal.ToUniversalTime();
 
                     var end = start.AddMinutes(availability.SlotDurationMins);
 
@@ -86,8 +87,9 @@ public class AppointmentService(
                 var limit = availability.EndTime.Add(TimeSpan.FromHours(24));
                 while (current < TimeSpan.FromHours(24) && (current + slotStep <= limit))
                 {
-                    var start = SlotService.TruncateToMinute(
+                    var startLocal = SlotService.TruncateToMinute(
                         date.ToDateTime(TimeOnly.MinValue).Add(current));
+                    var start = startLocal.ToUniversalTime();
 
                     var end = start.AddMinutes(availability.SlotDurationMins);
 
@@ -127,8 +129,9 @@ public class AppointmentService(
             while (current + slotStep <= limit)
             {
                 var todayTime = current - TimeSpan.FromHours(24);
-                var start = SlotService.TruncateToMinute(
+                var startLocal = SlotService.TruncateToMinute(
                     date.ToDateTime(TimeOnly.MinValue).Add(todayTime));
+                var start = startLocal.ToUniversalTime();
 
                 var end = start.AddMinutes(availability.SlotDurationMins);
 
@@ -191,18 +194,27 @@ public class AppointmentService(
 
         try
         {
-            if (request.Type != ConsultationType.Chat)
-            {
-                var validation = await slotService.ValidateSlotAsync(
-                    request.DoctorId,
-                    normalizedScheduledAt,
-                    durationMins);
+            var existingAppointment = await unitOfWork.Appointments.Query()
+                .AnyAsync(a => a.PatientId == patient.PatientId 
+                            && a.DoctorId == request.DoctorId 
+                            && a.ScheduledAt == normalizedScheduledAt 
+                            && a.Status != AppointmentStatus.Cancelled);
 
-                if (!validation.IsValid)
-                {
-                    await transaction.RollbackAsync();
-                    return ServiceResult<AppointmentBookedDTO>.Failure(validation.ErrorMessage);
-                }
+            if (existingAppointment)
+            {
+                await transaction.RollbackAsync();
+                return ServiceResult<AppointmentBookedDTO>.Failure("You already have an appointment with this doctor at this time.");
+            }
+
+            var validation = await slotService.ValidateSlotAsync(
+                request.DoctorId,
+                normalizedScheduledAt,
+                durationMins);
+
+            if (!validation.IsValid)
+            {
+                await transaction.RollbackAsync();
+                return ServiceResult<AppointmentBookedDTO>.Failure(validation.ErrorMessage);
             }
 
             if (request.PaymentMethod != PaymentMethod.Online && (request.Type == ConsultationType.Chat || request.Type == ConsultationType.VideoCall))
@@ -383,7 +395,7 @@ public class AppointmentService(
 
         query = ApplyFilters(query, filters);
 
-        return await query
+        var appointments = await query
             .OrderByDescending(a => a.ScheduledAt)
             .Select(a => new AppointmentListDTO
             {
@@ -400,6 +412,13 @@ public class AppointmentService(
                 SessionId = a.ConsultationType == ConsultationType.VideoCall ? a.VideoCallSessionId : a.SessionId,
                 PaymentMethod = a.PaymentMethod
             }).ToListAsync();
+
+        foreach (var app in appointments)
+        {
+            app.ScheduledAt = DateTime.SpecifyKind(app.ScheduledAt, DateTimeKind.Utc);
+        }
+
+        return appointments;
     }
 
     public async Task<List<AppointmentListDTO>> GetPatientAppointmentsAsync(string patientUserId, AppointmentFilterDTO filters)
@@ -417,7 +436,7 @@ public class AppointmentService(
 
         query = ApplyFilters(query, filters);
 
-        return await query
+        var appointments = await query
             .OrderByDescending(a => a.ScheduledAt)
             .Select(a => new AppointmentListDTO
             {
@@ -437,6 +456,13 @@ public class AppointmentService(
                 ReviewComment = a.Review != null ? a.Review.Comment : null,
                 PaymentMethod = a.PaymentMethod
             }).ToListAsync();
+
+        foreach (var app in appointments)
+        {
+            app.ScheduledAt = DateTime.SpecifyKind(app.ScheduledAt, DateTimeKind.Utc);
+        }
+
+        return appointments;
     }
 
     private IQueryable<Appointment> ApplyFilters(IQueryable<Appointment> query, AppointmentFilterDTO filters)
@@ -502,7 +528,7 @@ public class AppointmentService(
             AppointmentId = appointment.AppointmentId,
             DoctorName = doctor.User.FullName,
             PatientName = appointment.Patient.User.FullName,
-            ScheduledAt = appointment.ScheduledAt,
+            ScheduledAt = DateTime.SpecifyKind(appointment.ScheduledAt, DateTimeKind.Utc),
             ConsultationType = appointment.ConsultationType,
             Status = appointment.Status,
             DurationMins = appointment.DurationMins,

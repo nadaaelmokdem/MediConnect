@@ -35,9 +35,12 @@ public class AuthUtils(IConfiguration configuration) : IAuthUtils
         foreach (var role in roles)
             claims.Add(new Claim(ClaimTypes.Role, role));
 
+        var issuer = configuration["JwtSettings:ValidIssuer"];
+        var audience = configuration["JwtSettings:ValidAudience"];
+
         var token = new JwtSecurityToken(
-            issuer: configuration["JwtSettings:ValidIssuer"],
-            audience: configuration["JwtSettings:ValidAudience"],
+            issuer: !string.IsNullOrEmpty(issuer) && issuer != "empty" ? issuer : null,
+            audience: !string.IsNullOrEmpty(audience) && audience != "empty" ? audience : null,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(
                 int.Parse(configuration["JwtSettings:DurationInMinutes"] ?? "60")),

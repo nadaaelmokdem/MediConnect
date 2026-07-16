@@ -97,6 +97,7 @@ const ProfilePage: React.FC = () => {
     try {
       const payload = {
         ...updatedProfile,
+        profilePictureUrl: updatedProfile.imageUrl,
         licenseExpiryDate: updatedProfile.licenseExpiryDate || null,
         yearsOfExperience: updatedProfile.yearsOfExperience ? parseInt(updatedProfile.yearsOfExperience) : null,
         specialties: updatedProfile.specialties.map(s => typeof s === 'string' ? s : s.name),

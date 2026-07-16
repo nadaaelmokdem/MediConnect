@@ -650,7 +650,7 @@ namespace Tabibi.Application.Services
                 .Where(a => a.DoctorId == doctor.DoctorId)
                 .ToListAsync();
 
-            var blockingStatuses = new[] { AppointmentStatus.Confirmed };
+            var blockingStatuses = new[] { AppointmentStatus.Confirmed, AppointmentStatus.Pending };
             var activeAppointments = await unitOfWork.Appointments.Query()
                 .Where(a => a.DoctorId == doctor.DoctorId && a.ScheduledAt > DateTime.UtcNow && blockingStatuses.Contains(a.Status))
                 .ToListAsync();

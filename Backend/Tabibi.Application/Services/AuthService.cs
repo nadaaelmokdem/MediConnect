@@ -54,7 +54,7 @@ public class AuthService(
             var userResponse = user.ToResponse();
             userResponse.Roles = roles.ToList();
 
-            if (roles.Contains(UserRoles.Doctor))
+            if (roles.Any(r => string.Equals(r, UserRoles.Doctor, StringComparison.OrdinalIgnoreCase)))
             {
                 var doctor = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
                 userResponse.IsVerified = doctor?.IsVerified ?? false;
@@ -103,7 +103,7 @@ public class AuthService(
         var userResponse = user.ToResponse();
         userResponse.Roles = roles.ToList();
 
-        if (roles.Contains(UserRoles.Doctor))
+        if (roles.Any(r => string.Equals(r, UserRoles.Doctor, StringComparison.OrdinalIgnoreCase)))
         {
             var doctor = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
             userResponse.IsVerified = doctor?.IsVerified ?? false;
@@ -221,7 +221,7 @@ public class AuthService(
         var userResponse = user.ToResponse();
         userResponse.Roles = roles.ToList();
 
-        if (roles.Contains(UserRoles.Doctor))
+        if (roles.Any(r => string.Equals(r, UserRoles.Doctor, StringComparison.OrdinalIgnoreCase)))
         {
             var doctor = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
             userResponse.IsVerified = doctor?.IsVerified ?? false;
@@ -300,6 +300,7 @@ public class AuthService(
             {
                 await userManager.AddToRoleAsync(user, UserRoles.Doctor);
                 await unitOfWork.DoctorProfiles.AddAsync(new DoctorProfile { UserId = user.Id });
+
             }
             else if (signupRequest.Role.Equals(UserRoles.Patient, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -328,7 +329,7 @@ public class AuthService(
         var userResponse = user.ToResponse();
         userResponse.Roles = roles.ToList();
 
-        if (roles.Contains(UserRoles.Doctor))
+        if (roles.Any(r => string.Equals(r, UserRoles.Doctor, StringComparison.OrdinalIgnoreCase)))
         {
             var doctor = await unitOfWork.DoctorProfiles.FirstOrDefaultAsync(d => d.UserId == user.Id);
             userResponse.IsVerified = doctor?.IsVerified ?? false;
