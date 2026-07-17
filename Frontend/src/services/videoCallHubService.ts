@@ -11,6 +11,7 @@ class VideoCallHubService {
   private static instance: VideoCallHubService;
   private activeSessionId: number | null = null;
   private startPromise: Promise<signalR.HubConnection> | null = null;
+  private leaveToken: string | null = null;
 
   private constructor() {}
 
@@ -42,7 +43,7 @@ class VideoCallHubService {
       this.emit("reconnected", connectionId);
       if (this.activeSessionId) {
         try {
-          await this.connection?.invoke("JoinCall", this.activeSessionId);
+          this.leaveToken = (await this.connection?.invoke<string | null>("JoinCall", this.activeSessionId)) ?? null;
           console.log("Rejoined video call session after SignalR reconnect:", this.activeSessionId);
           await this.connection?.invoke("NotifyUserReconnected", this.activeSessionId);
           console.log("Notified peer of reconnection:", this.activeSessionId);
@@ -159,11 +160,17 @@ class VideoCallHubService {
   public async joinCall(sessionId: number): Promise<void> {
     this.activeSessionId = sessionId;
     const conn = await this.startConnection();
-    await conn.invoke("JoinCall", sessionId);
+    this.leaveToken = await conn.invoke<string | null>("JoinCall", sessionId);
+  }
+
+  /** Token minted by the hub on a successful JoinCall, used to authenticate the sendBeacon leave request. */
+  public getLeaveToken(): string | null {
+    return this.leaveToken;
   }
 
   public async leaveCall(sessionId: number): Promise<void> {
     this.activeSessionId = null;
+    this.leaveToken = null;
     if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) return;
     await this.connection.invoke("LeaveCall", sessionId);
   }

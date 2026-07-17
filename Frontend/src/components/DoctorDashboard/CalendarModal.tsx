@@ -77,8 +77,8 @@ export default function CalendarModal({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-surface-container-lowest rounded-xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-surface-variant/30">
-        <div className="flex-1 p-8">
+      <div className="bg-surface-container-lowest rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden shadow-2xl border border-surface-variant/30">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           <div className="flex justify-between items-center mb-8">
             <div className="flex gap-3">
               <select
@@ -112,7 +112,7 @@ export default function CalendarModal({
             </button>
           </div>
 
-          <div className="grid grid-cols-7 gap-3 text-center text-[10px] font-black mb-4 text-primary/60 uppercase tracking-widest">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-3 text-center text-[10px] font-black mb-4 text-primary/60 uppercase tracking-widest">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -122,7 +122,7 @@ export default function CalendarModal({
             <span>Sat</span>
           </div>
 
-          <div className="grid grid-cols-7 gap-3">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-3">
             {[...Array(daysCount)].map((_, i) => {
               const day = i + 1;
               const dayEvents = filterEventsForDay(
@@ -176,7 +176,7 @@ export default function CalendarModal({
           </div>
         </div>
 
-        <div className="w-full md:w-80 bg-surface-container-low border-l border-surface-variant/30 p-8">
+        <div className="w-full md:w-80 bg-surface-container-low border-l border-surface-variant/30 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           <h3 className="font-semibold text-xl text-on-surface mb-6 flex items-center gap-2">
             Details
           </h3>

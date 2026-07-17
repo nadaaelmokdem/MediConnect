@@ -135,8 +135,9 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (sessionId && user?.id) {
-        const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5009/api"}/VideoCall/leave-beacon/${sessionId}/${user.id}`;
+      const leaveToken = videoCallHubService.getLeaveToken();
+      if (sessionId && leaveToken) {
+        const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5009/api"}/VideoCall/leave-beacon/${sessionId}/${leaveToken}`;
         navigator.sendBeacon(url);
       }
       if (peerRef.current) {

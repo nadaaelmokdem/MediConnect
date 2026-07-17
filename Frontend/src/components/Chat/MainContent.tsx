@@ -127,7 +127,7 @@ export function ChatInput({
   acceptedFileTypes,
   onFileUpload,
 }: {
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string) => void | boolean | Promise<void | boolean>;
   isLoading: boolean;
   disabled?: boolean;
   acceptedFileTypes?: string;
@@ -193,7 +193,17 @@ export function ChatInput({
       }
     }
 
-    onSendMessage(messageText);
+    const result = await onSendMessage(messageText);
+    if (result === false) {
+      // Send failed - restore the composed text (including any already-uploaded
+      // file URL) so the user doesn't have to retype or re-upload to retry.
+      setText(messageText);
+      setSelectedFile(null);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      return;
+    }
+
     setText("");
     setSelectedFile(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);

@@ -9,20 +9,22 @@ namespace Tabibi.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class VideoCallController(
-        IHubContext<VideoCallHub> hubContext, 
+        IHubContext<VideoCallHub> hubContext,
         Tabibi.Application.Interfaces.IChatService chatService,
-        IServiceProvider serviceProvider) : ControllerBase
+        IServiceProvider serviceProvider,
+        ILogger<VideoCallController> logger) : ControllerBase
     {
         /// <summary>
         /// Beacon endpoint called via navigator.sendBeacon when a user closes the browser tab.
-        /// sendBeacon cannot attach auth headers, so userId is passed in the URL.
-        /// We validate by checking the user is actually in the room before processing.
+        /// sendBeacon cannot attach auth headers, so we validate via a one-time token minted
+        /// server-side in VideoCallHub.JoinCall (over the authenticated SignalR connection)
+        /// rather than trusting a raw userId supplied in the URL.
         /// </summary>
-        [HttpPost("leave-beacon/{sessionId}/{userId}")]
+        [HttpPost("leave-beacon/{sessionId}/{token}")]
         [AllowAnonymous]
-        public async Task<IActionResult> LeaveBeacon(string sessionId, string userId)
+        public async Task<IActionResult> LeaveBeacon(string sessionId, string token)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(token))
             {
                 return BadRequest();
             }
@@ -31,6 +33,15 @@ namespace Tabibi.API.Controllers
             {
                 return BadRequest("Invalid session format.");
             }
+
+            if (!VideoCallHub.LeaveTokens.TryRemove(token, out var tokenEntry) ||
+                tokenEntry.SessionId != sessionId ||
+                tokenEntry.Expiry < DateTime.UtcNow)
+            {
+                return Unauthorized();
+            }
+
+            var userId = tokenEntry.UserId;
 
             // Validate by checking room membership — only process if this user is actually in the room
             if (!VideoCallHub.RoomUsers.TryGetValue(sessionId, out var room) || !room.ContainsKey(userId))
@@ -60,18 +71,25 @@ namespace Tabibi.API.Controllers
             {
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(2));
-
-                    if (VideoCallHub.RoomUsers.TryGetValue(sessionId, out var currentRoom) && !currentRoom.IsEmpty)
+                    try
                     {
-                        return;
+                        await Task.Delay(TimeSpan.FromMinutes(2));
+
+                        if (VideoCallHub.RoomUsers.TryGetValue(sessionId, out var currentRoom) && !currentRoom.IsEmpty)
+                        {
+                            return;
+                        }
+
+                        using (var scope = serviceProvider.CreateScope())
+                        {
+                            var scopedChatService = scope.ServiceProvider.GetRequiredService<Tabibi.Application.Interfaces.IChatService>();
+                            VideoCallHub.CallStarted.TryRemove(parsedSessionId, out _);
+                            await scopedChatService.CompleteVideoCallSessionAsync(parsedSessionId);
+                        }
                     }
-
-                    using (var scope = serviceProvider.CreateScope())
+                    catch (Exception ex)
                     {
-                        var scopedChatService = scope.ServiceProvider.GetRequiredService<Tabibi.Application.Interfaces.IChatService>();
-                        VideoCallHub.CallStarted.TryRemove(parsedSessionId, out _);
-                        await scopedChatService.CompleteVideoCallSessionAsync(parsedSessionId);
+                        logger.LogError(ex, "Deferred video call cleanup failed for session {SessionId}", parsedSessionId);
                     }
                 });
             }
@@ -80,5 +98,4 @@ namespace Tabibi.API.Controllers
         }
     }
 }
-
 

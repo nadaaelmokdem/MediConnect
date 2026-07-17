@@ -8,8 +8,10 @@ namespace Tabibi.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<DoctorSpecialty> builder)
         {
-            builder.HasIndex(ds => ds.DoctorId);
             builder.HasIndex(ds => ds.SpecialtyId);
+
+            builder.HasIndex(ds => new { ds.DoctorId, ds.SpecialtyId })
+                .IsUnique();
         }
     }
 }

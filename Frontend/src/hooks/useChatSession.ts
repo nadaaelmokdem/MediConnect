@@ -132,17 +132,19 @@ export function useChatSession(sessionId: number) {
   }, [sessionId, user?.id, user?.activeRole]);
 
   const send = useCallback(
-    async (content: string) => {
-      if (!content.trim()) return;
+    async (content: string): Promise<boolean> => {
+      if (!content.trim()) return true;
       try {
         await sendHubMessage(sessionId, content.trim());
         // No optimistic local append here - the hub broadcasts back to the
         // sender too (see ChatHub.SendMessage), so the message will arrive
         // through onReceiveMessage with its real DB id/timestamp.
+        return true;
       } catch (err) {
         // Transient send failure - surfaced as a toast, not a fatal `error`
         // (which would replace the whole chat pane and hide message history).
         toast.error(err instanceof Error ? err.message : "Unable to send message right now.");
+        return false;
       }
     },
     [sessionId]

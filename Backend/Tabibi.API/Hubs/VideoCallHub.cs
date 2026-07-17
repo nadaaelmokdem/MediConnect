@@ -9,7 +9,7 @@ using Tabibi.Application.Interfaces;
 namespace Tabibi.API.Hubs
 {
     [Authorize]
-    public class VideoCallHub(IChatService chatService, IServiceProvider serviceProvider) : Hub
+    public class VideoCallHub(IChatService chatService, IServiceProvider serviceProvider, ILogger<VideoCallHub> logger) : Hub
     {
         // SessionId -> (UserId -> ConnectionId)
         public static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> RoomUsers = new();
@@ -17,23 +17,28 @@ namespace Tabibi.API.Hubs
         // Tracks whether both parties have successfully joined the call room
         public static readonly ConcurrentDictionary<long, bool> CallStarted = new();
 
-        public async Task JoinCall(long sessionId)
+        // Token -> (SessionId, UserId, Expiry). Minted on a successful (authenticated) JoinCall
+        // so navigator.sendBeacon — which cannot attach auth headers — can prove who it's
+        // leaving on behalf of without trusting a raw, guessable userId from the URL.
+        public static readonly ConcurrentDictionary<string, (string SessionId, string UserId, DateTime Expiry)> LeaveTokens = new();
+
+        public async Task<string?> JoinCall(long sessionId)
         {
             var userId = Context.UserIdentifier;
-            if (string.IsNullOrEmpty(userId)) return;
+            if (string.IsNullOrEmpty(userId)) return null;
 
             var access = await chatService.ValidateVideoCallAccess(sessionId, userId);
             if (!access.Allowed)
             {
                 await Clients.Caller.SendAsync("Unauthorized", access.ErrorMessage ?? "You do not have access to this video call session.");
-                return;
+                return null;
             }
 
             // SECURITY: Require payment before joining video call room
             if (!await chatService.IsVideoCallSessionPaidAsync(sessionId))
             {
                 await Clients.Caller.SendAsync("Unauthorized", "Payment required to join this video call session.");
-                return;
+                return null;
             }
 
             var sessionIdStr = sessionId.ToString();
@@ -57,6 +62,10 @@ namespace Tabibi.API.Hubs
                 var otherUsers = room.Keys.Where(id => id != userId).ToList();
                 await Clients.Caller.SendAsync("RoomPresence", otherUsers);
             }
+
+            var leaveToken = Guid.NewGuid().ToString("N");
+            LeaveTokens[leaveToken] = (sessionIdStr, userId, DateTime.UtcNow.AddHours(6));
+            return leaveToken;
         }
 
         public async Task LeaveCall(long sessionId)
@@ -93,20 +102,27 @@ namespace Tabibi.API.Hubs
             {
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(2));
-
-                    // Verify if the room is still empty
-                    if (RoomUsers.TryGetValue(sessionIdStr, out var currentRoom) && !currentRoom.IsEmpty)
+                    try
                     {
-                        // Someone re-joined during the grace period!
-                        return;
+                        await Task.Delay(TimeSpan.FromMinutes(2));
+
+                        // Verify if the room is still empty
+                        if (RoomUsers.TryGetValue(sessionIdStr, out var currentRoom) && !currentRoom.IsEmpty)
+                        {
+                            // Someone re-joined during the grace period!
+                            return;
+                        }
+
+                        using (var scope = serviceProvider.CreateScope())
+                        {
+                            var scopedChatService = scope.ServiceProvider.GetRequiredService<IChatService>();
+                            CallStarted.TryRemove(sessionId, out _);
+                            await scopedChatService.CompleteVideoCallSessionAsync(sessionId);
+                        }
                     }
-
-                    using (var scope = serviceProvider.CreateScope())
+                    catch (Exception ex)
                     {
-                        var scopedChatService = scope.ServiceProvider.GetRequiredService<IChatService>();
-                        CallStarted.TryRemove(sessionId, out _);
-                        await scopedChatService.CompleteVideoCallSessionAsync(sessionId);
+                        logger.LogError(ex, "Deferred video call cleanup failed for session {SessionId}", sessionId);
                     }
                 });
             }
@@ -187,19 +203,26 @@ namespace Tabibi.API.Hubs
                             {
                                 _ = Task.Run(async () =>
                                 {
-                                    await Task.Delay(TimeSpan.FromMinutes(2));
-
-                                    // Verify if the room is still empty
-                                    if (RoomUsers.TryGetValue(sessionIdStr, out var currentRoom) && !currentRoom.IsEmpty)
+                                    try
                                     {
-                                        return;
+                                        await Task.Delay(TimeSpan.FromMinutes(2));
+
+                                        // Verify if the room is still empty
+                                        if (RoomUsers.TryGetValue(sessionIdStr, out var currentRoom) && !currentRoom.IsEmpty)
+                                        {
+                                            return;
+                                        }
+
+                                        using (var scope = serviceProvider.CreateScope())
+                                        {
+                                            var scopedChatService = scope.ServiceProvider.GetRequiredService<IChatService>();
+                                            CallStarted.TryRemove(sessionId, out _);
+                                            await scopedChatService.CompleteVideoCallSessionAsync(sessionId);
+                                        }
                                     }
-
-                                    using (var scope = serviceProvider.CreateScope())
+                                    catch (Exception ex)
                                     {
-                                        var scopedChatService = scope.ServiceProvider.GetRequiredService<IChatService>();
-                                        CallStarted.TryRemove(sessionId, out _);
-                                        await scopedChatService.CompleteVideoCallSessionAsync(sessionId);
+                                        logger.LogError(ex, "Deferred video call cleanup failed for session {SessionId}", sessionId);
                                     }
                                 });
                             }

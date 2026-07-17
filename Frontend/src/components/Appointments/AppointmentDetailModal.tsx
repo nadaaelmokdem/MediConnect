@@ -44,10 +44,10 @@ export default function AppointmentDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-surface-variant overflow-hidden"
+        className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] shadow-2xl border border-surface-variant overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant bg-surface-container">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-surface-variant bg-surface-container">
           <h2 className="text-lg font-bold text-primary-dark">Appointment Details</h2>
           <button
             onClick={onClose}
@@ -58,7 +58,7 @@ export default function AppointmentDetailModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto">
           <DetailRow label={partyLabel} value={partyName} />
           <DetailRow
             label="Date & Time"
@@ -98,7 +98,7 @@ export default function AppointmentDetailModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-surface-variant bg-surface-container/50 flex flex-col sm:flex-row gap-2 sm:justify-end">
+        <div className="shrink-0 px-6 py-4 border-t border-surface-variant bg-surface-container/50 flex flex-col sm:flex-row gap-2 sm:justify-end">
           {showCancel && (
             <button
               onClick={() => onCancel!(appointment.appointmentId)}

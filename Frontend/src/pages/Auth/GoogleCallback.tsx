@@ -89,7 +89,7 @@ export default function GoogleCallback() {
                     text: message,
                     buttonsStyling: false,
                     customClass: {
-                      popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-sm w-full border border-surface-variant',
+                      popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
                       title: 'text-2xl font-bold mb-2 text-primary-dark',
                       htmlContainer: 'text-on-surface-variant mb-6 m-0',
                       confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',

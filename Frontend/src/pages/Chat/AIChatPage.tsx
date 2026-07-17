@@ -32,6 +32,7 @@ const CONTACTS: Contact[] = [
 ];
 
 export default function AIChatPage() {
+  const { sessionId } = useParams<{ sessionId: string }>();
   const [activeContact] = useState<Contact>(CONTACTS[0]);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -109,7 +110,6 @@ export default function AIChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { sessionId } = useParams<{ sessionId: string }>();
   const numericSessionId = sessionId ? Number(sessionId) : undefined;
   const location = useLocation();
   const [initialPromptHandled, setInitialPromptHandled] = useState(false);

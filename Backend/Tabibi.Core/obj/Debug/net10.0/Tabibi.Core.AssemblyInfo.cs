@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tabibi.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7834af147af9f855742a33056688874854e2350b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+667e9a6290ee64866f13b28ce2f1205bcdbe79dd")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tabibi.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tabibi.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
