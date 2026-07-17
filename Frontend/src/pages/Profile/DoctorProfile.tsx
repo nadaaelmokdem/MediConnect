@@ -16,6 +16,7 @@ import { ServicesAndPricingManager } from "../../components/Profile/ServicesAndP
 import DoctorService from "../../services/doctorService";
 import { useAuth } from "../../context/AuthContext";
 import { getFileUrl } from "../../utils/fileUtils";
+import { showErrorAlert } from "../../utils/swalTheme";
 
 const ProfilePage: React.FC = () => {
   const [editingField, setEditingField] = useState<
@@ -153,7 +154,7 @@ const ProfilePage: React.FC = () => {
         updateUser({ profilePictureUrl: newUrl });
       } catch (error) {
         console.error("Failed to upload image:", error);
-        alert("Failed to upload profile picture.");
+        showErrorAlert({ text: "Failed to upload profile picture." });
       } finally {
         if (fileInputRef.current) fileInputRef.current.value = "";
         setIsUploadingImage(false);

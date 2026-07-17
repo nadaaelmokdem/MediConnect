@@ -9,6 +9,7 @@ import DoctorListFilters from "../../components/Doctors/DoctorListFilters";
 import DoctorGrid from "../../components/Doctors/DoctorGrid";
 import AppointmentService from "../../services/appointmentService";
 import { getAiQuota } from "../../services/AIChat";
+import { showErrorAlert, showInfoAlert, showWarningAlert } from "../../utils/swalTheme";
 
 import { toast } from "react-toastify";
 
@@ -149,7 +150,7 @@ const DoctorsPage: React.FC = () => {
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot book appointments.");
+      showWarningAlert({ title: "Not Available", text: "Doctors cannot book appointments." });
       return;
     }
     setBookingModalInitialType("clinic");
@@ -180,13 +181,13 @@ const DoctorsPage: React.FC = () => {
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot start chats with other doctors.");
+      showWarningAlert({ title: "Not Available", text: "Doctors cannot start chats with other doctors." });
       return;
     }
 
     if (doctor) {
       if (!doctor.isChatEnabled) {
-        alert("This doctor does not offer chat consultations.");
+        showInfoAlert({ title: "Chat Unavailable", text: "This doctor does not offer chat consultations." });
         return;
       }
       setSelectedDoctorForChat(doctor);
@@ -208,7 +209,7 @@ const DoctorsPage: React.FC = () => {
       }
       throw new Error("Payment link could not be generated.");
     } catch (err: any) {
-      alert(err.response?.data?.message || err.response?.data || err.message || "Failed to start chat session.");
+      showErrorAlert({ title: "Cannot start chat", text: err.response?.data?.message || err.response?.data || err.message || "Failed to start chat session." });
     }
   };
 
@@ -218,7 +219,7 @@ const DoctorsPage: React.FC = () => {
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot start video calls with other doctors.");
+      showWarningAlert({ title: "Not Available", text: "Doctors cannot start video calls with other doctors." });
       return;
     }
 
@@ -241,7 +242,7 @@ const DoctorsPage: React.FC = () => {
       const sessionId = await ChatService.startSession(selectedDoctorForChat.doctorId, true, assessment);
       navigate(`/chat/${sessionId}`);
     } catch (err: any) {
-      alert(err.response?.data || "Failed to start chat session.");
+      showErrorAlert({ title: "Cannot start chat", text: err.response?.data || "Failed to start chat session." });
     } finally {
       setSelectedDoctorForChat(null);
     }

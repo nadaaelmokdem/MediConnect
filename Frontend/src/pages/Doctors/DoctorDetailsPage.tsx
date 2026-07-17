@@ -4,7 +4,7 @@ import { FaChevronLeft } from "react-icons/fa";
 import PublicService from "../../services/publicService";
 import type { DoctorListItem } from "../../types/public";
 import { useAuth } from "../../context/AuthContext";
-import Swal from "sweetalert2";
+import Swal, { swalClasses, confirmDialog, showErrorAlert, showInfoAlert, showWarningAlert } from "../../utils/swalTheme";
 import { getAiQuota } from "../../services/AIChat";
 import PatientService from "../../services/patientService";
 import ChatService from "../../services/chatService";
@@ -102,6 +102,8 @@ export default function DoctorDetailsPage() {
       Swal.fire({
         title: 'Loading...',
         allowOutsideClick: false,
+        showConfirmButton: false,
+        customClass: { popup: swalClasses.popup, title: `${swalClasses.title} text-center` },
         didOpen: () => Swal.showLoading()
       });
 
@@ -111,14 +113,9 @@ export default function DoctorDetailsPage() {
       );
 
       if (completedWithDoctor.length === 0) {
-        Swal.fire({
-          icon: 'warning',
+        showWarningAlert({
           title: 'Cannot Rate Doctor',
           text: "You can't rate this doctor because you didn't book with him yet.",
-          customClass: {
-            popup: 'rounded-3xl',
-            confirmButton: 'bg-primary text-white px-6 py-2 rounded-xl'
-          }
         });
         return;
       }
@@ -179,11 +176,11 @@ export default function DoctorDetailsPage() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-8 rounded-[32px] shadow-2xl max-w-md w-full border border-surface-variant',
-          htmlContainer: 'w-full m-0',
-          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 mt-4 text-lg',
-          cancelButton: 'w-full mt-3 py-3.5 text-text-muted font-semibold hover:text-primary-dark hover:bg-surface-variant rounded-2xl transition-colors',
-          actions: 'flex flex-col w-full m-0'
+          popup: swalClasses.popup,
+          htmlContainer: swalClasses.htmlContainer,
+          actions: swalClasses.actions,
+          confirmButton: swalClasses.confirmPrimary,
+          cancelButton: swalClasses.cancel,
         },
         didOpen: () => {
           const stars = document.querySelectorAll('.star-btn');
@@ -272,15 +269,7 @@ export default function DoctorDetailsPage() {
               PublicService.getDoctorById(doctor!.doctorId).then(setDoctor).catch(console.error);
             })
             .catch(err => {
-              Swal.fire({
-                icon: 'error',
-                title: 'Cannot Submit Review',
-                text: err.message || 'Failed to submit review.',
-                customClass: {
-                  popup: 'rounded-3xl',
-                  confirmButton: 'bg-primary text-white px-6 py-2 rounded-xl'
-                }
-              });
+              showErrorAlert({ title: 'Cannot Submit Review', text: err.message || 'Failed to submit review.' });
             });
         }
       });
@@ -301,7 +290,7 @@ export default function DoctorDetailsPage() {
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot start chats with other doctors.");
+      showWarningAlert({ title: "Not Available", text: "Doctors cannot start chats with other doctors." });
       return;
     }
 
@@ -328,17 +317,9 @@ export default function DoctorDetailsPage() {
         navigate(`/chat/${sessionId}`);
       }
     } catch (err: any) {
-      Swal.fire({
-        icon: 'error',
+      showErrorAlert({
         title: 'Cannot start chat',
         text: err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response.data : null) || err.message || "Failed to start chat session.",
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
-        }
       });
     }
   };
@@ -350,7 +331,7 @@ export default function DoctorDetailsPage() {
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot start video calls with other doctors.");
+      showWarningAlert({ title: "Not Available", text: "Doctors cannot start video calls with other doctors." });
       return;
     }
 
@@ -362,18 +343,7 @@ export default function DoctorDetailsPage() {
     if (!doctor) return;
     
     if (!doctor.isChatEnabled) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Chat Unavailable',
-        text: "This doctor does not offer chat consultations.",
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
-        }
-      });
+      showInfoAlert({ title: 'Chat Unavailable', text: "This doctor does not offer chat consultations." });
       return;
     }
 
@@ -411,11 +381,11 @@ export default function DoctorDetailsPage() {
         cancelButtonText: 'Cancel',
         buttonsStyling: false,
         customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-3 text-primary-dark text-left w-full',
-          htmlContainer: 'w-full m-0',
-          cancelButton: 'w-full mt-6 py-3 text-text-muted font-semibold hover:text-primary-dark hover:bg-surface-variant rounded-xl transition-colors',
-          actions: 'flex flex-col w-full m-0'
+          popup: swalClasses.popup,
+          title: swalClasses.title,
+          htmlContainer: swalClasses.htmlContainer,
+          cancelButton: swalClasses.cancel,
+          actions: `${swalClasses.actions} !mt-4`,
         },
         didOpen: () => {
           const btnFree = Swal.getPopup()?.querySelector('#btn-free');
@@ -425,10 +395,10 @@ export default function DoctorDetailsPage() {
         }
       });
     } else {
-      Swal.fire({
+      confirmDialog({
         title: 'Start Chat Consultation',
         html: `
-          <div class="text-center mb-6">
+          <div class="text-center">
             <div class="w-20 h-20 bg-[var(--color-primary-light)]/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
             </div>
@@ -437,20 +407,9 @@ export default function DoctorDetailsPage() {
             </p>
           </div>
         `,
-        showCancelButton: true,
-        confirmButtonText: 'Start Chat',
-        cancelButtonText: 'Cancel',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-4 text-primary-dark',
-          htmlContainer: 'w-full m-0',
-          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5',
-          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-primary-dark hover:bg-surface-variant rounded-xl transition-colors',
-          actions: 'flex flex-col w-full m-0'
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
+        confirmText: 'Start Chat',
+      }).then((confirmed) => {
+        if (confirmed) {
           handleStartChat(false);
         }
       });
@@ -464,7 +423,7 @@ export default function DoctorDetailsPage() {
       return;
     }
     if (user?.activeRole?.toLowerCase() === "doctor") {
-      alert("Doctors cannot book appointments.");
+      showWarningAlert({ title: "Not Available", text: "Doctors cannot book appointments." });
       return;
     }
     setBookingModalInitialType("clinic");

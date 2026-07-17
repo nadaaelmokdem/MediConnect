@@ -14,7 +14,7 @@ import { formatTimeTo12Hour } from "../../utils/dateUtils";
 import AIChatSidebar from "../../components/Chat/AIChat/AIChatSidebar";
 import AIChatHeader from "../../components/Chat/AIChat/AIChatHeader";
 import AIChatAssessment from "../../components/Chat/AIChat/AIChatAssessment";
-import Swal from "sweetalert2";
+import { showAiRechargeDialog } from "../../utils/swalTheme";
 import { FiInfo } from "react-icons/fi";
 
 const CURRENT_USER_ID = "user1";
@@ -49,57 +49,7 @@ export default function AIChatPage() {
   const [topicDrift, setTopicDrift] = useState(false);
 
   const triggerRecharge = () => {
-    Swal.fire({
-      title: "Recharge AI Messages",
-      html: `<div class="text-left font-medium mb-3 text-on-surface-variant text-sm leading-relaxed">
-               Select the amount of credits you'd like to purchase:
-             </div>
-             <div class="mb-4">
-               <select id="swal-recharge-amount" class="w-full border border-surface-variant rounded-xl p-3.5 text-sm text-on-surface font-semibold bg-surface-container focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors cursor-pointer">
-                 <option value="10">10.00 EGP (20 Messages)</option>
-                 <option value="20">20.00 EGP (40 Messages)</option>
-                 <option value="30">30.00 EGP (60 Messages)</option>
-                 <option value="50">50.00 EGP (100 Messages)</option>
-                 <option value="100">100.00 EGP (200 Messages)</option>
-               </select>
-             </div>`,
-      showCancelButton: true,
-      confirmButtonText: "Recharge via Wallet",
-      cancelButtonText: "Cancel",
-      buttonsStyling: false,
-      customClass: {
-        popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
-        title: 'text-xl font-bold mb-4 text-on-surface text-left w-full',
-        htmlContainer: 'w-full m-0',
-        confirmButton: 'w-full mt-4 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg cursor-pointer',
-        cancelButton: 'w-full mt-2 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-        actions: 'flex flex-col gap-0 w-full'
-      },
-      preConfirm: () => {
-        const select = document.getElementById('swal-recharge-amount') as HTMLSelectElement;
-        return Number(select?.value || 10);
-      }
-    }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        const amount = result.value;
-        rechargeAiQuota(amount).then(res => {
-          if (res.paymentUrl) {
-            window.location.href = res.paymentUrl;
-          }
-        }).catch(err => {
-          console.error(err);
-          Swal.fire({
-            title: "Error",
-            text: "Failed to initiate recharge. Please try again.",
-            icon: "error",
-            confirmButtonText: "OK",
-            customClass: {
-              confirmButton: "bg-primary text-white font-bold py-2.5 px-6 rounded-xl cursor-pointer"
-            }
-          });
-        });
-      }
-    });
+    showAiRechargeDialog(rechargeAiQuota);
   };
   const [urgencyLevel, setUrgencyLevel] = useState<string | null>(null);
   const [classification, setClassification] = useState<string | null>(null);

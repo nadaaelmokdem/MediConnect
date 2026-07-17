@@ -8,7 +8,7 @@ import { formatTimeTo12Hour } from "../../../utils/dateUtils";
 import Skeleton from "../../common/Skeleton";
 import NetworkError from "../../common/NetworkError";
 import ChatService from "../../../services/chatService";
-import Swal from "sweetalert2";
+import { confirmDialog, showErrorAlert } from "../../../utils/swalTheme";
 import { CachedImage } from "../../common/CachedImage";
 import { getFileUrl } from "../../../utils/fileUtils";
 import { TbArrowLeft, TbLayoutSidebarRightCollapse } from "react-icons/tb";
@@ -93,31 +93,19 @@ export default function ActiveChatPane({
     return !!clinicalAssessment && contact.name !== "AI Medical Assistant";
   }, [assessmentVisible, isDoctor, contact.name]);
 
-  const handleSendAssessment = () => {
+  const handleSendAssessment = async () => {
     const assessment = localStorage.getItem("clinical_assessment");
     if (!assessment) return;
-    Swal.fire({
+    const confirmed = await confirmDialog({
       title: "AI Clinic Assessment",
-      html: `<div class="text-left bg-surface-container p-4 rounded-xl border border-surface-variant text-sm whitespace-pre-wrap max-h-60 overflow-y-auto text-on-surface font-medium">${assessment}</div>`,
-      showCancelButton: true,
-      confirmButtonText: "Send to Doctor",
-      cancelButtonText: "Cancel",
-      buttonsStyling: false,
-      customClass: {
-        popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-md w-full border border-surface-variant',
-        title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
-        htmlContainer: 'w-full m-0',
-        confirmButton: 'w-full mt-6 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
-        cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors',
-        actions: 'flex flex-col gap-0 w-full mt-2'
-      }
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        await send(`Clinical Assessment:\n${assessment}`);
-        localStorage.removeItem("clinical_assessment"); 
-        setAssessmentVisible(false);
-      }
+      html: `<div class="bg-surface-container p-4 rounded-xl border border-surface-variant text-sm whitespace-pre-wrap max-h-60 overflow-y-auto text-on-surface font-medium">${assessment}</div>`,
+      confirmText: "Send to Doctor",
     });
+    if (confirmed) {
+      await send(`Clinical Assessment:\n${assessment}`);
+      localStorage.removeItem("clinical_assessment");
+      setAssessmentVisible(false);
+    }
   };
 
   if (loading) return <div className="flex-1 p-8"><Skeleton className="h-full min-h-[400px] w-full" /></div>;
@@ -201,11 +189,11 @@ export default function ActiveChatPane({
             </div>
             {!isDoctor && (
               <button 
-                onClick={() => {
+                onClick={async () => {
                   const basePrice = sessionDetails?.doctorChatPrice || 0;
                   const followUpPrice = basePrice * 0.4;
-                  
-                  Swal.fire({
+
+                  const confirmed = await confirmDialog({
                     title: "Confirm Follow-Up Payment",
                     html: `<div class="text-center">
                              <p class="text-sm font-medium text-on-surface-variant leading-relaxed">
@@ -218,40 +206,21 @@ export default function ActiveChatPane({
                                (40% of standard doctor fee EGP ${basePrice.toFixed(2)})
                              </p>
                            </div>`,
-                    showCancelButton: true,
-                    confirmButtonText: "Confirm and Pay",
-                    cancelButtonText: "Cancel",
-                    buttonsStyling: false,
-                    customClass: {
-                      popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
-                      title: 'text-xl font-bold mb-4 text-on-surface text-center w-full',
-                      htmlContainer: 'w-full m-0',
-                      confirmButton: 'w-full mt-6 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg cursor-pointer',
-                      cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-                      actions: 'flex flex-col gap-0 w-full mt-2'
-                    }
-                  }).then(async (result) => {
-                    if (result.isConfirmed) {
-                      try {
-                        const res = await ChatService.followUp(numericSessionId);
-                        if (res.paymentUrl) {
-                          window.location.href = res.paymentUrl;
-                        } else {
-                          window.location.reload();
-                        }
-                      } catch (e: any) {
-                        Swal.fire({
-                          title: "Error",
-                          text: e.response?.data || "Failed to initiate follow up.",
-                          icon: "error",
-                          confirmButtonText: "OK",
-                          customClass: {
-                            confirmButton: "bg-primary text-white font-bold py-2.5 px-6 rounded-xl cursor-pointer"
-                          }
-                        });
-                      }
-                    }
+                    confirmText: "Confirm and Pay",
                   });
+
+                  if (confirmed) {
+                    try {
+                      const res = await ChatService.followUp(numericSessionId);
+                      if (res.paymentUrl) {
+                        window.location.href = res.paymentUrl;
+                      } else {
+                        window.location.reload();
+                      }
+                    } catch (e: any) {
+                      showErrorAlert({ text: e.response?.data || "Failed to initiate follow up." });
+                    }
+                  }
                 }}
                 className="mt-1 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
               >

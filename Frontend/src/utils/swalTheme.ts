@@ -91,6 +91,24 @@ export function showInfoAlert({ title, text, html }: AlertOptions) {
   });
 }
 
+export function showWarningAlert({ title, text, html }: AlertOptions) {
+  return Swal.fire({
+    icon: "warning",
+    title,
+    text,
+    html,
+    confirmButtonText: "OK",
+    buttonsStyling: false,
+    customClass: {
+      popup: swalClasses.popup,
+      title: `${swalClasses.title} text-center`,
+      htmlContainer: `${swalClasses.htmlContainer} text-center`,
+      actions: oneButtonActions,
+      confirmButton: swalClasses.confirmPrimary,
+    },
+  });
+}
+
 interface ConfirmOptions {
   title: string;
   text?: string;
@@ -172,6 +190,51 @@ export async function promptTextarea({
     inputValidator: (v) => (!v ? "This field is required" : undefined),
   });
   return isConfirmed ? value : undefined;
+}
+
+const RECHARGE_AMOUNTS = [10, 20, 30, 50, 100];
+
+/** AI-message recharge picker — shared by every entry point (AI chat, patient dashboard, quota banner). */
+export async function showAiRechargeDialog(
+  rechargeAiQuota: (amount: number) => Promise<{ paymentUrl?: string }>
+): Promise<void> {
+  const result = await Swal.fire({
+    title: "Recharge AI Messages",
+    html: `
+      <p class="text-sm text-on-surface-variant mb-3">Select the amount of credits you'd like to purchase:</p>
+      <select id="swal-recharge-amount" class="${swalClasses.input} !min-h-0 cursor-pointer">
+        ${RECHARGE_AMOUNTS.map((amount) => `<option value="${amount}">${amount.toFixed(2)} EGP (${amount * 2} Messages)</option>`).join("")}
+      </select>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Recharge via Wallet",
+    cancelButtonText: "Cancel",
+    buttonsStyling: false,
+    customClass: {
+      popup: swalClasses.popup,
+      title: swalClasses.title,
+      htmlContainer: swalClasses.htmlContainer,
+      actions: swalClasses.actions,
+      confirmButton: swalClasses.confirmPrimary,
+      cancelButton: swalClasses.cancel,
+    },
+    preConfirm: () => {
+      const select = document.getElementById("swal-recharge-amount") as HTMLSelectElement;
+      return Number(select?.value || RECHARGE_AMOUNTS[0]);
+    },
+  });
+
+  if (!result.isConfirmed || !result.value) return;
+
+  try {
+    const res = await rechargeAiQuota(result.value);
+    if (res.paymentUrl) {
+      window.location.href = res.paymentUrl;
+    }
+  } catch (err) {
+    console.error(err);
+    showErrorAlert({ text: "Failed to initiate recharge. Please try again." });
+  }
 }
 
 export default Swal;
