@@ -18,7 +18,7 @@ export default function AuthLayout({
   const navigate = useNavigate();
 
   return (
-    <div className="bg-surface-bright text-on-surface text-[16px] leading-[24px] font-normal antialiased min-h-dvh overflow-hidden flex flex-col selection:bg-primary selection:text-surface-container">
+    <div className="bg-surface-bright text-on-surface text-[16px] leading-[24px] font-normal antialiased h-screen overflow-hidden flex flex-col selection:bg-primary selection:text-surface-container">
       <main className="flex-grow flex w-full h-full relative">
         {/* Brand Header (visible on md+ screens) */}
         <header className="absolute top-4 left-15 z-50 flex items-center md:block hidden">
