@@ -35,6 +35,11 @@ api.interceptors.response.use(
 
     // If the error is 401 or 403
     if ((error.response?.status === 401 || error.response?.status === 403)) {
+      // Don't trigger unauthorized handlers for logout to prevent unwanted redirects
+      if (originalRequest.url?.includes("/logout")) {
+        return Promise.reject(error);
+      }
+
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
 
