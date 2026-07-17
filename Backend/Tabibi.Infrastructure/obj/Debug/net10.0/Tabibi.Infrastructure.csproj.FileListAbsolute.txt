@@ -38,3 +38,23 @@ C:\My Files\Tabibi\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\refint\Tabibi
 C:\My Files\Tabibi\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.pdb
 C:\My Files\Tabibi\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.genruntimeconfig.cache
 C:\My Files\Tabibi\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\ref\Tabibi.Infrastructure.dll
+d:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Infrastructure.deps.json
+d:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Infrastructure.runtimeconfig.json
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Infrastructure.dll
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Infrastructure.pdb
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Application.dll
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Core.dll
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Core.pdb
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\bin\Debug\net10.0\Tabibi.Application.pdb
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.csproj.AssemblyReference.cache
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.AssemblyInfoInputs.cache
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.AssemblyInfo.cs
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.csproj.CoreCompileInputs.cache
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.sourcelink.json
+d:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.I.D00D47A2.Up2Date
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.dll
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\refint\Tabibi.Infrastructure.dll
+D:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.pdb
+d:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\Tabibi.Infrastructure.genruntimeconfig.cache
+d:\nadod\MediConnect\Backend\Tabibi.Infrastructure\obj\Debug\net10.0\ref\Tabibi.Infrastructure.dll

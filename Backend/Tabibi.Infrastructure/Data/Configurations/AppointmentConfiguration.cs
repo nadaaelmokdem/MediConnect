@@ -10,6 +10,11 @@ namespace Tabibi.Infrastructure.Data.Configurations
         {
             builder.HasIndex(a => new { a.PatientId, a.DoctorId });
             builder.HasIndex(a => a.ScheduledAt);
+
+            // Prevent double-booking the same doctor slot; cancelled appointments free the slot back up.
+            builder.HasIndex(a => new { a.DoctorId, a.ScheduledAt })
+                .IsUnique()
+                .HasFilter("[Status] <> 3");
         }
     }
 }

@@ -61,7 +61,13 @@ const DoctorsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchSpecialties = async () => {
-      const sp = await PublicService.getSpecialties();
+      let sp: { specialtyId: number; name: string }[];
+      try {
+        sp = await PublicService.getSpecialties();
+      } catch (error) {
+        console.error(error);
+        return;
+      }
       setSpecialties(sp);
 
       const searchParams = new URLSearchParams(location.search);

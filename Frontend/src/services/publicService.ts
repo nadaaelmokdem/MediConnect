@@ -30,7 +30,7 @@ export default class PublicService {
       return response.data;
     } catch (error) {
       console.error("Failed to fetch specialties:", error);
-      return [];
+      throw new Error("Failed to fetch specialties.");
     }
   }
 

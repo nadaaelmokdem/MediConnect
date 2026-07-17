@@ -5,6 +5,7 @@ using Tabibi.Application.Interfaces;
 using LoginRequest = Tabibi.Application.DTOs.LoginRequest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace Tabibi.API.Controllers
 {
@@ -37,6 +38,14 @@ namespace Tabibi.API.Controllers
         [Authorize]
         public async Task<IActionResult> AddToRole([FromBody] AddToRoleDTO addToRoleDTO)
         {
+            // SECURITY: This endpoint only lets a user assign a role to their OWN account
+            // (e.g. completing role selection after Google sign-up). It must never accept
+            // an arbitrary email, or any authenticated user could grant themselves/others
+            // the Doctor role on someone else's account.
+            var callerEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
+            if (string.IsNullOrEmpty(callerEmail) || !string.Equals(callerEmail, addToRoleDTO.Email, StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+
             var result = await authService.AddToRole(addToRoleDTO.Email, addToRoleDTO.Role);
 
             if (!result.IsSuccess)

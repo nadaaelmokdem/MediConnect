@@ -11,7 +11,7 @@ namespace Tabibi.Infrastructure.Data.Configurations
             builder.HasOne(dr => dr.Appointment)
                 .WithOne(a => a.Review)
                 .HasForeignKey<DoctorReview>(dr => dr.AppointmentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(dr => dr.AppointmentId);
         }

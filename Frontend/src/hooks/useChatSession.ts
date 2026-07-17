@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import ChatService from "../services/chatService";
 import {
   joinSession,
@@ -68,7 +69,9 @@ export function useChatSession(sessionId: number) {
     };
 
     handleSendMessageErrorRef.current = (message: string) => {
-      setError(message || "Unable to send message right now.");
+      // A failed send is transient and shouldn't blank out the whole chat pane
+      // (that's reserved for fatal errors like auth failure or a failed history load).
+      toast.error(message || "Unable to send message right now.");
     };
 
     async function init() {
@@ -132,13 +135,14 @@ export function useChatSession(sessionId: number) {
     async (content: string) => {
       if (!content.trim()) return;
       try {
-        setError(null);
         await sendHubMessage(sessionId, content.trim());
         // No optimistic local append here - the hub broadcasts back to the
         // sender too (see ChatHub.SendMessage), so the message will arrive
         // through onReceiveMessage with its real DB id/timestamp.
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to send message right now.");
+        // Transient send failure - surfaced as a toast, not a fatal `error`
+        // (which would replace the whole chat pane and hide message history).
+        toast.error(err instanceof Error ? err.message : "Unable to send message right now.");
       }
     },
     [sessionId]

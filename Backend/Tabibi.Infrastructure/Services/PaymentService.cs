@@ -54,6 +54,10 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
         }
 
         // --- BRANCH: Appointment Payment (existing logic) ---
+        // SECURITY: Serializable isolation closes the race where duplicate webhook
+        // deliveries for the same order are processed concurrently before either commits.
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+
         var payment = await dbContext.Payments
             .Include(p => p.Appointment)
             .FirstOrDefaultAsync(p => p.ExternalOrderId == result.ExternalOrderId);
@@ -150,11 +154,16 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
         }
 
         await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
         return ServiceResult.Success();
     }
 
     private async Task<ServiceResult> ProcessAiRechargeWebhookAsync(PaymentWebhookResult result)
     {
+        // SECURITY: Serializable isolation closes the race where duplicate webhook
+        // deliveries for the same order are processed concurrently before either commits.
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+
         var recharge = await dbContext.AiRecharges
             .Include(r => r.Patient).ThenInclude(p => p.Quota)
             .FirstOrDefaultAsync(r => r.ExternalOrderId == result.ExternalOrderId);
@@ -196,11 +205,16 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
         }
 
         await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
         return ServiceResult.Success();
     }
 
     private async Task<ServiceResult> ProcessFollowUpWebhookAsync(PaymentWebhookResult result)
     {
+        // SECURITY: Serializable isolation closes the race where duplicate webhook
+        // deliveries for the same order are processed concurrently before either commits.
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+
         var payment = await dbContext.Payments
             .Include(p => p.ChatSession)
             .FirstOrDefaultAsync(p => p.ExternalOrderId == result.ExternalOrderId);
@@ -237,6 +251,7 @@ public class PaymentService(PaymentGatewayResolver paymentGatewayResolver, AppDb
         }
 
         await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
         return ServiceResult.Success();
     }
 }

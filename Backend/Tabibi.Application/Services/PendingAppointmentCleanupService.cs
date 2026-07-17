@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Tabibi.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Tabibi.Core.Models;
 
 namespace Tabibi.Application.Services
@@ -9,10 +10,12 @@ namespace Tabibi.Application.Services
     public class PendingAppointmentCleanupService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<PendingAppointmentCleanupService> _logger;
 
-        public PendingAppointmentCleanupService(IServiceProvider serviceProvider)
+        public PendingAppointmentCleanupService(IServiceProvider serviceProvider, ILogger<PendingAppointmentCleanupService> logger)
         {
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,9 +55,9 @@ namespace Tabibi.Application.Services
 
                     await unitOfWork.CompleteAsync(stoppingToken);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Log error if logger is available, ignore for now to keep service running
+                    _logger.LogError(ex, "Pending appointment cleanup sweep failed");
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);

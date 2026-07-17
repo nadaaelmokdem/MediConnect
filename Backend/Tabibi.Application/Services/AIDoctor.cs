@@ -3,10 +3,11 @@ using Google.GenAI;
 using Google.GenAI.Types;
 using Type = Google.GenAI.Types.Type;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Tabibi.Application.Services
 {
-    public class AIDoctor(IConfiguration config, IFileService fileService) : Tabibi.Application.Interfaces.IAIDoctor
+    public class AIDoctor(IConfiguration config, IFileService fileService, ILogger<AIDoctor> logger) : Tabibi.Application.Interfaces.IAIDoctor
     {
         private static readonly HttpClient _httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
 
@@ -149,7 +150,12 @@ Output:
                     // Remove the URL from the message so the model doesn't get confused and refuse to "open links"
                     msg = msg.Replace(url, "").Trim();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to fetch/upload AI attachment from {Url}", url);
+                    // Strip the dangling URL so the model isn't asked to "open" a link it was never given.
+                    msg = msg.Replace(url, "").Trim();
+                }
             }
 
             string promptPayload = $"History of session:\n{prevContext}\n\nLatest Message from user:\n{msg}";

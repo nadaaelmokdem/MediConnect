@@ -98,87 +98,120 @@ namespace Tabibi.Application.Services
 
         public async Task<ServiceResult<string>> AskAIAsync(string userId, SendAIMessageDTO request)
         {
-            await using var transaction = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+            long patientId;
+            bool usedFreeMessage;
+
+            await using (var transaction = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
+            {
+                try
+                {
+                    var patient = await unitOfWork.PatientProfiles.Query().Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == userId);
+                    if (patient == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return ServiceResult<string>.Failure("Patient not found");
+                    }
+
+                    if (patient.Quota == null)
+                    {
+                        patient.Quota = new PatientQuota { PatientId = patient.PatientId };
+                        await unitOfWork.PatientQuotas.AddAsync(patient.Quota);
+                    }
+
+                    if (DateTime.UtcNow - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
+                    {
+                        patient.Quota.AvailableAiMessages = 15;
+                        patient.Quota.LastAiMessageReset = DateTime.UtcNow;
+                    }
+
+                    if (patient.Quota.AvailableAiMessages > 0)
+                    {
+                        patient.Quota.AvailableAiMessages--;
+                        usedFreeMessage = true;
+                    }
+                    else if (patient.Quota.AvailablePremiumAiMessages > 0)
+                    {
+                        patient.Quota.AvailablePremiumAiMessages--;
+                        usedFreeMessage = false;
+                    }
+                    else
+                    {
+                        await transaction.RollbackAsync();
+                        return ServiceResult<string>.Failure("AI message quota exceeded. Please recharge.");
+                    }
+
+                    patientId = patient.PatientId;
+                    await unitOfWork.CompleteAsync();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+
+            // From here on, the patient's quota has already been spent. Any failure below
+            // must refund it — otherwise the patient is charged for a reply they never got.
             try
             {
-                var patient = await unitOfWork.PatientProfiles.Query().Include(p => p.Quota).FirstOrDefaultAsync(p => p.UserId == userId);
-                if (patient == null)
+                var session = await chatService.StartOrGetAISessionAsync(userId, request.SessionId);
+
+                // save user's message
+                await chatService.SaveMessage(session.SessionId, UserRoles.Patient, request.RequestText);
+
+                var aiResponseString = await aiDoctor.Ask(request.RequestText, request.ContextText);
+
+                // parse JSON and inject sessionId
+                var responseJson = JsonDocument.Parse(aiResponseString);
+                var responseObj = JsonSerializer.Deserialize<Dictionary<string, object>>(responseJson.RootElement.GetRawText());
+                if (responseObj != null)
                 {
-                    await transaction.RollbackAsync();
-                    return ServiceResult<string>.Failure("Patient not found");
+                    responseObj["sessionId"] = session.SessionId;
+                    aiResponseString = JsonSerializer.Serialize(responseObj);
                 }
 
-                if (patient.Quota == null)
+                string userFacingReply = "";
+                using (var doc = JsonDocument.Parse(aiResponseString))
                 {
-                    patient.Quota = new PatientQuota { PatientId = patient.PatientId };
-                    await unitOfWork.PatientQuotas.AddAsync(patient.Quota);
+                    if (doc.RootElement.TryGetProperty("user_facing_reply", out var replyElement))
+                    {
+                        userFacingReply = replyElement.GetString() ?? "";
+                    }
+
+                    if (doc.RootElement.TryGetProperty("clinical_assessment", out var assessmentElement))
+                    {
+                        session.SessionSummary = assessmentElement.GetString();
+                        await unitOfWork.CompleteAsync();
+                    }
                 }
 
-                if (DateTime.UtcNow - patient.Quota.LastAiMessageReset > TimeSpan.FromDays(1))
+                if (string.IsNullOrWhiteSpace(userFacingReply))
                 {
-                    patient.Quota.AvailableAiMessages = 15;
-                    patient.Quota.LastAiMessageReset = DateTime.UtcNow;
+                    await RefundAiMessageAsync(patientId, usedFreeMessage);
+                    return ServiceResult<string>.Failure("The AI assistant didn't return a usable reply. Your message credit has been refunded — please try again.");
                 }
 
-                if (patient.Quota.AvailableAiMessages > 0)
-                {
-                    patient.Quota.AvailableAiMessages--;
-                }
-                else if (patient.Quota.AvailablePremiumAiMessages > 0)
-                {
-                    patient.Quota.AvailablePremiumAiMessages--;
-                }
-                else
-                {
-                    await transaction.RollbackAsync();
-                    return ServiceResult<string>.Failure("AI message quota exceeded. Please recharge.");
-                }
+                await chatService.SaveMessage(session.SessionId, "AI Doctor", userFacingReply);
 
-                await unitOfWork.CompleteAsync();
-                await transaction.CommitAsync();
+                return ServiceResult<string>.Success(aiResponseString);
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await RefundAiMessageAsync(patientId, usedFreeMessage);
                 throw;
             }
+        }
 
-            var session = await chatService.StartOrGetAISessionAsync(userId, request.SessionId);
-            
-            // save user's message
-            await chatService.SaveMessage(session.SessionId, UserRoles.Patient, request.RequestText);
+        private async Task RefundAiMessageAsync(long patientId, bool wasFreeMessage)
+        {
+            var quota = await unitOfWork.PatientQuotas.Query().FirstOrDefaultAsync(q => q.PatientId == patientId);
+            if (quota == null) return;
 
-            var aiResponseString = await aiDoctor.Ask(request.RequestText, request.ContextText);
+            if (wasFreeMessage) quota.AvailableAiMessages++;
+            else quota.AvailablePremiumAiMessages++;
 
-            // parse JSON and inject sessionId
-            var responseJson = JsonDocument.Parse(aiResponseString);
-            var responseObj = JsonSerializer.Deserialize<Dictionary<string, object>>(responseJson.RootElement.GetRawText());
-            if (responseObj != null)
-            {
-                responseObj["sessionId"] = session.SessionId;
-                aiResponseString = JsonSerializer.Serialize(responseObj);
-            }
-
-            string userFacingReply = "";
-            try
-            {
-                using var doc = JsonDocument.Parse(aiResponseString);
-                if (doc.RootElement.TryGetProperty("user_facing_reply", out var replyElement))
-                {
-                    userFacingReply = replyElement.GetString() ?? "";
-                }
-
-                if (doc.RootElement.TryGetProperty("clinical_assessment", out var assessmentElement))
-                {
-                    session.SessionSummary = assessmentElement.GetString();
-                    await unitOfWork.CompleteAsync();
-                }
-            }
-            catch { }
-
-            await chatService.SaveMessage(session.SessionId, "AI Doctor", userFacingReply);
-
-            return ServiceResult<string>.Success(aiResponseString);
+            await unitOfWork.CompleteAsync();
         }
 
         public async Task<ServiceResult<ChatHistoryResponseDTO>> GetHistoryAsync(string userId, long sessionId)

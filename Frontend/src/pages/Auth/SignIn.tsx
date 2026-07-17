@@ -142,7 +142,7 @@ export default function TabibiLogin({
             });
           }
           } else {
-            logout();
+            await logout();
             const fallback = requiredRole === "Doctor" ? "login" : "doctor-login";
             navigate(`/${fallback}`);
           }

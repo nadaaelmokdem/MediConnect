@@ -144,17 +144,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     setIsLoading(true);
+    // Each cleanup step is best-effort and independent — a failure in one (e.g. the
+    // realtime connection already being dead) must not block the others, otherwise
+    // the user is left looking logged-in with stale local/session state.
     try {
       await stopConnection();
-      await authService.logout();
-      setUser(null);
-      setError(null);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Logout failed";
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
+      console.error("Failed to stop realtime connection during logout:", err);
     }
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error("Server logout call failed:", err);
+    }
+    setUser(null);
+    setError(null);
+    setIsLoading(false);
   }, []);
 
   // Safeguard: if user has no name, log them out and navigate to login

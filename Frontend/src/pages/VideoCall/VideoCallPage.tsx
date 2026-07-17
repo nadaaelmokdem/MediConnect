@@ -98,6 +98,12 @@ export default function VideoCallPage() {
       if (parsedSessionId && active) {
         try {
           const stream = await initLocalStream();
+          if (!active) {
+            // Unmounted while awaiting camera/mic permission — the earlier unmount
+            // cleanup already ran and found no stream to stop, so release it now.
+            cleanupCall();
+            return;
+          }
           if (localVideoRef.current && stream) {
             localVideoRef.current.srcObject = stream;
           }
@@ -111,7 +117,7 @@ export default function VideoCallPage() {
     return () => {
       active = false;
     };
-  }, [parsedSessionId, isLoading, user?.id, initLocalStream, initializePeer]);
+  }, [parsedSessionId, isLoading, user?.id, initLocalStream, initializePeer, cleanupCall]);
 
   // Handle explicit Peer End Call signal
   useEffect(() => {

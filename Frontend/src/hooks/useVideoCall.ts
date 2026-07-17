@@ -301,7 +301,11 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
     peer.on("open", (id) => {
       console.log("PeerJS initialized with ID:", id);
       if (sessionId) {
-        videoCallHubService.joinCall(sessionId).catch(console.error);
+        videoCallHubService.joinCall(sessionId).catch((err) => {
+          console.error("Failed to join video call session:", err);
+          toast.error("Failed to join the call. Please try refreshing the page.");
+          setCallState("DISCONNECTED");
+        });
       }
     });
 
@@ -323,9 +327,13 @@ export const useVideoCall = ({ sessionId, onRemoteStream, onCallEnded }: UseVide
 
     peer.on("error", (err) => {
       console.error("PeerJS error:", err);
+      clearConnectionTimeout();
+      setCallState("DISCONNECTED");
+      setPeerJoined(false);
+      toast.error("Video call connection failed. Please try rejoining.");
     });
-    
-  }, [user?.id, sessionId, answerCall]);
+
+  }, [user?.id, sessionId, answerCall, clearConnectionTimeout]);
 
   // Setup signalR event listeners
   useEffect(() => {

@@ -8,6 +8,11 @@ namespace Tabibi.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<DoctorProfile> builder)
         {
+            // Only tighten the delete behavior of the existing convention-discovered
+            // DoctorProfile -> AppUser relationship; redeclaring it via HasOne()/WithOne()
+            // makes EF think it's a second relationship and adds a bogus shadow FK.
+            builder.Metadata.FindNavigation(nameof(DoctorProfile.User))!.ForeignKey.DeleteBehavior = DeleteBehavior.Restrict;
+
             builder.HasMany(d => d.DoctorSpecialties)
                 .WithOne(ds => ds.Doctor)
                 .HasForeignKey(ds => ds.DoctorId)

@@ -125,6 +125,11 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
     try {
       const slots = await loadSlotsForDay(doctor, day.date, bookedSlots);
       setDaySlots(slots);
+    } catch {
+      setFeedback({
+        type: "error",
+        message: "Couldn't load available slots. Please try again.",
+      });
     } finally {
       setLoadingSlots(false);
     }

@@ -24,3 +24,16 @@ C:\My Files\Tabibi\Backend\Tabibi.Core\bin\Debug\net10.0\Tabibi.Core.deps.json
 C:\My Files\Tabibi\Backend\Tabibi.Core\bin\Debug\net10.0\Tabibi.Core.dll
 C:\My Files\Tabibi\Backend\Tabibi.Core\bin\Debug\net10.0\Tabibi.Core.pdb
 C:\My Files\Tabibi\Backend\Tabibi.Core\obj\Debug\net10.0\ref\Tabibi.Core.dll
+D:\nadod\MediConnect\Backend\Tabibi.Core\bin\Debug\net10.0\Tabibi.Core.deps.json
+D:\nadod\MediConnect\Backend\Tabibi.Core\bin\Debug\net10.0\Tabibi.Core.dll
+D:\nadod\MediConnect\Backend\Tabibi.Core\bin\Debug\net10.0\Tabibi.Core.pdb
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.csproj.AssemblyReference.cache
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.AssemblyInfoInputs.cache
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.AssemblyInfo.cs
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.csproj.CoreCompileInputs.cache
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.sourcelink.json
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.dll
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\refint\Tabibi.Core.dll
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\Tabibi.Core.pdb
+D:\nadod\MediConnect\Backend\Tabibi.Core\obj\Debug\net10.0\ref\Tabibi.Core.dll

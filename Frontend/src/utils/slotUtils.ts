@@ -163,8 +163,8 @@ export function buildMockSlotsForDay(
 
 /**
  * Loads slots for a given day.
- * Uses the real API by default; falls back to mock data when USE_MOCK_DATA is true
- * or when the API call fails.
+ * Uses the real API, unless USE_MOCK_DATA is enabled for local UI demos.
+ * API failures are propagated to the caller rather than masked with fake availability.
  */
 export async function loadSlotsForDay(
   doctor: DoctorListItem,
@@ -174,15 +174,11 @@ export async function loadSlotsForDay(
   const dateKey = formatDateKey(date);
 
   if (!USE_MOCK_DATA) {
-    try {
-      const apiSlots = await AppointmentService.getAvailableSlots(
-        doctor.doctorId,
-        dateKey,
-      );
-      return apiSlots.map((s) => mapApiSlot(s, doctor.doctorId, bookedSlots));
-    } catch {
-      // Fall back to mock schedule on API failure
-    }
+    const apiSlots = await AppointmentService.getAvailableSlots(
+      doctor.doctorId,
+      dateKey,
+    );
+    return apiSlots.map((s) => mapApiSlot(s, doctor.doctorId, bookedSlots));
   }
 
   await new Promise((r) => setTimeout(r, 350));
