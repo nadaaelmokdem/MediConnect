@@ -321,9 +321,24 @@ namespace Tabibi.Application.Services
             return ServiceResult.Success();
         }
 
-        public async Task<List<AdminUserDTO>> GetAllUsers()
+        public async Task<PagedResultDTO<AdminUserDTO>> GetAllUsers(AdminUserQueryDTO query)
         {
-            var users = await unitOfWork.Users.Query().ToListAsync();
+            var usersQuery = unitOfWork.Users.Query().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var term = query.Search.Trim().ToLower();
+                usersQuery = usersQuery.Where(u =>
+                    u.FullName.ToLower().Contains(term) ||
+                    (u.Email != null && u.Email.ToLower().Contains(term)));
+            }
+
+            if (query.IsActive.HasValue)
+            {
+                usersQuery = usersQuery.Where(u => u.IsActive == query.IsActive.Value);
+            }
+
+            var users = await usersQuery.ToListAsync();
 
             var roleByUser = await (
                 from ur in unitOfWork.UserRoles.Query()
@@ -339,7 +354,7 @@ namespace Tabibi.Application.Services
                 .Select(g => new { UserId = g.Key, Total = g.Sum(x => x.Amount) })
                 .ToDictionaryAsync(x => x.UserId, x => x.Total);
 
-            return users.Select(u => new AdminUserDTO
+            IEnumerable<AdminUserDTO> dtos = users.Select(u => new AdminUserDTO
             {
                 Id = u.Id,
                 FullName = u.FullName,
@@ -349,7 +364,82 @@ namespace Tabibi.Application.Services
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
                 TotalSpent = spendByPatientUserId.TryGetValue(u.Id, out var total) ? total : null
-            }).ToList();
+            });
+
+            if (!string.IsNullOrWhiteSpace(query.Role))
+            {
+                dtos = dtos.Where(d => d.Role.Contains(query.Role, StringComparison.OrdinalIgnoreCase));
+            }
+
+            dtos = query.SortBy.ToLower() switch
+            {
+                "fullname" => query.SortDescending ? dtos.OrderByDescending(d => d.FullName) : dtos.OrderBy(d => d.FullName),
+                "email" => query.SortDescending ? dtos.OrderByDescending(d => d.Email) : dtos.OrderBy(d => d.Email),
+                "totalspent" => query.SortDescending ? dtos.OrderByDescending(d => d.TotalSpent ?? 0) : dtos.OrderBy(d => d.TotalSpent ?? 0),
+                _ => query.SortDescending ? dtos.OrderByDescending(d => d.CreatedAt) : dtos.OrderBy(d => d.CreatedAt),
+            };
+
+            var list = dtos.ToList();
+            var page = Math.Max(query.Page, 1);
+            var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
+            return new PagedResultDTO<AdminUserDTO>
+            {
+                Items = list.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
+                TotalCount = list.Count,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<AdminUserDetailDTO?> GetUserDetail(string userId)
+        {
+            var user = await unitOfWork.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return null;
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            var recentAppointments = await unitOfWork.Appointments.Query()
+                .Include(a => a.Patient).ThenInclude(p => p.User)
+                .Include(a => a.Doctor).ThenInclude(d => d.User)
+                .Include(a => a.Payment)
+                .Where(a => a.Patient.UserId == userId || a.Doctor.UserId == userId)
+                .OrderByDescending(a => a.ScheduledAt)
+                .Take(50)
+                .Select(a => new AdminAppointmentDTO
+                {
+                    AppointmentId = a.AppointmentId,
+                    PatientName = a.Patient.User.FullName,
+                    DoctorName = a.Doctor.User.FullName,
+                    ScheduledAt = a.ScheduledAt,
+                    ConsultationType = a.ConsultationType.ToString(),
+                    Status = a.Status.ToString(),
+                    Price = a.Price,
+                    PaymentStatus = a.Payment != null ? a.Payment.Status.ToString() : null,
+                    AmountPaid = a.Payment != null && a.Payment.Status == PaymentStatus.Paid ? a.Payment.Amount : null
+                })
+                .ToListAsync();
+
+            var appointmentCount = await unitOfWork.Appointments.Query()
+                .CountAsync(a => a.Patient.UserId == userId || a.Doctor.UserId == userId);
+
+            var totalSpent = await unitOfWork.Payments.Query()
+                .Where(p => p.Status == PaymentStatus.Paid && p.Appointment != null && p.Appointment.Patient != null && p.Appointment.Patient.UserId == userId)
+                .SumAsync(p => (decimal?)p.Amount);
+
+            return new AdminUserDetailDTO
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email ?? "",
+                PhoneNumber = user.PhoneNumber ?? "",
+                Role = string.Join(", ", roles),
+                IsActive = user.IsActive,
+                CreatedAt = user.CreatedAt,
+                TotalSpent = totalSpent,
+                AppointmentCount = appointmentCount,
+                RecentAppointments = recentAppointments
+            };
         }
 
         public async Task<ServiceResult> SetUserActive(string userId, bool isActive)
@@ -365,13 +455,57 @@ namespace Tabibi.Application.Services
             return ServiceResult.Success();
         }
 
-        public async Task<List<AdminAppointmentDTO>> GetAppointments()
+        public async Task<PagedResultDTO<AdminAppointmentDTO>> GetAppointments(AdminAppointmentQueryDTO query)
         {
-            return await unitOfWork.Appointments.Query()
+            var appointmentsQuery = unitOfWork.Appointments.Query()
                 .Include(a => a.Patient).ThenInclude(p => p.User)
                 .Include(a => a.Doctor).ThenInclude(d => d.User)
                 .Include(a => a.Payment)
-                .OrderByDescending(a => a.ScheduledAt)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Status) && Enum.TryParse<AppointmentStatus>(query.Status, true, out var status))
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.Status == status);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.ConsultationType) && Enum.TryParse<ConsultationType>(query.ConsultationType, true, out var type))
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.ConsultationType == type);
+            }
+
+            if (query.FromDate.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.ScheduledAt >= query.FromDate.Value);
+            }
+
+            if (query.ToDate.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.ScheduledAt <= query.ToDate.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var term = query.Search.Trim().ToLower();
+                appointmentsQuery = appointmentsQuery.Where(a =>
+                    a.Patient.User.FullName.ToLower().Contains(term) ||
+                    a.Doctor.User.FullName.ToLower().Contains(term));
+            }
+
+            var totalCount = await appointmentsQuery.CountAsync();
+
+            appointmentsQuery = query.SortBy.ToLower() switch
+            {
+                "price" => query.SortDescending ? appointmentsQuery.OrderByDescending(a => a.Price) : appointmentsQuery.OrderBy(a => a.Price),
+                "status" => query.SortDescending ? appointmentsQuery.OrderByDescending(a => a.Status) : appointmentsQuery.OrderBy(a => a.Status),
+                _ => query.SortDescending ? appointmentsQuery.OrderByDescending(a => a.ScheduledAt) : appointmentsQuery.OrderBy(a => a.ScheduledAt),
+            };
+
+            var page = Math.Max(query.Page, 1);
+            var pageSize = Math.Clamp(query.PageSize, 1, 100);
+
+            var items = await appointmentsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(a => new AdminAppointmentDTO
                 {
                     AppointmentId = a.AppointmentId,
@@ -385,6 +519,14 @@ namespace Tabibi.Application.Services
                     AmountPaid = a.Payment != null && a.Payment.Status == PaymentStatus.Paid ? a.Payment.Amount : null
                 })
                 .ToListAsync();
+
+            return new PagedResultDTO<AdminAppointmentDTO>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
     }

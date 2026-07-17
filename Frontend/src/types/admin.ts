@@ -75,5 +75,39 @@ export interface AdminAppointment {
   amountPaid?: number;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AdminUserQuery {
+  search?: string;
+  role?: string;
+  isActive?: boolean;
+  sortBy?: "CreatedAt" | "FullName" | "Email" | "TotalSpent";
+  sortDescending?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface AdminAppointmentQuery {
+  search?: string;
+  status?: string;
+  consultationType?: string;
+  fromDate?: string;
+  toDate?: string;
+  sortBy?: "ScheduledAt" | "Price" | "Status";
+  sortDescending?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface AdminUserDetail extends AdminUser {
+  appointmentCount: number;
+  recentAppointments: AdminAppointment[];
+}
+
 export const TABS = ["Overview", "Users", "Doctor Verification", "Appointments & Payments"] as const;
 export type Tab = (typeof TABS)[number];

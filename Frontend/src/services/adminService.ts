@@ -8,6 +8,10 @@ import type {
   AdminAppointment,
   AdminDoctorDetail,
   DoctorProfileChangeLog,
+  PagedResult,
+  AdminUserQuery,
+  AdminAppointmentQuery,
+  AdminUserDetail,
 } from "../types/admin";
 
 export default class AdminService {
@@ -54,8 +58,13 @@ export default class AdminService {
     }
   }
 
-  static async getAllUsers(): Promise<AdminUser[]> {
-    const response = await api.get("admin/users");
+  static async getAllUsers(query: AdminUserQuery = {}): Promise<PagedResult<AdminUser>> {
+    const response = await api.get("admin/users", { params: query });
+    return response.data;
+  }
+
+  static async getUserDetail(userId: string): Promise<AdminUserDetail> {
+    const response = await api.get(`admin/users/${userId}/detail`);
     return response.data;
   }
 
@@ -78,8 +87,8 @@ export default class AdminService {
     }
   }
 
-  static async getAppointments(): Promise<AdminAppointment[]> {
-    const response = await api.get("admin/appointments");
+  static async getAppointments(query: AdminAppointmentQuery = {}): Promise<PagedResult<AdminAppointment>> {
+    const response = await api.get("admin/appointments", { params: query });
     return response.data;
   }
 

@@ -63,10 +63,18 @@ namespace Tabibi.API.Controllers
         }
 
         [HttpGet("users")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] AdminUserQueryDTO query)
         {
-            var users = await adminService.GetAllUsers();
+            var users = await adminService.GetAllUsers(query);
             return Ok(users);
+        }
+
+        [HttpGet("users/{userId}/detail")]
+        public async Task<IActionResult> GetUserDetail(string userId)
+        {
+            var detail = await adminService.GetUserDetail(userId);
+            if (detail == null) return NotFound();
+            return Ok(detail);
         }
 
         [HttpPatch("users/{userId}/active")]
@@ -81,9 +89,9 @@ namespace Tabibi.API.Controllers
         }
 
         [HttpGet("appointments")]
-        public async Task<IActionResult> GetAppointments()
+        public async Task<IActionResult> GetAppointments([FromQuery] AdminAppointmentQueryDTO query)
         {
-            var appointments = await adminService.GetAppointments();
+            var appointments = await adminService.GetAppointments(query);
             return Ok(appointments);
         }
 

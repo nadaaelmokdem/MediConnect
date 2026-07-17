@@ -11,7 +11,8 @@ public interface IAdminService
     Task<AdminDoctorDetailDTO?> GetDoctorDetail(long doctorId);
     Task<List<DoctorProfileChangeLogDTO>> GetDoctorChanges(long doctorId);
     Task<ServiceResult> VerifyDoctor(long doctorId, ReviewDoctorRequestDTO request);
-    Task<List<AdminUserDTO>> GetAllUsers();
+    Task<PagedResultDTO<AdminUserDTO>> GetAllUsers(AdminUserQueryDTO query);
+    Task<AdminUserDetailDTO?> GetUserDetail(string userId);
     Task<ServiceResult> SetUserActive(string userId, bool isActive);
-    Task<List<AdminAppointmentDTO>> GetAppointments();
+    Task<PagedResultDTO<AdminAppointmentDTO>> GetAppointments(AdminAppointmentQueryDTO query);
 }

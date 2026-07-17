@@ -95,4 +95,50 @@ namespace Tabibi.Application.DTOs
         public decimal? AmountPaid { get; set; }
     }
 
+    public class PagedResultDTO<T>
+    {
+        public List<T> Items { get; set; } = new();
+        public int TotalCount { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+    }
+
+    public class AdminUserQueryDTO
+    {
+        public string? Search { get; set; }
+        public string? Role { get; set; }
+        public bool? IsActive { get; set; }
+        public string SortBy { get; set; } = "CreatedAt";
+        public bool SortDescending { get; set; } = true;
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+
+    public class AdminAppointmentQueryDTO
+    {
+        public string? Search { get; set; }
+        public string? Status { get; set; }
+        public string? ConsultationType { get; set; }
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
+        public string SortBy { get; set; } = "ScheduledAt";
+        public bool SortDescending { get; set; } = true;
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+
+    public class AdminUserDetailDTO
+    {
+        public string Id { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public decimal? TotalSpent { get; set; }
+        public int AppointmentCount { get; set; }
+        public List<AdminAppointmentDTO> RecentAppointments { get; set; } = new();
+    }
+
 }
