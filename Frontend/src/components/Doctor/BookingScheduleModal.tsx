@@ -27,7 +27,7 @@ import {
 } from "../../utils/slotUtils";
 import { getFileUrl } from "../../utils/fileUtils";
 import AppointmentService from "../../services/appointmentService";
-import Swal from "sweetalert2";
+import { showErrorAlert, showSuccessAlert } from "../../utils/swalTheme";
 
 type ConsultationType = "clinic" | "video" | "chat";
 
@@ -196,32 +196,24 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
         message: `Appointment successfully booked for ${selectedSlot.timeLabel}!`,
       });
       
-      Swal.fire({
-        icon: 'success',
+      showSuccessAlert({
         title: 'Booking Confirmed!',
         text: `Your appointment is scheduled for ${selectedSlot.date} at ${selectedSlot.timeLabel}.`,
-        confirmButtonColor: '#6A5ACD',
-        confirmButtonText: 'Great!'
       }).then(() => {
         if (onBookingSuccess) onBookingSuccess(selectedSlot);
         onClose();
         setSelectedSlot(null);
         setFeedback(null);
       });
-      
+
     } catch (err: any) {
       console.error("Booking failed", err);
-      const errorMsg = 
-        typeof err.response?.data === "string" 
-          ? err.response.data 
+      const errorMsg =
+        typeof err.response?.data === "string"
+          ? err.response.data
           : err.response?.data?.message || err.response?.data?.error || err.message || "Failed to book appointment. Please try again.";
-      
-      Swal.fire({
-        icon: 'error',
-        title: 'Booking Failed',
-        text: errorMsg,
-        confirmButtonColor: '#6A5ACD',
-      });
+
+      showErrorAlert({ title: 'Booking Failed', text: errorMsg });
     } finally {
       setIsBooking(false);
     }
@@ -363,7 +355,7 @@ const BookingScheduleModal: React.FC<BookingScheduleModalProps> = ({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-5 space-y-5">
           <WeekDayPicker
             days={weekDays}
             selectedDateKey={selectedDateKey}

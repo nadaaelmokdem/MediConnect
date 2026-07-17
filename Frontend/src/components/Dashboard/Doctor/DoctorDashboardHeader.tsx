@@ -60,7 +60,7 @@ export default function DoctorDashboardHeader({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-3 relative overflow-hidden rounded-xl shadow-[0_12px_24px_-4px_rgba(42,36,85,0.08),0_4px_12px_-2px_rgba(42,36,85,0.04)] h-48 group">
+        <div className="md:col-span-3 relative overflow-hidden rounded-xl shadow-[0_12px_24px_-4px_rgba(42,36,85,0.08),0_4px_12px_-2px_rgba(42,36,85,0.04)] min-h-48 h-auto group">
           <img
             alt="Manage your practice"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

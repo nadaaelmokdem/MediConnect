@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       {activeTab === "Overview" && (
         <>
           {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Skeleton className="h-24 w-full" />
               <Skeleton className="h-24 w-full" />
               <Skeleton className="h-24 w-full" />
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
           )}
           {error && !loading && <NetworkError />}
           {data && !loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard title="Patients" value={data.totalPatients} icon={MdPeopleAlt} isPrimary />
               <StatCard title="Doctors" value={data.totalDoctors} icon={MdMedicalServices} />
               <StatCard

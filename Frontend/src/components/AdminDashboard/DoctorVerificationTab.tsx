@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { confirmDialog, promptTextarea, showErrorAlert } from "../../utils/swalTheme";
 import { MdExpandMore, MdExpandLess, MdOpenInNew } from "react-icons/md";
 import AdminService from "../../services/adminService";
 import type {
@@ -78,18 +78,7 @@ export default function DoctorVerificationTab() {
       setDetails((prev) => ({ ...prev, [doctorId]: detail }));
       setChanges((prev) => ({ ...prev, [doctorId]: changeLog }));
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err instanceof Error ? err.message : "Failed to load details",
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-        }
-      });
+      showErrorAlert({ text: err instanceof Error ? err.message : "Failed to load details" });
     } finally {
       setLoadingDetailId(null);
     }
@@ -118,60 +107,29 @@ export default function DoctorVerificationTab() {
       if (detail) {
         const missingFields = validateDoctorData(detail);
         if (missingFields.length > 0) {
-          await Swal.fire({
-            icon: 'error',
-            title: 'Cannot Approve Doctor',
+          await showErrorAlert({
+            title: "Cannot Approve Doctor",
             text: `Missing required fields: ${missingFields.join(", ")}`,
-            buttonsStyling: false,
-            customClass: {
-              popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-surface-variant',
-              title: 'text-2xl font-bold mb-2 text-primary-dark',
-              htmlContainer: 'text-on-surface-variant mb-6 m-0',
-              confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-            }
           });
           return;
         }
       }
 
-      const { isConfirmed } = await Swal.fire({
+      const confirmed = await confirmDialog({
         title: `Approve ${doctor.fullName}?`,
         icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Approve",
-        cancelButtonText: 'Cancel',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-          title: 'text-xl font-bold mb-2 text-primary-dark',
-          confirmButton: 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-          actions: 'flex flex-col w-full m-0'
-        }
+        confirmText: "Approve",
       });
-      if (!isConfirmed) return;
+      if (!confirmed) return;
     } else {
-      const { value, isConfirmed } = await Swal.fire({
+      const value = await promptTextarea({
         title: decision === "Rejected" ? "Reject application" : "Request changes",
-        input: "textarea",
-        inputLabel: "Comment for the doctor (required)",
-        inputPlaceholder: "Explain what's wrong or what needs to change...",
-        showCancelButton: true,
-        confirmButtonText: decision === "Rejected" ? "Reject" : "Request changes",
-        cancelButtonText: 'Cancel',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
-          inputLabel: 'text-sm font-bold text-on-surface mb-1.5 ml-1 text-left w-full block',
-          input: 'w-full border-surface-variant rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary p-3 border bg-surface-container font-medium text-on-surface outline-none transition-all resize-none min-h-[100px]',
-          confirmButton: `w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-sm mt-2 cursor-pointer`,
-          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-          actions: 'flex flex-col w-full m-0'
-        },
-        inputValidator: (v) => (!v ? "A comment is required" : undefined),
+        label: "Comment for the doctor (required)",
+        placeholder: "Explain what's wrong or what needs to change...",
+        confirmText: decision === "Rejected" ? "Reject" : "Request changes",
+        danger: decision === "Rejected",
       });
-      if (!isConfirmed) return;
+      if (value === undefined) return;
       comment = value;
     }
 
@@ -191,18 +149,7 @@ export default function DoctorVerificationTab() {
       if (expandedId === doctor.doctorId) setExpandedId(null);
       load();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err instanceof Error ? err.message : "Action failed",
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-        }
-      });
+      showErrorAlert({ text: err instanceof Error ? err.message : "Action failed" });
     } finally {
       setActioningId(null);
     }
@@ -216,62 +163,30 @@ export default function DoctorVerificationTab() {
       if (detail) {
         const missingFields = validateDoctorData(detail);
         if (missingFields.length > 0) {
-          await Swal.fire({
-            icon: 'error',
-            title: 'Cannot Revert & Approve',
+          await showErrorAlert({
+            title: "Cannot Revert & Approve",
             text: `Missing required fields in current data: ${missingFields.join(", ")}`,
-            buttonsStyling: false,
-            customClass: {
-              popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-surface-variant',
-              title: 'text-2xl font-bold mb-2 text-primary-dark',
-              htmlContainer: 'text-on-surface-variant mb-6 m-0',
-              confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-            }
           });
           return;
         }
       }
 
-      const { isConfirmed } = await Swal.fire({
+      const confirmed = await confirmDialog({
         title: `Revert changes for ${doctor.fullName}?`,
         text: "This will restore their last approved data and re-approve their profile.",
         icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Revert & Approve",
-        cancelButtonText: 'Cancel',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-          title: 'text-xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-          actions: 'flex flex-col w-full m-0'
-        }
+        confirmText: "Revert & Approve",
       });
-      if (!isConfirmed) return;
+      if (!confirmed) return;
     } else {
-      const { value, isConfirmed } = await Swal.fire({
+      const value = await promptTextarea({
         title: "Ban Doctor",
-        input: "textarea",
-        inputLabel: "Reason for ban (required)",
-        inputPlaceholder: "Explain why this doctor is being banned...",
-        showCancelButton: true,
-        confirmButtonText: "Ban Doctor",
-        cancelButtonText: 'Cancel',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
-          inputLabel: 'text-sm font-bold text-on-surface mb-1.5 ml-1 text-left w-full block',
-          input: 'w-full border-surface-variant rounded-xl shadow-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 p-3 border bg-surface-container font-medium text-on-surface outline-none transition-all resize-none min-h-[100px]',
-          confirmButton: `w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-sm mt-2 cursor-pointer`,
-          cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-          actions: 'flex flex-col w-full m-0'
-        },
-        inputValidator: (v) => (!v ? "A reason is required" : undefined),
+        label: "Reason for ban (required)",
+        placeholder: "Explain why this doctor is being banned...",
+        confirmText: "Ban Doctor",
+        danger: true,
       });
-      if (!isConfirmed) return;
+      if (value === undefined) return;
       comment = value;
     }
 
@@ -297,18 +212,7 @@ export default function DoctorVerificationTab() {
       if (expandedId === doctor.doctorId) setExpandedId(null);
       load();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err instanceof Error ? err.message : "Action failed",
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-        }
-      });
+      showErrorAlert({ text: err instanceof Error ? err.message : "Action failed" });
     } finally {
       setActioningId(null);
     }

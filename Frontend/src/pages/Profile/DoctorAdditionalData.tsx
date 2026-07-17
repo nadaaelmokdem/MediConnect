@@ -57,6 +57,8 @@ export default function DoctorAdditionalData() {
   const idProofInputRef = useRef<HTMLInputElement>(null);
   const degreeProofInputRef = useRef<HTMLInputElement>(null);
 
+  const [hasAccess, setHasAccess] = useState<boolean | null>(location.state?.fromSignIn ? true : null);
+
   useEffect(() => {
     let isMounted = true;
     
@@ -127,8 +129,6 @@ export default function DoctorAdditionalData() {
     
     return () => { isMounted = false; };
   }, [user?.id]); // fetch profile once when component mounts
-
-  const [hasAccess, setHasAccess] = useState<boolean | null>(location.state?.fromSignIn ? true : null);
 
   useEffect(() => {
     if (location.state?.fromSignIn) {

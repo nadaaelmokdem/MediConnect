@@ -23,7 +23,7 @@ export default function FormField({
       <div className="relative">
         {icon}
         <input
-          className={`w-full h-9 lg:h-10 p-3 bg-white/90 backdrop-blur-sm border rounded-xl text-[14px] lg:text-[15px] leading-[22px] font-normal text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 transition-all ${borderClass}`}
+          className={`w-full h-10 p-3 bg-white/90 backdrop-blur-sm border rounded-xl text-[14px] lg:text-[15px] leading-[22px] font-normal text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 transition-all ${borderClass}`}
           id={id}
           name={id}
           placeholder={placeholder}

@@ -30,7 +30,7 @@ export default function PatientDashboardHeader({
         </div>
       </div>
 
-      <div className={`relative overflow-hidden ${CARD_BASE} h-48 group`}>
+      <div className={`relative overflow-hidden ${CARD_BASE} min-h-48 h-auto group`}>
         <img
           alt="Find Doctors"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

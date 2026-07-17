@@ -10,7 +10,7 @@ interface DoctorInfoCardProps {
 
 export default function DoctorInfoCard({ doctor, isSelf }: DoctorInfoCardProps) {
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-primary/10 p-8 flex flex-col md:flex-row gap-8 items-start relative overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-sm border border-primary/10 p-5 sm:p-8 flex flex-col md:flex-row gap-5 sm:gap-8 items-start relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
 
       <div className="shrink-0 relative">
@@ -33,9 +33,9 @@ export default function DoctorInfoCard({ doctor, isSelf }: DoctorInfoCardProps) 
       </div>
 
       <div className="flex-1 space-y-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-primary-dark tracking-tight mb-2">
+        <div className="flex justify-between items-start gap-3">
+          <div className="min-w-0">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-primary-dark tracking-tight mb-2 break-words">
               Dr. {doctor.fullName}
             </h1>
             <div className="flex flex-wrap gap-2">

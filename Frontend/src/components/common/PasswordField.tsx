@@ -23,7 +23,7 @@ export default function PasswordField({
       <div className="relative">
         <MdLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none text-lg" />
         <input
-          className={`w-full h-9 lg:h-10 pr-10 p-3 bg-white/90 backdrop-blur-sm border rounded-xl text-[14px] lg:text-[15px] leading-[22px] font-normal text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 transition-all ${borderClass}`}
+          className={`w-full h-10 pr-10 p-3 bg-white/90 backdrop-blur-sm border rounded-xl text-[14px] lg:text-[15px] leading-[22px] font-normal text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-2 transition-all ${borderClass}`}
           id={id}
           name={id}
           placeholder="••••••••"
@@ -35,7 +35,7 @@ export default function PasswordField({
         <button
           type="button"
           onClick={togglePassword}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-primary-dark focus:outline-none cursor-pointer text-lg p-1 rounded transition-colors"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-outline-variant hover:text-primary-dark focus:outline-none cursor-pointer text-lg p-2 rounded transition-colors"
           tabIndex={-1}
         >
           {showPassword ? <MdVisibilityOff /> : <MdVisibility />}

@@ -98,10 +98,22 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat, onStartCal
           </div>
 
           {/* Consultation Types Icons */}
-          <div className="flex gap-3 text-outline-variant mb-4">
-             {minPrices.clinic !== null && <FaClinicMedical title="Clinic Visit" className="hover:text-primary transition-colors cursor-pointer" />}
-             {minPrices.video !== null && <FaVideo title="Video Call" onClick={handleStartCall} className="hover:text-primary transition-colors cursor-pointer" />}
-             {minPrices.chat !== null && <FaCommentDots title="Chat" onClick={handleStartChat} className="hover:text-primary transition-colors cursor-pointer" />}
+          <div className="flex items-center gap-1 -ml-2 text-outline-variant mb-4">
+             {minPrices.clinic !== null && (
+               <span title="Clinic Visit" className="p-2 flex items-center justify-center">
+                 <FaClinicMedical className="hover:text-primary transition-colors" />
+               </span>
+             )}
+             {minPrices.video !== null && (
+               <button type="button" title="Video Call" onClick={handleStartCall} className="p-2 flex items-center justify-center hover:text-primary transition-colors cursor-pointer">
+                 <FaVideo />
+               </button>
+             )}
+             {minPrices.chat !== null && (
+               <button type="button" title="Chat" onClick={handleStartChat} className="p-2 flex items-center justify-center hover:text-primary transition-colors cursor-pointer">
+                 <FaCommentDots />
+               </button>
+             )}
           </div>
         </div>
 
@@ -118,7 +130,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onStartChat, onStartCal
             )}
           </div>
           {!isSelf && (doctor.isChatEnabled || doctor.isClinicEnabled || doctor.isVideoCallEnabled) && (
-            <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
               {onBookAppointment && (doctor.isClinicEnabled || doctor.isVideoCallEnabled) && (
                 <button
                   type="button"

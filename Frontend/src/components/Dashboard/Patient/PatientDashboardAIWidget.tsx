@@ -29,7 +29,7 @@ export default function PatientDashboardAIWidget({
     <div className={`relative z-0 mb-2 bg-surface-container-lowest rounded-xl p-6 flex flex-col h-full w-full transition-all duration-300 ${CARD_SHADOW} ${
       showSystemMessage && systemMessageDoctor ? 'col-span-1 md:col-span-12 lg:col-span-8' : 'col-span-1 md:col-span-12'
     }`}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
             <MdAutoAwesome className="text-xl" />

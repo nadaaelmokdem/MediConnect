@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { confirmDialog, showErrorAlert } from "../../utils/swalTheme";
 import AdminService from "../../services/adminService";
 import type { AdminUser } from "../../types/admin";
 import { formatMoney } from "../../utils/formatMoney";
@@ -26,44 +26,23 @@ export default function UsersTab() {
 
   async function handleToggleActive(user: AdminUser) {
     const action = user.isActive ? "deactivate" : "reactivate";
-    const result = await Swal.fire({
+    const confirmed = await confirmDialog({
       title: `${action === "deactivate" ? "Deactivate" : "Reactivate"} ${user.fullName}?`,
       text: action === "deactivate"
         ? "They will no longer be able to log in. Their history is kept and this can be reversed."
         : "They will be able to log in again.",
       icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: action === "deactivate" ? "Deactivate" : "Reactivate",
-      cancelButtonText: 'Cancel',
-      buttonsStyling: false,
-      customClass: {
-        popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-        title: 'text-xl font-bold mb-2 text-primary-dark',
-        htmlContainer: 'text-on-surface-variant mb-6 m-0',
-        confirmButton: `w-full ${action === "deactivate" ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary-dark"} text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer`,
-        cancelButton: 'w-full mt-3 py-3 text-text-muted font-semibold hover:text-on-surface hover:bg-surface-variant rounded-xl transition-colors cursor-pointer',
-        actions: 'flex flex-col w-full m-0'
-      }
+      confirmText: action === "deactivate" ? "Deactivate" : "Reactivate",
+      danger: action === "deactivate",
     });
-    if (!result.isConfirmed) return;
+    if (!confirmed) return;
 
     setActioningId(user.id);
     try {
       await AdminService.setUserActive(user.id, !user.isActive);
       load();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err instanceof Error ? err.message : "Action failed",
-        buttonsStyling: false,
-        customClass: {
-          popup: 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-surface-variant',
-          title: 'text-2xl font-bold mb-2 text-primary-dark',
-          htmlContainer: 'text-on-surface-variant mb-6 m-0',
-          confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer',
-        }
-      });
+      showErrorAlert({ text: err instanceof Error ? err.message : "Action failed" });
     } finally {
       setActioningId(null);
     }
@@ -78,7 +57,7 @@ export default function UsersTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-surface-container text-left text-primary-dark/70">
-              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold sticky left-0 z-10 bg-surface-container">Name</th>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Role</th>
               <th className="px-4 py-3 font-semibold">Joined</th>
@@ -90,7 +69,7 @@ export default function UsersTab() {
           <tbody className="divide-y divide-surface-container">
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="px-4 py-3 font-medium text-primary-dark">{u.fullName}</td>
+                <td className="px-4 py-3 font-medium text-primary-dark sticky left-0 z-10 bg-white">{u.fullName}</td>
                 <td className="px-4 py-3 text-primary-dark/70">{u.email}</td>
                 <td className="px-4 py-3 text-primary-dark/70">{u.role}</td>
                 <td className="px-4 py-3 text-primary-dark/70">

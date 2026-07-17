@@ -183,13 +183,13 @@ export default function SignUp({
         <button
           type="button"
           onClick={() => navigate(`/${signInLink}`)}
-          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all text-primary hover:bg-surface-variant cursor-pointer"
+          className="flex-1 py-2.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all text-primary hover:bg-surface-variant cursor-pointer"
         >
           Login
         </button>
         <button
           type="button"
-          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all bg-primary text-white shadow-sm"
+          className="flex-1 py-2.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all bg-primary text-white shadow-sm"
         >
           Register
         </button>
@@ -317,7 +317,7 @@ export default function SignUp({
 
         {/* Submit */}
         <button
-          className="cursor-pointer mt-0 w-full h-9 lg:h-10 flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary-dark hover:-translate-y-0.5 rounded-xl text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-floating disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          className="cursor-pointer mt-0 w-full h-10 flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary-dark hover:-translate-y-0.5 rounded-xl text-[13px] lg:text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-floating disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           type="submit"
           disabled={isLoading}
         >

@@ -74,7 +74,7 @@ const Navbar = () => {
         <div className="md:hidden flex items-center gap-2 ml-auto">
           <Link
             to="/register"
-            className="text-xs font-semibold px-3 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow-md transition-all duration-200"
+            className="text-xs font-semibold px-3 py-2.5 rounded-lg bg-primary text-white hover:bg-primary-dark shadow-md transition-all duration-200"
           >
             Get Started
           </Link>

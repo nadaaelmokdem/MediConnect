@@ -48,7 +48,7 @@ export default function AIChatHeader({
       </div>
 
       {quota && (
-        <div className="flex items-center justify-between sm:justify-end gap-3 bg-surface-container border border-surface-variant px-3 py-2 rounded-xl shadow-sm w-full lg:w-auto mt-2 lg:mt-0">
+        <div className="flex items-center flex-wrap justify-between sm:justify-end gap-2 sm:gap-3 bg-surface-container border border-surface-variant px-3 py-2 rounded-xl shadow-sm w-full lg:w-auto mt-2 lg:mt-0">
           <div className="hidden sm:flex items-center gap-2 mr-2">
             <MdOutlineAccountBalanceWallet className="text-[18px] text-on-surface-variant" />
             <p className="text-xs font-semibold text-on-surface-variant">Usage</p>

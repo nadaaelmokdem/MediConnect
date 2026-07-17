@@ -27,7 +27,7 @@ export default function AppointmentsTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-surface-container text-left text-primary-dark/70">
-              <th className="px-4 py-3 font-semibold">Patient</th>
+              <th className="px-4 py-3 font-semibold sticky left-0 z-10 bg-surface-container">Patient</th>
               <th className="px-4 py-3 font-semibold">Doctor</th>
               <th className="px-4 py-3 font-semibold">Scheduled</th>
               <th className="px-4 py-3 font-semibold">Type</th>
@@ -39,7 +39,7 @@ export default function AppointmentsTab() {
           <tbody className="divide-y divide-surface-container">
             {appointments.map((a) => (
               <tr key={a.appointmentId}>
-                <td className="px-4 py-3 font-medium text-primary-dark">{a.patientName}</td>
+                <td className="px-4 py-3 font-medium text-primary-dark sticky left-0 z-10 bg-white">{a.patientName}</td>
                 <td className="px-4 py-3 text-primary-dark/70">{a.doctorName}</td>
                 <td className="px-4 py-3 text-primary-dark/70">
                   {new Date(a.scheduledAt).toLocaleString()}

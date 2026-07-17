@@ -41,7 +41,7 @@ export default function DoctorsPreviewSection() {
         <button
           type="button"
           onClick={() => navigate("/doctors")}
-          className="cursor-pointer flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark transition-colors duration-150"
+          className="cursor-pointer flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark transition-colors duration-150 py-2 px-1"
         >
           Browse all <FaChevronRight size={11} />
         </button>
@@ -105,7 +105,7 @@ export default function DoctorsPreviewSection() {
                         e.stopPropagation();
                         navigate(`/doctors/${doc.doctorId}`);
                       }}
-                      className="cursor-pointer text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors duration-200"
+                      className="cursor-pointer text-xs font-semibold px-3.5 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors duration-200"
                     >
                       Book now
                     </button>

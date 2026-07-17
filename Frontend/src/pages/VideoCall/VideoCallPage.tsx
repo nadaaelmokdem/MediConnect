@@ -261,9 +261,9 @@ export default function VideoCallPage() {
       {/* Dynamic Warning Banner */}
       {showWarning && (
         <div className="absolute top-0 left-0 right-0 z-50 animate-slide-down">
-          <div className="bg-red-500/90 backdrop-blur-md text-white px-6 py-3 flex items-center justify-center gap-3 shadow-xl">
-            <FaExclamationTriangle className="text-xl animate-pulse" />
-            <span className="font-bold tracking-wide">
+          <div className="bg-red-500/90 backdrop-blur-md text-white px-4 sm:px-6 py-3 flex items-center justify-center gap-3 shadow-xl text-center">
+            <FaExclamationTriangle className="text-xl animate-pulse shrink-0" />
+            <span className="font-bold tracking-wide text-sm sm:text-base">
               5 minutes remaining. This call will end automatically at 30 minutes.
             </span>
             <button onClick={() => setShowWarning(false)} className="absolute right-4 hover:bg-white/20 p-1.5 rounded-full transition-colors">
@@ -312,23 +312,23 @@ export default function VideoCallPage() {
           )}
 
           {/* Call Status Overlay */}
-          <div className="absolute top-6 left-6 flex items-center gap-4">
-            <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-white shadow-lg flex items-center gap-3">
-              <div className={`w-2.5 h-2.5 rounded-full ${callState === 'ACTIVE' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
-              <span className="font-medium tracking-wide text-sm">{callState}</span>
+          <div className={`absolute left-3 sm:left-6 flex items-center gap-2 sm:gap-4 transition-all duration-300 ${showWarning ? 'top-24 sm:top-20' : 'top-4 sm:top-6'}`}>
+            <div className="bg-black/40 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 text-white shadow-lg flex items-center gap-2 sm:gap-3">
+              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${callState === 'ACTIVE' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
+              <span className="font-medium tracking-wide text-xs sm:text-sm">{callState}</span>
             </div>
-            
+
             {callState === "ACTIVE" && (
-              <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-white/90 shadow-lg font-mono text-sm">
+              <div className="bg-black/40 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 text-white/90 shadow-lg font-mono text-xs sm:text-sm">
                 {formatTime(callDurationSeconds)}
               </div>
             )}
           </div>
 
           {/* Local Video PiP */}
-          <div className={`absolute bottom-28 transition-all duration-300 right-8 ${
+          <div className={`absolute bottom-32 sm:bottom-28 transition-all duration-300 right-3 sm:right-8 ${
             isChatOpen ? 'sm:right-[352px]' : ''
-          } w-48 sm:w-64 aspect-video bg-gray-800 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10 hover:border-primary/50 group z-40`}>
+          } w-32 sm:w-64 aspect-video bg-gray-800 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10 hover:border-primary/50 group z-40`}>
             <video
               ref={localVideoRef}
               autoPlay
@@ -386,7 +386,7 @@ export default function VideoCallPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-black/20 border-t border-white/10">
+            <div className="p-4 pb-28 sm:pb-4 bg-black/20 border-t border-white/10">
               <form onSubmit={handleSendMessage} className="flex gap-2">
                 <input
                   type="text"
@@ -409,51 +409,51 @@ export default function VideoCallPage() {
       </div>
 
       {/* Floating Control Dock */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-black/40 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-full shadow-2xl">
+      <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 sm:gap-4 bg-black/40 backdrop-blur-xl border border-white/10 px-4 sm:px-8 py-3 sm:py-4 rounded-full shadow-2xl max-w-[calc(100vw-1rem)]">
         <button
           onClick={toggleMute}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg ${
-            isMuted 
-              ? 'bg-red-500/90 hover:bg-red-600 text-white border border-red-400' 
+          className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg shrink-0 ${
+            isMuted
+              ? 'bg-red-500/90 hover:bg-red-600 text-white border border-red-400'
               : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
           }`}
           title={isMuted ? "Unmute" : "Mute"}
         >
-          {isMuted ? <FaMicrophoneSlash className="text-xl" /> : <FaMicrophone className="text-xl" />}
+          {isMuted ? <FaMicrophoneSlash className="text-base sm:text-xl" /> : <FaMicrophone className="text-base sm:text-xl" />}
         </button>
 
         <button
           onClick={toggleVideo}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg ${
-            isVideoOff 
-              ? 'bg-red-500/90 hover:bg-red-600 text-white border border-red-400' 
+          className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg shrink-0 ${
+            isVideoOff
+              ? 'bg-red-500/90 hover:bg-red-600 text-white border border-red-400'
               : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
           }`}
           title={isVideoOff ? "Turn on camera" : "Turn off camera"}
         >
-          {isVideoOff ? <FaVideoSlash className="text-xl" /> : <FaVideo className="text-xl" />}
+          {isVideoOff ? <FaVideoSlash className="text-base sm:text-xl" /> : <FaVideo className="text-base sm:text-xl" />}
         </button>
 
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg relative ${
+          className={`w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-lg relative shrink-0 ${
             isChatOpen
               ? 'bg-primary/80 hover:bg-primary text-white border border-primary/50'
               : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
           }`}
           title="Toggle Chat"
         >
-          <FaCommentDots className="text-xl" />
+          <FaCommentDots className="text-base sm:text-xl" />
         </button>
 
-        <div className="w-px h-8 bg-white/20 mx-2"></div>
+        <div className="w-px h-6 sm:h-8 bg-white/20 mx-0.5 sm:mx-2 shrink-0"></div>
 
         <button
           onClick={handleEndCall}
-          className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] transition-all cursor-pointer border border-red-500"
+          className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] transition-all cursor-pointer border border-red-500 shrink-0"
           title="End Call"
         >
-          <FaPhoneSlash className="text-2xl" />
+          <FaPhoneSlash className="text-lg sm:text-2xl" />
         </button>
       </div>
     </div>

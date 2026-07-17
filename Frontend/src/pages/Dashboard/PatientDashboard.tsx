@@ -181,7 +181,7 @@ export default function PatientDashboard() {
 
   if (loading) {
     return (
-      <div className="flex-1 p-8 max-w-[1440px] z-10 relative">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1440px] z-10 relative">
         <Skeleton className="h-48 w-full mb-6" />
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <Skeleton className="col-span-1 md:col-span-12 h-40" />
@@ -194,7 +194,7 @@ export default function PatientDashboard() {
 
   if (error || !data) {
     return (
-      <div className="flex-1 p-8 max-w-[1440px] z-10 relative flex items-center justify-center min-h-[50vh]">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1440px] z-10 relative flex items-center justify-center min-h-[50vh]">
         <NetworkError />
       </div>
     );
@@ -210,7 +210,7 @@ export default function PatientDashboard() {
   const formattedDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <main className="flex-1 p-8 max-w-[1440px] z-10 relative bg-background text-on-background min-h-screen">
+    <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1440px] z-10 relative bg-background text-on-background min-h-screen">
       <PatientDashboardHeader 
         fullName={data.fullName}
         getGreeting={getGreeting}

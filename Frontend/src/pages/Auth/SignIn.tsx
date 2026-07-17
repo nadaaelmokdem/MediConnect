@@ -1,6 +1,6 @@
 import { MdOutlineMail, MdArrowForward } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
-import Swal from "sweetalert2";
+import { confirmDialog, showErrorAlert } from "../../utils/swalTheme";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -96,28 +96,16 @@ export default function TabibiLogin({
           return;
         }
 
-        Swal.fire({
-          title: `Role Conflict`,
+        confirmDialog({
+          title: "Role Conflict",
           html: `
-            <div class="mb-4">
-               <p class="text-on-surface-variant">You are registered as a <span class="font-semibold text-primary-dark">${user.roles.join(", ")}</span>.</p>
-               <p class="text-on-surface-variant mt-2">Do you want to sign in as a ${user.roles.join(", ")} or register as a ${requiredRole}?</p>
-            </div>
+            <p>You are registered as a <span class="font-semibold text-primary-dark">${user.roles.join(", ")}</span>.</p>
+            <p class="mt-2">Do you want to sign in as a ${user.roles.join(", ")} or register as a ${requiredRole}?</p>
           `,
-          showCancelButton: true,
-          confirmButtonText: `Register as ${requiredRole}`,
-          cancelButtonText: `Sign in as ${user.roles.join(", ")}`,
-          buttonsStyling: false,
-          customClass: {
-            popup: 'bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-md w-full border border-surface-variant',
-            title: 'text-2xl font-bold mb-4 text-primary-dark text-left w-full',
-            htmlContainer: 'w-full m-0 text-left',
-            confirmButton: 'w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5',
-            cancelButton: 'w-full mt-3 py-3.5 border-2 border-surface-variant text-on-surface-variant font-bold hover:text-primary-dark hover:border-outline-variant hover:bg-surface-container rounded-xl transition-colors',
-            actions: 'flex flex-col w-full m-0 mt-4'
-          }
-        }).then(async (result) => {
-          if (result.isConfirmed) {
+          confirmText: `Register as ${requiredRole}`,
+          cancelText: `Sign in as ${user.roles.join(", ")}`,
+        }).then(async (confirmed) => {
+          if (confirmed) {
             try {
               await addToRole(email, requiredRole);
               await login(email, password, requiredRole);
@@ -127,20 +115,9 @@ export default function TabibiLogin({
                 navigate(from);
               }
             } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to switch roles.";
-            Swal.fire({
-              icon: "error",
-              title: "Something went wrong",
-              text: message,
-              buttonsStyling: false,
-              customClass: {
-                popup: 'bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-surface-variant',
-                title: 'text-2xl font-bold mb-2 text-primary-dark',
-                htmlContainer: 'text-on-surface-variant mb-6 m-0',
-                confirmButton: 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg',
-              }
-            });
-          }
+              const message = err instanceof Error ? err.message : "Failed to switch roles.";
+              showErrorAlert({ text: message });
+            }
           } else {
             await logout();
             const fallback = requiredRole === "Doctor" ? "login" : "doctor-login";
@@ -176,14 +153,14 @@ export default function TabibiLogin({
       <div className="flex w-full bg-surface-container rounded-full p-1 mb-0.5">
         <button
           type="button"
-          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all bg-primary text-white shadow-sm"
+          className="flex-1 py-2.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all bg-primary text-white shadow-sm"
         >
           Login
         </button>
         <button
           type="button"
           onClick={() => navigate(`/${registerLink}`)}
-          className="flex-1 py-1.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all text-primary hover:bg-surface-variant cursor-pointer"
+          className="flex-1 py-2.5 text-[13px] lg:text-[14px] font-semibold rounded-full transition-all text-primary hover:bg-surface-variant cursor-pointer"
         >
           Register
         </button>
@@ -234,7 +211,7 @@ export default function TabibiLogin({
 
         <button
           disabled={isLoading}
-          className={`w-full h-9 lg:h-10 flex items-center justify-center gap-2 bg-primary text-white rounded-xl text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-floating ${
+          className={`w-full h-10 flex items-center justify-center gap-2 bg-primary text-white rounded-xl text-[14px] leading-[20px] tracking-[0.01em] font-semibold transition-all shadow-floating ${
             isLoading
               ? "opacity-70 cursor-not-allowed"
               : "hover:bg-primary-dark hover:-translate-y-0.5 cursor-pointer"
